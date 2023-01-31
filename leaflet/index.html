@@ -183,7 +183,7 @@
         isSegmentation = true;
         const {relatedTarget} = e;
         relatedLayer = relatedTarget;
-        map.pm.enableDraw('Line', {});
+        map.pm.enableDraw('Marker', {});
     }
 
     function segmentationLine(layer) {
@@ -205,7 +205,6 @@
         if (index !== -1) {
             map.removeLayer(relatedLayer);
             drawLayers.splice(index, 1);
-            console.log(drawLayers);
         }
         relatedLayer = undefined;
         isSegmentation = !isSegmentation;
