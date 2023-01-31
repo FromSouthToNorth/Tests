@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>leaflet</title>
+    <script src="./src/leaflet/tutf.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+          integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
+          crossorigin=""/>
+    <script src="./src/leaflet/leaflet.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css"/>
+    <script src="./src/leaflet/leaflet-geoman.js"></script>
+
+    <script src="./src/leaflet/leaflet.contextmenu.js"></script>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-contextmenu/1.4.0/leaflet.contextmenu.css"/>
+
+    <script src="./src/uuid/uuid.js"></script>
+
+    <style>
+        /* http://meyerweb.com/eric/tools/css/reset/
+        v2.0 | 20110126
+        License: none (public domain)
+        */
+
+        html, body, div, span, applet, object, iframe,
+        h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+        a, abbr, acronym, address, big, cite, code,
+        del, dfn, em, img, ins, kbd, q, s, samp,
+        small, strike, strong, sub, sup, tt, const,
+        b, u, i, center,
+        dl, dt, dd, ol, ul, li,
+        fieldset, form, label, legend,
+        table, caption, tbody, tfoot, thead, tr, th, td,
+        article, aside, canvas, details, embed,
+        figure, figcaption, footer, header, hgroup,
+        menu, nav, output, ruby, section, summary,
+        time, mark, audio, video {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            font-size: 100%;
+            font: inherit;
+            vertical-align: baseline;
+            font-family: "JetBrains Mono";
+        }
+
+        /* HTML5 display-role reset for older browsers */
+        article, aside, details, figcaption, figure,
+        footer, header, hgroup, menu, nav, section {
+            display: block;
+        }
+
+        body {
+            line-height: 1;
+        }
+
+        ol, ul {
+            list-style: none;
+        }
+
+        blockquote, q {
+            quotes: none;
+        }
+
+        blockquote:before, blockquote:after,
+        q:before, q:after {
+            content: '';
+            content: none;
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+
+        #info {
+            position: fixed;
+            z-index: 999;
+            bottom: 10px;
+            left: 10px;
+            padding: 10px;
+            border: none;
+            border-radius: 3px;
+            font-size: 12px;
+            text-align: center;
+            color: #222;
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<pre id="info"></pre>
+<script>
+    const map = L.map('map', {contextmenu: true,}).setView([30.3339, 106.9303], 16);
+
+    map.on('click', (e) => {
+        const {containerPoint, latlng, layerPoint} = e;
+        const point = turf.point([latlng.lng, latlng.lat]);
+        const options = {precision: 7, coordinates: 2};
+        const truncated = turf.truncate(point, options);
+        const info = `<span>x: ${containerPoint.x} y: ${containerPoint.y}</span> <br/> <br/><span>${truncated.geometry.coordinates[1]}, ${truncated.geometry.coordinates[0]}</span>`;
+        document.getElementById('info').innerHTML = info;
+    })
+
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+
+    const linShuiMarker = L.marker([30.3339, 106.9303]).bindPopup(`<p>邻水</p>`).addTo(map);
+    linShuiMarker.uuid = uuid.v4()
+
+    // 设置动画
+    linShuiMarker.on("click", function () {
+        const pos = map.latLngToLayerPoint(linShuiMarker.getLatLng());
+        const fx = new L.PosAnimation();
+        pos.y -= 10;
+
+        fx.once('end', function () {
+            pos.y += 10;
+            fx.run(linShuiMarker._icon, pos, 0.8);
+        });
+
+        fx.run(linShuiMarker._icon, pos, 0.3);
+    });
+
+    /*****  Leaflet-Geoman  *****/
+    const drawLayers = [];
+    // add Leaflet-Geoman controls with some options to the map
+    map.pm.addControls({
+        position: 'topleft',
+        drawCircle: false,
+    });
+
+    /** 绑定右键菜单 */
+    function bindContextMenuLine(shape, layer) {
+        if (shape.includes('Line')) {
+            layer.bindContextMenu({
+                contextmenu: true,
+                contextmenuItems: [{
+                    text: '分割',
+                    callback: segmentation,
+                }, {
+                    text: '编辑',
+                    callback: edit,
+                }]
+            })
+        }
+    }
+
+    let isSegmentation = false;
+
+    let relatedLayer;
+
+    /** 编辑 */
+    function edit(e) {
+        console.log(e);
+        const {relatedTarget} = e;
+        console.log(relatedTarget);
+    }
+
+    /** 裁剪方法 */
+    function segmentation(e) {
+        isSegmentation = true;
+        const {relatedTarget} = e;
+        relatedLayer = relatedTarget;
+        map.pm.enableDraw('Line', {});
+    }
+
+    function segmentationLine(layer) {
+        const splitter = layer.toGeoJSON();
+        const line = relatedLayer.toGeoJSON();
+        const split = turf.lineSplit(line, splitter);
+        console.log(split);
+        map.removeLayer(layer);
+        const index = drawLayersFindIndex(relatedLayer.uuid);
+        const {features} = split;
+        for (let i = 0; i < features.length; i++) {
+            console.log(features[i]);
+            const line = L.GeoJSON.geometryToLayer(features[i], {color: i > 0 ? '#cf1322' : '#fa541c',});
+            console.log(line);
+            line.uuid = uuid.v4();
+            drawLayers.push(line);
+            line.addTo(map);
+        }
+        if (index !== -1) {
+            map.removeLayer(relatedLayer);
+            drawLayers.splice(index, 1);
+            console.log(drawLayers);
+        }
+        relatedLayer = undefined;
+    }
+
+    function drawLayersFindIndex(uuid) {
+        return drawLayers.findIndex(e => {
+            return e.uuid === uuid;
+        })
+    }
+
+    map.on('pm:create', (e) => {
+        const {layer, shape} = e;
+        layer.isSegmentation = isSegmentation;
+        if (!isSegmentation) {
+            layer.uuid = uuid.v4();
+            drawLayers.push(layer);
+        } else {
+            segmentationLine(layer);
+        }
+        isSegmentation = !isSegmentation;
+        bindContextMenuLine(shape, layer);
+        map.pm.disableDraw();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MergeSort</title>
+</head>
+<body>
+<script>
+    let nums = [99, 2, 1, -12, 4, 0, 3, 1, 8, 10, 2, 3, 5, 6]
+
+    let aux = []
+
+    console.log(aux);
+
+    sort(nums, 0, nums.length - 1);
+
+    console.log("nums: ", nums);
+
+    function sort(nums, lo, hi) {
+        if (hi <= lo) return
+        let mid = lo + (hi - lo) / 2
+        sort(nums, lo, mid)
+        sort(nums, mid + 1, hi)
+        merge(nums, lo, mid, hi)
+    }
+
+    function merge(nums, lo, mid, hi) {
+        let i = lo, j = mid + 1
+        for (let k = lo; k <= hi; k++) aux[k] = nums[k]
+        for (let k = lo; k <= hi; k++) {
+            if (i > mid) {
+                nums[k] = aux[j++]
+            } else if (j > mid) {
+                nums[k] = aux[i++]
+            } else if (aux[j] < aux[i]) {
+                nums[k] = aux[j++]
+            } else {
+                nums[k] = aux[i++]
+            }
+        }
+    }
+
+</script>
+</body>
+</html>

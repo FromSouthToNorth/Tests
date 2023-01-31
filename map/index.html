@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .page {
+            width: 200px;
+            margin: 0 auto;
+        }
+
+        .container {
+            display: flex;
+        }
+
+    </style>
+</head>
+
+<body>
+<script>
+    const evaluate = function (s, knowledge) {
+        const map = new Map(knowledge);
+        let keys = '', res = '', appendKeys = false;
+        for (let c of s) {
+            if (c === '(') {
+                appendKeys = true;
+            }
+            else if (c === ')') {
+                res += map.has(keys) ? map.get(keys) : '?';
+                appendKeys = false;
+                keys = '';
+            }
+            else {
+                if (appendKeys) {
+                    keys += c;
+                }
+                else {
+                    res += c;
+                }
+            }
+        }
+        return res;
+    }
+    console.log(evaluate('(name)is(age)yearsold', [['name','bob'], ['age','two']]));
+    console.log(evaluate('123(321)is(?)yearsold', [['321','bob'], ['?','two']]));
+    console.log(evaluate('123${6}sb,(9):12sd', [['6','10'], ['age','two']]));
+</script>
+</body>
+
+</html>

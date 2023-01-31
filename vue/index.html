@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vue</title>
+    <script src="./vue.js"></script>
+    <script type="text/x-template" id="icon-template">
+       <svg-icon :name="getSvgIcon" v-if="isSvgIcon" :class="[$attrs.class, 'anticon']" :spin="spin" />
+    </script>
+    <script type="text/x-template" id="svg-icon-template">
+        <svg
+            :class="[prefixCls, $attrs.class, spin && 'svg-icon-spin']"
+            :style="getStyle"
+            aria-hidden="true"
+        >
+            <use :xlink:href="symbolId" />
+        </svg>
+    </script>
+</head>
+<body>
+<div id="demo">
+    <Icon :icon-name="'11'" :size="12" />
+</div>
+<script>
+    Vue.component('SvgIcon', {
+        template: '#svg-icon-template',
+        props: {
+            prefix: {
+                type: String,
+                default: 'icon',
+            },
+            name: {
+                type: String,
+                required: true,
+            },
+            size: {
+                type: [Number, String],
+                default: 16,
+            },
+            spin: {
+                type: Boolean,
+                default: false,
+            },
+        },
+        setup(props) {
+        },
+    });
+    Vue.component('icon', {
+        template: '#icon-template',
+        props: {
+            iconName: String,
+            size: Number,
+        },
+        setup(props) {
+            console.log(props.iconName);
+            console.log(props.size);
+        },
+    });
+    var demo = new Vue({
+        el: '#demo',
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+  integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+  crossorigin=""/>
+  <!-- Make sure you put this AFTER Leaflet's CSS -->
+ <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+ integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+ crossorigin=""></script>
+ <script src="./AnimatedMarker.js"></script>
+ <script src="./polylineDecorator.js"></script>
+ <style>
+  * {
+    margin: 0;
+    padding: 0;
+  }
+  #map-container {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+  .menu {
+    width: 60px;
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: aliceblue;
+    z-index: 1000;
+  }
+  .menu button {
+    display: flex;
+    width: 58px;
+    height: 20px;
+    justify-content: center;
+    align-items: center;
+  }
+ </style>
+</head>
+<body>
+  <div id="map-container">
+  </div>
+  <div class="menu">
+    <button onclick="startClick()">开始</button>
+    <button onclick="pauseClick()">暂停</button>
+    <button onclick="speetUp()">加速</button>
+    <button onclick="speetDown()">减速</button>
+    <button onclick="stopClick()">结束</button>
+  </div>
+</body>
+<script>
+  var map = L.map('map-container', {
+    center: [39.924317, 116.390619],
+    zoom: 14,
+    preferCanvas: true
+  })
+  var tiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
+  // 运行轨迹
+  var latlngs = [
+        [39.898457, 116.391844],
+        [39.898457, 116.391844],
+        [39.898457, 116.391844],
+        [39.898457, 116.391844],
+        [39.898457, 116.391844],
+        [39.898457, 116.391844],
+        [39.898457, 116.391844],
+        [39.898457, 116.391844],
+        [39.898457, 116.391844],
+        [39.898457, 116.391844],
+        [39.898457, 116.391844],
+        [39.898457, 116.391844],
+        [39.898457, 116.391844],
+        [39.898457, 116.391844],
+        [39.898457, 116.391844],
+        [39.898457, 116.391844],
+        [39.898457, 116.391844],
+        [39.898457, 116.391844],
+        [39.898457, 116.391844],
+        [39.898457, 116.391844],
+        [39.898457, 116.391844],
+        [39.898457, 116.391844],
+        [39.898595, 116.377947],
+        [39.898341, 116.368001],
+        [39.898063, 116.357144],
+        [39.899095, 116.351934],
+        [39.905871, 116.350670],
+        [39.922329, 116.349800],
+        [39.931017, 116.349671],
+        [39.939104, 116.349225],
+        [39.942233, 116.349910],
+        [39.947263, 116.366892],
+        [39.947568, 116.387537],
+        [39.947764, 116.401988],
+        [39.947929, 116.410824],
+        [39.947558, 116.426740],
+        [39.939700, 116.427338],
+        [39.932404, 116.427919],
+        [39.923109, 116.428377],
+        [39.907094, 116.429583],
+        [39.906858, 116.414040],
+        [39.906622, 116.405321],
+        [39.906324, 116.394954],
+        [39.906308, 116.391264],
+        [39.916611, 116.390748]
+    ];
+    // 速度
+    var speedList = [0.1, 0.1,1,1,1,1,1,1, 0.1, 0.1, 0.1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 2, 2, 2, 1, 1, 1, 1, 1, 1]
+
+    // 轨迹线
+    var routeLine = L.polyline(latlngs, {
+        weight: 8
+    }).addTo(map)
+    var realRouteLine = L.polyline([], {
+        weight: 8,
+        color: '#FF9900'
+    }).addTo(map)
+    // 轨迹方向箭头
+    var decorator = L.polylineDecorator(routeLine, {
+        patterns: [{
+            repeat: 50,
+            symbol: L.Symbol.arrowHead({
+                pixelSize: 5,
+                headAngle: 75,
+                polygon: false,
+                pathOptions: {
+                    stroke: true,
+                    weight: 2,
+                    color: '#FFFFFF'
+                }
+            })
+        }]
+    }).addTo(map);
+    var carIcon = L.icon({
+        iconSize: [37, 26],
+        iconAnchor: [19, 13],
+        iconUrl: './img/car.png'
+    })
+    // 动态marker
+    var animatedMarker = L.animatedMarker(routeLine.getLatLngs(), {
+        speedList: speedList,
+        interval: 220, // 默认为100mm
+        icon: carIcon,
+        playCall: updateRealLine
+    }).addTo(map)
+    var newLatlngs = [routeLine.getLatLngs()[0]]
+
+    // 绘制已行走轨迹线（橙色那条）
+    function updateRealLine(latlng) {
+        newLatlngs.push(latlng)
+        realRouteLine.setLatLngs(newLatlngs)
+    }
+
+    let speetX = 1 // 默认速度倍数
+
+     // 加速
+     function speetUp() {
+        speetX = speetX * 2
+        animatedMarker.setSpeetX(speetX);
+    }
+
+    // 减速
+    function speetDown() {
+        speetX = speetX / 2
+        animatedMarker.setSpeetX(speetX);
+    }
+
+    // 开始
+    function startClick() {
+        animatedMarker.start();
+    }
+
+    // 暂停
+    function pauseClick() {
+        animatedMarker.pause();
+    }
+
+    // 停止
+    function stopClick() {
+        newLatlngs = []
+        animatedMarker.stop();
+    }
+</script>
+</html>

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="f4051669-6a98-464c-aadf-067901613746" name="Changes" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="TypeScript File" />
+        <option value="HTML File" />
+        <option value="CSS File" />
+        <option value="JavaScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="GOROOT" url="file://E:/Go" />
+  <component name="KotlinMultiplatform">
+    <allAvailableExecutables />
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="n7oxlaro" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHome" value="E:/maven-3.8.3/apache-maven-3.8.3" />
+        <option name="userSettingsFile" value="E:\maven-3.8.3\apache-maven-3.8.3\conf\settings.xml" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="ProjectId" id="2BpG7N6gU3s5bmOJu6JQCXRdhR9" />
+  <component name="ProjectViewState">
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="DefaultHtmlFileTemplate" value="HTML File" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="dart.analysis.tool.window.visible" value="false" />
+    <property name="go.format.on.save.advertiser.fired" value="true" />
+    <property name="go.formatter.settings.were.checked" value="true" />
+    <property name="go.import.settings.migrated" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/leaflet/src/leaflet" />
+    <property name="list.type.of.created.stylesheet" value="CSS" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="ts.external.directory.path" value="E:\JetBrains\IntelliJ IDEA 2021.3.3\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
+    <property name="vue.rearranger.settings.migration" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\bw\Desktop\Math\leaflet\src\leaflet" />
+      <recent name="C:\Users\bw\Desktop\Math\leaflet" />
+      <recent name="C:\Users\bw\Desktop\Math\mapboxgl" />
+      <recent name="C:\Users\bw\Desktop\Math\omstogeojson" />
+      <recent name="C:\Users\bw\Desktop\Math\vue" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\bw\Desktop\Math\omstogeojson" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="f4051669-6a98-464c-aadf-067901613746" name="Changes" comment="" />
+      <created>1657595445248</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1657595445248</updated>
+      <workItem from="1657595446651" duration="3930000" />
+      <workItem from="1660186716406" duration="963000" />
+      <workItem from="1665971368224" duration="2019000" />
+      <workItem from="1665974461670" duration="29275000" />
+      <workItem from="1666662807981" duration="1987000" />
+      <workItem from="1666686960079" duration="15162000" />
+      <workItem from="1667198072145" duration="4654000" />
+      <workItem from="1667375864358" duration="7980000" />
+      <workItem from="1667896926411" duration="1571000" />
+      <workItem from="1668477400678" duration="3415000" />
+      <workItem from="1668758025378" duration="646000" />
+      <workItem from="1669686411566" duration="2174000" />
+      <workItem from="1669770499009" duration="209000" />
+      <workItem from="1669770730064" duration="96000" />
+      <workItem from="1670310884578" duration="2328000" />
+      <workItem from="1670480091082" duration="918000" />
+      <workItem from="1670481027780" duration="6705000" />
+      <workItem from="1670500630903" duration="1505000" />
+      <workItem from="1670550361042" duration="774000" />
+      <workItem from="1670551537884" duration="4166000" />
+      <workItem from="1670574902185" duration="650000" />
+      <workItem from="1672124463312" duration="2068000" />
+      <workItem from="1672196835747" duration="3098000" />
+      <workItem from="1672709185050" duration="6982000" />
+      <workItem from="1672912070789" duration="5027000" />
+      <workItem from="1673228299468" duration="602000" />
+      <workItem from="1673579333206" duration="16685000" />
+      <workItem from="1673677888467" duration="10576000" />
+      <workItem from="1674954108195" duration="598000" />
+      <workItem from="1674987750108" duration="18168000" />
+      <workItem from="1675149364735" duration="72000" />
+      <workItem from="1675149450266" duration="6784000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
