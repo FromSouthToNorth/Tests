@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f4051669-6a98-464c-aadf-067901613746" name="Changes" comment="" />
+    <list default="true" id="f4051669-6a98-464c-aadf-067901613746" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/leaflet/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/leaflet/index.html" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -21,6 +23,9 @@
     </option>
   </component>
   <component name="GOROOT" url="file://E:/Go" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
   <component name="KotlinMultiplatform">
     <allAvailableExecutables />
   </component>
@@ -39,6 +44,7 @@
     </option>
   </component>
   <component name="ProjectId" id="2BpG7N6gU3s5bmOJu6JQCXRdhR9" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
@@ -109,7 +115,7 @@
       <workItem from="1674954108195" duration="598000" />
       <workItem from="1674987750108" duration="18168000" />
       <workItem from="1675149364735" duration="72000" />
-      <workItem from="1675149450266" duration="6784000" />
+      <workItem from="1675149450266" duration="9641000" />
     </task>
     <servers />
   </component>

@@ -135,6 +135,8 @@
     });
 
     /*****  Leaflet-Geoman  *****/
+
+    map.pm.setLang('zh');
     const drawLayers = [];
     // add Leaflet-Geoman controls with some options to the map
     map.pm.addControls({
@@ -165,8 +167,15 @@
     /** 编辑 */
     function edit(e) {
         console.log(e);
+        console.log('可用形状的数组: ', map.pm.Draw.getShapes());
+        console.log('返回活动形状。: ', map.pm.Draw.getActiveShape());
         const {relatedTarget} = e;
         console.log(relatedTarget);
+        console.log('getOptions', relatedTarget.pm.getOptions());
+        relatedTarget.pm.enable({
+            allowSelfIntersection: false
+        });
+        console.log('enable getOptions', relatedTarget.pm.getOptions());
     }
 
     /** 裁剪方法 */
@@ -178,10 +187,10 @@
     }
 
     function segmentationLine(layer) {
+        console.log('是否启用了编辑: ', relatedLayer.pm.enabled());
         const splitter = layer.toGeoJSON();
         const line = relatedLayer.toGeoJSON();
         const split = turf.lineSplit(line, splitter);
-        console.log(split);
         map.removeLayer(layer);
         const index = drawLayersFindIndex(relatedLayer.uuid);
         const {features} = split;
@@ -199,6 +208,7 @@
             console.log(drawLayers);
         }
         relatedLayer = undefined;
+        isSegmentation = !isSegmentation;
     }
 
     function drawLayersFindIndex(uuid) {
@@ -213,10 +223,10 @@
         if (!isSegmentation) {
             layer.uuid = uuid.v4();
             drawLayers.push(layer);
-        } else {
+        }
+        else {
             segmentationLine(layer);
         }
-        isSegmentation = !isSegmentation;
         bindContextMenuLine(shape, layer);
         map.pm.disableDraw();
     });
