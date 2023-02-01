@@ -115,12 +115,10 @@
         maxZoom: 19,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
-    const layerGroup = L.layerGroup().addTo(map);
 
-    const linShuiMarker = L.marker([30.3339, 106.9303]).bindPopup(`<p>邻水</p>`);
+    const linShuiMarker = L.marker([30.3339, 106.9303]).bindPopup(`<p>邻水</p>`).addTo(map);
     linShuiMarker.uuid = uuid.v4()
 
-    layerGroup.addLayer(linShuiMarker);
     // 设置动画
     linShuiMarker.on("click", function () {
         const pos = map.latLngToLayerPoint(linShuiMarker.getLatLng());
@@ -184,30 +182,53 @@
             }
         ]
     ];
+    const layerGroup = L.layerGroup().addTo(map);
+
     for (let line of lineArray) {
         const polyline = L.polyline(line, {});
         polyline.uuid = uuid.v4();
         bindContextMenuLine('Line', polyline);
         layerGroup.addLayer(polyline);
     }
-
     map.on('contextmenu', e => {
+        console.log('map contextmenu', e);
         const {latlng} = e;
         const pt = turf.point([latlng.lng, latlng.lat]);
         let recentLayer;
-        layerGroup.eachLayer(e => {
-            const geoJSON = e.toGeoJSON();
+        const layers = layerGroup.getLayers();
+        let distance = 0.003
+        for (let layer of layers) {
+            const geoJSON = layer.toGeoJSON();
             if (geoJSON.geometry.type === 'LineString') {
-                const distance = turf.pointToLineDistance(pt, geoJSON, {units: 'miles'});
-                if (distance < 0.002) {
-                    recentLayer = e;
+                const {geometry, properties} = turf.nearestPointOnLine(geoJSON, pt, {units: 'miles'});
+                distance = Math.min(properties.dist, distance);
+                if (distance < 0.003) {
+                    recentLayer = layer;
                 }
             }
-        });
-        if (recentLayer) {
+        }
+        if (!recentLayer) {
+            for (let drawLayer of drawLayers) {
+                const geoJSON = drawLayer.toGeoJSON();
+                if (geoJSON.geometry.type === 'LineString') {
+                    const {geometry, properties} = turf.nearestPointOnLine(geoJSON, pt, {units: 'miles'});
+                    console.log(properties);
+                    console.log(properties.dist);
+                    distance = Math.min(properties.dist, distance);
+                    console.log(distance);
+                    if (distance < 0.003) {
+                        recentLayer = drawLayer;
+                    }
+                }
+            }
+        }
+        console.log(recentLayer);
+        if (recentLayer && distance > 0.001) {
             // console.log(recentLayer._events['contextmenu']);
-            let fn = recentLayer._events['contextmenu'][0].fn;
+            const fn = recentLayer._events['contextmenu'][0].fn;
+            console.log(fn);
             if (typeof fn === "function") {
+                stop()
                 fn.apply(recentLayer, [e])
             }
         }
@@ -245,16 +266,10 @@
 
     /** 编辑 */
     function edit(e) {
-        console.log(e);
-        console.log('可用形状的数组: ', map.pm.Draw.getShapes());
-        console.log('返回活动形状。: ', map.pm.Draw.getActiveShape());
         const {relatedTarget} = e;
-        console.log(relatedTarget);
-        console.log('getOptions', relatedTarget.pm.getOptions());
         relatedTarget.pm.enable({
             allowSelfIntersection: false
         });
-        console.log('enable getOptions', relatedTarget.pm.getOptions());
     }
 
     /** 裁剪方法 */
@@ -289,9 +304,18 @@
     }
 
     function drawLayersFindIndex(uuid) {
+        let layer;
+        layerGroup.eachLayer(e => {
+            if (e.uuid === uuid) {
+                layer = e;
+            }
+        });
+        if (layer) {
+            layerGroup.removeLayer(layer);
+        }
         return drawLayers.findIndex(e => {
             return e.uuid === uuid;
-        })
+        });
     }
 
     map.on('pm:create', (e) => {
@@ -301,7 +325,8 @@
         if (!isSegmentation) {
             layer.uuid = uuid.v4();
             drawLayers.push(layer);
-        } else {
+        }
+        else {
             segmentationLine(layer);
         }
         bindContextMenuLine(shape, layer);
