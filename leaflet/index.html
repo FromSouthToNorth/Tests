@@ -103,7 +103,7 @@
     const map = L.map('map', {contextmenu: true,}).setView([30.3339, 106.9303], 16);
 
     map.on('click', (e) => {
-        const {containerPoint, latlng, layerPoint} = e;
+        const {containerPoint, latlng} = e;
         const point = turf.point([latlng.lng, latlng.lat]);
         const options = {precision: 7, coordinates: 2};
         const truncated = turf.truncate(point, options);
@@ -115,11 +115,12 @@
         maxZoom: 19,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
+    const layerGroup = L.layerGroup().addTo(map);
 
-
-    const linShuiMarker = L.marker([30.3339, 106.9303]).bindPopup(`<p>邻水</p>`).addTo(map);
+    const linShuiMarker = L.marker([30.3339, 106.9303]).bindPopup(`<p>邻水</p>`);
     linShuiMarker.uuid = uuid.v4()
 
+    layerGroup.addLayer(linShuiMarker);
     // 设置动画
     linShuiMarker.on("click", function () {
         const pos = map.latLngToLayerPoint(linShuiMarker.getLatLng());
@@ -133,6 +134,84 @@
 
         fx.run(linShuiMarker._icon, pos, 0.3);
     });
+
+    const lineArray = [
+        [
+            {
+                lat: 30.336812794354024,
+                lng: 106.92691951990129
+            },
+            {
+                lat: 30.33660213482554,
+                lng: 106.92676663398744
+            },
+            {
+                lat: 30.336396104738355,
+                lng: 106.92641258239748
+            },
+            {
+                lat: 30.33537289271365,
+                lng: 106.92539870738985
+            }
+        ], [
+            {
+                lat: 30.333648223810336,
+                lng: 106.9262194633484
+            },
+            {
+                lat: 30.333129659703403,
+                lng: 106.92640185356142
+            },
+            {
+                lat: 30.332564792104783,
+                lng: 106.926509141922
+            },
+            {
+                lat: 30.331759155629687,
+                lng: 106.92683905363086
+            },
+            {
+                lat: 30.331411896484173,
+                lng: 106.9269034266472
+            },
+            {
+                lat: 30.331182704773553,
+                lng: 106.92686319351196
+            },
+            {
+                lat: 30.330879430069324,
+                lng: 106.92670762538911
+            }
+        ]
+    ];
+    for (let line of lineArray) {
+        const polyline = L.polyline(line, {});
+        polyline.uuid = uuid.v4();
+        bindContextMenuLine('Line', polyline);
+        layerGroup.addLayer(polyline);
+    }
+
+    map.on('contextmenu', e => {
+        const {latlng} = e;
+        const pt = turf.point([latlng.lng, latlng.lat]);
+        let recentLayer;
+        layerGroup.eachLayer(e => {
+            const geoJSON = e.toGeoJSON();
+            if (geoJSON.geometry.type === 'LineString') {
+                const distance = turf.pointToLineDistance(pt, geoJSON, {units: 'miles'});
+                if (distance < 0.002) {
+                    recentLayer = e;
+                }
+            }
+        });
+        if (recentLayer) {
+            // console.log(recentLayer._events['contextmenu']);
+            let fn = recentLayer._events['contextmenu'][0].fn;
+            if (typeof fn === "function") {
+                fn.apply(recentLayer, [e])
+            }
+        }
+    })
 
     /*****  Leaflet-Geoman  *****/
 
@@ -192,16 +271,15 @@
         const line = relatedLayer.toGeoJSON();
         const split = turf.lineSplit(line, splitter);
         map.removeLayer(layer);
-        const index = drawLayersFindIndex(relatedLayer.uuid);
         const {features} = split;
         for (let i = 0; i < features.length; i++) {
-            console.log(features[i]);
-            const line = L.GeoJSON.geometryToLayer(features[i], {color: i > 0 ? '#cf1322' : '#fa541c',});
-            console.log(line);
+            const line = L.GeoJSON.geometryToLayer(features[i], {});
+            bindContextMenuLine('Line', line);
             line.uuid = uuid.v4();
             drawLayers.push(line);
             line.addTo(map);
         }
+        const index = drawLayersFindIndex(relatedLayer.uuid);
         if (index !== -1) {
             map.removeLayer(relatedLayer);
             drawLayers.splice(index, 1);
@@ -218,12 +296,12 @@
 
     map.on('pm:create', (e) => {
         const {layer, shape} = e;
+        console.log(layer);
         layer.isSegmentation = isSegmentation;
         if (!isSegmentation) {
             layer.uuid = uuid.v4();
             drawLayers.push(layer);
-        }
-        else {
+        } else {
             segmentationLine(layer);
         }
         bindContextMenuLine(shape, layer);
