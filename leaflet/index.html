@@ -281,12 +281,12 @@
     }
 
     function segmentationLine(layer) {
-        console.log('是否启用了编辑: ', relatedLayer.pm.enabled());
         const splitter = layer.toGeoJSON();
         const line = relatedLayer.toGeoJSON();
         const split = turf.lineSplit(line, splitter);
         map.removeLayer(layer);
         const {features} = split;
+        console.log(features);
         for (let i = 0; i < features.length; i++) {
             const line = L.GeoJSON.geometryToLayer(features[i], {});
             bindContextMenuLine('Line', line);
