@@ -3,85 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <title>D3.js</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="/css/reset.css">
+    <script src="./src/d3.js"></script>
     <style>
         #map {
             width: 100%;
             height: 100vh;
         }
+
+        .ideditor {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            border: 0;
+            overflow: hidden;
+            position: relative;
+            z-index: 0;
+            font: normal 12px/1.6667 ui-sans-serif, "-apple-system", BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", "Arial", sans-serif;
+            color: #333;
+            -ms-touch-action: none;
+            touch-action: none;
+        }
+
+        .ideditor .layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        .ideditor path.line.shadow.tag-highway {
+            stroke-width: 20;
+        }
+
+        .ideditor.mode-browse .line, .ideditor.mode-select .line, .ideditor.mode-select-data .line, .ideditor.mode-select-error .line, .ideditor.mode-select-note .line {
+            cursor: pointer;
+            cursor: url(./img/cursor-select-line.png), pointer;
+        }
+
+        .ideditor .data-layer.osm *, .ideditor .data-layer.notes *, .ideditor .data-layer.keepRight *, .ideditor .data-layer.improveOSM * {
+            pointer-events: none;
+        }
+
+        .ideditor path.shadow {
+            stroke: #f6634f;
+            stroke-width: 16;
+            stroke-opacity: 0;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .ideditor path.line.casing.tag-highway-motorway, .ideditor path.line.casing.tag-highway-motorway_link, .ideditor path.line.casing.tag-motorway {
+            stroke: #70372f;
+        }
+
+        .ideditor path.line.casing.tag-highway {
+            stroke-width: 10;
+        }
+
+        .ideditor path.line.stroke.tag-highway-motorway, .ideditor path.line.stroke.tag-highway-motorway_link, .ideditor path.line.stroke.tag-motorway {
+            stroke: #CF2081;
+        }
+
+        .ideditor path.line.stroke.tag-highway {
+            stroke-width: 8;
+        }
+
+        .ideditor .onewaygroup path.oneway, .ideditor .viewfieldgroup path.viewfield, .ideditor .sidedgroup path.sided {
+            stroke-width: 6px;
+        }
+
+        .ideditor .data-layer.osm *, .ideditor .data-layer.notes *, .ideditor .data-layer.keepRight *, .ideditor .data-layer.improveOSM * {
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
-<div id="map"></div>
+<div id="map">
+    <div class="ideditor">
+        <div class="layer layer-data">
+            <svg style="width: 100vw; height: 100vh">
+                <g class="layergroup layer0">
+                    <g class="linegroup line-shadow">
+                        <path class="way line shadow w377675091 tag-highway tag-highway-motorway tag-oneway tag-oneway-yes tag-paved"
+                              d="M1107.028,-5L686.046,355.262L598.408,438"></path>
+                        <path class="way line shadow w377675090 tag-highway tag-highway-motorway tag-oneway tag-oneway-yes tag-paved"
+                              d="M694.603,438L750.491,385.416L1192.851,6.914L1207.482,-5"></path>
+                    </g>
+                    <g class="linegroup line-casing">
+                        <path class="way line casing w377675091 tag-highway tag-highway-motorway tag-oneway tag-oneway-yes tag-paved"
+                              d="M1107.028,-5L686.046,355.262L598.408,438"></path>
+                        <path class="way line casing w377675090 tag-highway tag-highway-motorway tag-oneway tag-oneway-yes tag-paved"
+                              d="M694.603,438L750.491,385.416L1192.851,6.914L1207.482,-5"></path>
+                    </g>
+                    <g class="linegroup line-stroke">
+                        <path class="way line stroke w377675091 tag-highway tag-highway-motorway tag-oneway tag-oneway-yes tag-paved"
+                              d="M1107.028,-5L686.046,355.262L598.408,438"></path>
+                        <path class="way line stroke w377675090 tag-highway tag-highway-motorway tag-oneway tag-oneway-yes tag-paved"
+                              d="M694.603,438L750.491,385.416L1192.851,6.914L1207.482,-5"></path>
+                    </g>
+                    <g class="linegroup line-shadow-highlighted"></g>
+                    <g class="linegroup line-casing-highlighted"></g>
+                    <g class="linegroup line-stroke-highlighted"></g>
+                    <g class="onewaygroup">
+                        <path class="oneway" marker-mid="url(#ideditor-oneway-marker)"
+                              d="M1101.1856658726867,0L1074.593581903121,22.756561035349087L1048.0014979335554,45.513122070698174L1021.4094139639897,68.26968310604727L994.817329994424,91.02624414139635L968.2252460248583,113.78280517674543L941.6331620552926,136.5393662120945L925.9037948888067,150"></path>
+                        <path class="oneway" marker-mid="url(#ideditor-oneway-marker)"
+                              d="M1025.624318803541,149.99999999999997L1052.218017502748,127.24532598572762L1078.8117162019548,104.49065197145526L1105.4054149011617,81.73597795718291L1131.9991136003687,58.98130394291056L1158.5928122995756,36.226629928638204L1185.1865109987825,13.471955914365846L1192.8506474420428,6.914202202111483"></path>
+                    </g>
+                    <g class="sidedgroup"></g>
+                </g>
+            </svg>
+        </div>
+    </div>
+</div>
 <script>
-    // var p = d3.select("body")
-    //     .selectAll("p");
-    //
-    // p.text("Hello World");
-    // //修改段落的颜色和字体大小
-    // p.style("color","red")
-    //     .style("font-size","72px");
-
-    // var str = "China";
-    //
-    // var body = d3.select("body");
-    // var p = body.selectAll("p");
-    //
-    // p.datum(str);
-    //
-    // p.text(function(d, i){
-    //     return "第 "+ i + " 个元素绑定的数据是 " + d;
-    // });
-
-    // var dataset = ["I like dog","I like cat","I like snake"];
-    //
-    // var body = d3.select("body");
-    // var p = body.selectAll("p");
-    //
-    // p.data(dataset)
-    //     .text(function(d, i){
-    //         return d;
-    //     });
-    // var str = "1 2 3";
-    // str.split(' ')
-    // var marge = {top: 60, bottom: 60, left: 60, right: 60}
-    // var dataset = [2.5, 2.4, 1.709, 1.03, 0.03];
-    //
-    // var scaleLinear = d3.scaleLinear()
-    //     .domain([0, d3.max(dataset)])
-    //     .range([0, 250]);
-    //
-    // var svg = d3.select("svg");
-    // var g = svg.append("g")
-    //     .attr("transform", "translate(" + marge.top + "," + marge.left + ")");
-    //
-    // var rectHeight = 30;
-    //
-    // g.selectAll("rect")
-    //     .data(dataset)
-    //     .enter()
-    //     .append("rect")
-    //     .attr("x", 20)
-    //     .attr("y", function (d, i) {
-    //         return i * rectHeight;
-    //     })
-    //     .attr("width", function (d) {
-    //         return scaleLinear(d);
-    //     })
-    //     .attr("height", rectHeight - 5)
-    //     .attr("fill", "blue");
-    //
-    // //为坐标轴定义一个线性比例尺
-    // var xScale = d3.scaleLinear()
-    //     .domain([0, d3.max(dataset)])
-    //     .range([0, 250]);
-    // //定义一个坐标轴
-    // var xAxis = d3.axisBottom(xScale)//定义一个axis，由bottom可知，是朝下的
-    //     .ticks(7);//设置刻度数目
-    // g.append("g")
-    //     .attr("transform", "translate(" + 20 + "," + (dataset.length * rectHeight) + ")")
-    //     .call(xAxis);
-    var bounds = p
+    d3.selectAll("p").style("color", "blue");
+    console.log(d3.selectAll("p"));
+    d3.select("body").style("background-color", "black");
 </script>
 </body>
 </html>

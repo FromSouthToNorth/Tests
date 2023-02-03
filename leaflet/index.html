@@ -18,6 +18,8 @@
 
     <script src="./src/uuid/uuid.js"></script>
 
+    <script src="./src/leaflet/leaflet.textpath.js"></script>
+
     <style>
         /* http://meyerweb.com/eric/tools/css/reset/
         v2.0 | 20110126
@@ -151,7 +153,8 @@
                 lat: 30.33537289271365,
                 lng: 106.92539870738985
             }
-        ], [
+        ],
+        [
             {
                 lat: 30.333648223810336,
                 lng: 106.9262194633484
@@ -188,6 +191,9 @@
         const polyline = L.polyline(line, {});
         polyline.uuid = uuid.v4();
         bindContextMenuLine('Line', polyline);
+        polyline.on('mouseover', function () {
+            this.setText(' \u21e6 ', {repeat: true, offset: 4, attributes: {'font-size': '12'}});
+        });
         layerGroup.addLayer(polyline);
     }
     map.on('contextmenu', e => {
