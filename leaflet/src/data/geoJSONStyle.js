@@ -854,7 +854,9 @@ amenityMap.set('post_office', {
 amenityMap.set('prison', {
     title: '监狱。',
     style: {
-        color: '',
+        color: 'rgba(255, 255, 255, 0.3)',
+        fill: 'rgba(255, 255, 255, 0.3)',
+        weight: 1,
     },
 });
 amenityMap.set('ranger_station', {
