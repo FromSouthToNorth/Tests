@@ -47,6 +47,7 @@
 <body>
 <div id="map"></div>
 <pre id="info"></pre>
+<script src="src/data/geoJSONStyle.js"></script>
 <script>
     delete L.Icon.Default.prototype._getIconUrl
     L.Icon.Default.mergeOptions({
@@ -55,7 +56,7 @@
         shadowUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAApCAQAAAACach9AAACMUlEQVR4Ae3ShY7jQBAE0Aoz/f9/HTMzhg1zrdKUrJbdx+Kd2nD8VNudfsL/Th///dyQN2TH6f3y/BGpC379rV+S+qqetBOxImNQXL8JCAr2V4iMQXHGNJxeCfZXhSRBcQMfvkOWUdtfzlLgAENmZDcmo2TVmt8OSM2eXxBp3DjHSMFutqS7SbmemzBiR+xpKCNUIRkdkkYxhAkyGoBvyQFEJEefwSmmvBfJuJ6aKqKWnAkvGZOaZXTUgFqYULWNSHUckZuR1HIIimUExutRxwzOLROIG4vKmCKQt364mIlhSyzAf1m9lHZHJZrlAOMMztRRiKimp/rpdJDc9Awry5xTZCte7FHtuS8wJgeYGrex28xNTd086Dik7vUMscQOa8y4DoGtCCSkAKlNwpgNtphjrC6MIHUkR6YWxxs6Sc5xqn222mmCRFzIt8lEdKx+ikCtg91qS2WpwVfBelJCiQJwvzixfI9cxZQWgiSJelKnwBElKYtDOb2MFbhmUigbReQBV0Cg4+qMXSxXSyGUn4UbF8l+7qdSGnTC0XLCmahIgUHLhLOhpVCtw4CzYXvLQWQbJNmxoCsOKAxSgBJno75avolkRw8iIAFcsdc02e9iyCd8tHwmeSSoKTowIgvscSGZUOA7PuCN5b2BX9mQM7S0wYhMNU74zgsPBj3HU7wguAfnxxjFQGBE6pwN+GjME9zHY7zGp8wVxMShYX9NXvEWD3HbwJf4giO4CFIQxXScH1/TM+04kkBiAAAAAElFTkSuQmCC'
     });
 
-    const map = L.map('map', { contextmenu: true, maxZoom: 18 }).setView([30.3339, 106.9303], 16);
+    const map = L.map('map', { contextmenu: true, maxZoom: 18, minZoom: 3, }).setView([30.3339, 106.9303], 16);
 
     map.on('click', (e) => {
         const { containerPoint, latlng } = e;
@@ -66,137 +67,181 @@
         document.getElementById('info').innerHTML = info;
     })
 
-    const markerClusterGroup = L.markerClusterGroup();
+    // const markerClusterGroup = L.markerClusterGroup();
+    //
+    // const markersLatLng = [[30.3374633, 106.9264582], [30.3386601, 106.9255784], [30.3386601, 106.9255784], [30.326997, 106.9268954], [30.3492779, 106.9230652], [30.2532288, 106.8837762]];
+    //
+    // const markersArray = [];
+    // for (let latLng of markersLatLng) {
+    //     markersArray.push(L.marker(latLng));
+    // }
+    // markerClusterGroup.addLayers(markersArray).addTo(map);
 
-    const markersLatLng = [[30.3374633, 106.9264582], [30.3386601, 106.9255784], [30.3386601, 106.9255784], [30.326997, 106.9268954], [30.3492779, 106.9230652], [30.2532288, 106.8837762]];
-
-    const markersArray = [];
-    for (let latLng of markersLatLng) {
-        markersArray.push(L.marker(latLng));
-    }
-    markerClusterGroup.addLayers(markersArray).addTo(map);
-
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    var connectId = 'c2cbd3f2-003a-46ec-9e46-26a3996d6484';
+    L.tileLayer(`https://services.digitalglobe.com/earthservice/tmsaccess/tms/1.0.0/DigitalGlobe:ImageryTileService@EPSG:3857@jpg/{z}/{x}/{y}.jpg?connectId=${connectId}`, {
+        tms: true
     }).addTo(map);
 
-    const linShuiMarker = L.marker([30.3339, 106.9303]).bindPopup(`<p>邻水</p>`).addTo(map);
-    linShuiMarker.uuid = uuid.v4()
+
+    d3.json('lingshui.json').then(data => {
+        L.geoJSON(data, {
+            pointToLayer: function (geoJsonPoint, latlng) {
+                return L.marker(latlng);
+            },
+            style: function (feature) {
+                const { geometry, properties } = feature;
+                const { waterway, highway, landuse, natural, building, leisure, amenity, power } = properties;
+                if (landuse && landuseMap.has(landuse)) {
+                    return landuseMap.get(landuse).style;
+                }
+                if (natural && naturalMap.has(natural)) {
+                    return naturalMap.get(natural).style;
+                }
+                if (building && buildingMap.has(building)) {
+                    return buildingMap.get(building).style;
+                }
+                if (leisure && leisureMap.has(leisure)) {
+                    return leisureMap.get(leisure).style;
+                }
+                if (amenity && amenityMap.has(amenity)) {
+                    return amenityMap.get(amenity).style;
+                }
+                if (power && powerMap.has(power)) {
+                    return powerMap.get(power).style;
+                }
+                if (highway && highwayMap.has(highway)) {
+                    return highwayMap.get(highway).style;
+                }
+                if (waterway && waterwayMap.has(waterway)) {
+                    return waterwayMap.get(waterway).style;
+                }
+            },
+            filter: function (geoJsonFeature) {
+                return !geoJsonFeature.properties.boundary
+            }
+        }).bindPopup(function (layer) {
+            console.log(layer.feature);
+            return layer.feature.properties.name ? layer.feature.properties.name : '无名称'
+        }).addTo(map);
+    })
+
+    // const linShuiMarker = L.marker([30.3339, 106.9303]).bindPopup(`<p>邻水</p>`).addTo(map);
+    // linShuiMarker.uuid = uuid.v4()
 
     // 设置动画
-    linShuiMarker.on("click", e => {
-        console.log(d3.select(e.target._icon));
-        const pos = map.latLngToLayerPoint(linShuiMarker.getLatLng());
-        const fx = new L.PosAnimation();
-        pos.y -= 10;
+    // linShuiMarker.on("click", e => {
+    //     console.log(d3.select(e.target._icon));
+    //     const pos = map.latLngToLayerPoint(linShuiMarker.getLatLng());
+    //     const fx = new L.PosAnimation();
+    //     pos.y -= 10;
+    //
+    //     fx.once('end', function () {
+    //         pos.y += 10;
+    //         fx.run(linShuiMarker._icon, pos, 0.8);
+    //     });
+    //
+    //     fx.run(linShuiMarker._icon, pos, 0.3);
+    // });
 
-        fx.once('end', function () {
-            pos.y += 10;
-            fx.run(linShuiMarker._icon, pos, 0.8);
-        });
+    // const lineArray = [
+    //     [
+    //         {
+    //             lat: 30.336812794354024,
+    //             lng: 106.92691951990129
+    //         },
+    //         {
+    //             lat: 30.33660213482554,
+    //             lng: 106.92676663398744
+    //         },
+    //         {
+    //             lat: 30.336396104738355,
+    //             lng: 106.92641258239748
+    //         },
+    //         {
+    //             lat: 30.33537289271365,
+    //             lng: 106.92539870738985
+    //         }
+    //     ],
+    //     [
+    //         {
+    //             lat: 30.333648223810336,
+    //             lng: 106.9262194633484
+    //         },
+    //         {
+    //             lat: 30.333129659703403,
+    //             lng: 106.92640185356142
+    //         },
+    //         {
+    //             lat: 30.332564792104783,
+    //             lng: 106.926509141922
+    //         },
+    //         {
+    //             lat: 30.331759155629687,
+    //             lng: 106.92683905363086
+    //         },
+    //         {
+    //             lat: 30.331411896484173,
+    //             lng: 106.9269034266472
+    //         },
+    //         {
+    //             lat: 30.331182704773553,
+    //             lng: 106.92686319351196
+    //         },
+    //         {
+    //             lat: 30.330879430069324,
+    //             lng: 106.92670762538911
+    //         }
+    //     ]
+    // ];
+    // const layerGroup = L.layerGroup().addTo(map);
 
-        fx.run(linShuiMarker._icon, pos, 0.3);
-    });
-
-    const lineArray = [
-        [
-            {
-                lat: 30.336812794354024,
-                lng: 106.92691951990129
-            },
-            {
-                lat: 30.33660213482554,
-                lng: 106.92676663398744
-            },
-            {
-                lat: 30.336396104738355,
-                lng: 106.92641258239748
-            },
-            {
-                lat: 30.33537289271365,
-                lng: 106.92539870738985
-            }
-        ],
-        [
-            {
-                lat: 30.333648223810336,
-                lng: 106.9262194633484
-            },
-            {
-                lat: 30.333129659703403,
-                lng: 106.92640185356142
-            },
-            {
-                lat: 30.332564792104783,
-                lng: 106.926509141922
-            },
-            {
-                lat: 30.331759155629687,
-                lng: 106.92683905363086
-            },
-            {
-                lat: 30.331411896484173,
-                lng: 106.9269034266472
-            },
-            {
-                lat: 30.331182704773553,
-                lng: 106.92686319351196
-            },
-            {
-                lat: 30.330879430069324,
-                lng: 106.92670762538911
-            }
-        ]
-    ];
-    const layerGroup = L.layerGroup().addTo(map);
-
-    for (let line of lineArray) {
-        const polyline = L.polyline(line, {});
-        polyline.uuid = uuid.v4();
-        bindContextMenuLine('Line', polyline);
-        polyline.on('mouseover', e => {
-            // this.setText(' \u21e6 ', { repeat: true, offset: 4, attributes: { 'font-size': '12' } });
-            console.log(e);
-        });
-
-        layerGroup.addLayer(polyline);
-    }
-    map.on('contextmenu', e => {
-        const { latlng } = e;
-        const pt = turf.point([latlng.lng, latlng.lat]);
-        let recentLayer;
-        const layers = layerGroup.getLayers();
-        let distance = 0.003
-        for (let layer of layers) {
-            const geoJSON = layer.toGeoJSON();
-            if (geoJSON.geometry.type === 'LineString') {
-                const { geometry, properties } = turf.nearestPointOnLine(geoJSON, pt, { units: 'miles' });
-                distance = Math.min(properties.dist, distance);
-                if (distance < 0.003) {
-                    recentLayer = layer;
-                }
-            }
-        }
-        if (!recentLayer) {
-            for (let drawLayer of drawLayers) {
-                const geoJSON = drawLayer.toGeoJSON();
-                if (geoJSON.geometry.type === 'LineString') {
-                    const { geometry, properties } = turf.nearestPointOnLine(geoJSON, pt, { units: 'miles' });
-                    distance = Math.min(properties.dist, distance);
-                    if (distance < 0.003) {
-                        recentLayer = drawLayer;
-                    }
-                }
-            }
-        }
-        if (recentLayer && distance > 0.001) {
-            const fn = recentLayer._events['contextmenu'][0].fn;
-            if (typeof fn === "function") {
-                stop()
-                fn.apply(recentLayer, [e])
-            }
-        }
-    })
+    // for (let line of lineArray) {
+    //     const polyline = L.polyline(line, {});
+    //     polyline.uuid = uuid.v4();
+    //     bindContextMenuLine('Line', polyline);
+    //     polyline.on('mouseover', e => {
+    //         // this.setText(' \u21e6 ', { repeat: true, offset: 4, attributes: { 'font-size': '12' } });
+    //         console.log(e);
+    //     });
+    //
+    //     layerGroup.addLayer(polyline);
+    // }
+    // map.on('contextmenu', e => {
+    //     const { latlng } = e;
+    //     const pt = turf.point([latlng.lng, latlng.lat]);
+    //     let recentLayer;
+    //     const layers = layerGroup.getLayers();
+    //     let distance = 0.003
+    //     for (let layer of layers) {
+    //         const geoJSON = layer.toGeoJSON();
+    //         if (geoJSON.geometry.type === 'LineString') {
+    //             const { geometry, properties } = turf.nearestPointOnLine(geoJSON, pt, { units: 'miles' });
+    //             distance = Math.min(properties.dist, distance);
+    //             if (distance < 0.003) {
+    //                 recentLayer = layer;
+    //             }
+    //         }
+    //     }
+    //     if (!recentLayer) {
+    //         for (let drawLayer of drawLayers) {
+    //             const geoJSON = drawLayer.toGeoJSON();
+    //             if (geoJSON.geometry.type === 'LineString') {
+    //                 const { geometry, properties } = turf.nearestPointOnLine(geoJSON, pt, { units: 'miles' });
+    //                 distance = Math.min(properties.dist, distance);
+    //                 if (distance < 0.003) {
+    //                     recentLayer = drawLayer;
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     if (recentLayer && distance > 0.001) {
+    //         const fn = recentLayer._events['contextmenu'][0].fn;
+    //         if (typeof fn === "function") {
+    //             stop()
+    //             fn.apply(recentLayer, [e])
+    //         }
+    //     }
+    // })
 
     /*****  Leaflet-Geoman  *****/
 
