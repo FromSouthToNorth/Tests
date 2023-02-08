@@ -7,6 +7,8 @@
     <script src="./src/leaflet/tutf.js"></script>
     <link rel="stylesheet" href="src/css/leaflet.css"/>
     <script src="./src/leaflet/leaflet.js"></script>
+    <script src="https://unpkg.com/geojson-vt@3.2.0/geojson-vt.js"></script>
+    <script src="./src/leaflet/geojson-vt.js"></script>
 
     <script src="src/leaflet/leaflet.markercluster.js"></script>
     <link rel="stylesheet" href="./src/css/MarkerCluster.Default.css">
@@ -82,65 +84,112 @@
         tms: true
     }).addTo(map);
 
-    console.log(map.getBounds());
     let geoJSON;
+    const options = {
+        maxZoom: 18,
+        tolerance: 3,
+        debug: 0,
+        style: function (feature) {
+            const { waterway, highway, landuse, natural, building, leisure, amenity, power, construction, aeroway, railway, public_transport } = feature.tags;
+            if (landuse && landuseMap.has(landuse)) {
+                return landuseMap.get(landuse).style;
+            }
+            if (natural && naturalMap.has(natural)) {
+                return naturalMap.get(natural).style;
+            }
+            if (building && buildingMap.has(building)) {
+                return buildingMap.get(building).style;
+            }
+            if (leisure && leisureMap.has(leisure)) {
+                return leisureMap.get(leisure).style;
+            }
+            if (amenity && amenityMap.has(amenity)) {
+                return amenityMap.get(amenity).style;
+            }
+            if (power && powerMap.has(power)) {
+                return powerMap.get(power).style;
+            }
+            if (highway && highwayMap.has(highway)) {
+                return highwayMap.get(highway).style;
+            }
+            if (waterway && waterwayMap.has(waterway)) {
+                return waterwayMap.get(waterway).style;
+            }
+            if (construction && constructionMap.has(construction)) {
+                return constructionMap.get(construction).style;
+            }
+            if (aeroway && aerowayMap.has(aeroway)) {
+                return aerowayMap.get(aeroway).style;
+            }
+            if (railway && railwayMap.has(railway)) {
+                return railwayMap.get(railway).style;
+            }
+            if (public_transport && publicTransportMap.has(public_transport)) {
+                return publicTransportMap.get(public_transport).style;
+            }
+            return  {
+                color: '#222',
+                opacity: 0.5,
+                dashArray: 'none',
+            }
+        },
+    }
     d3.json('file.geojson').then(data => {
         geoJSON = data;
-        L.geoJSON(data, {
-            filter: function (geoJsonFeature) {
-                return !geoJsonFeature.properties.boundary || geoJsonFeature.geometry.type === 'Point';
-            },
-            pointToLayer: function (geoJsonPoint, latlng) {
-                return L.marker(latlng);
-            },
-            style: function (feature) {
-                const { geometry, properties } = feature;
-                const { waterway, highway, landuse, natural, building, leisure, amenity, power, construction, aeroway, railway, public_transport } = properties;
-                if (landuse && landuseMap.has(landuse)) {
-                    return landuseMap.get(landuse).style;
-                }
-                if (natural && naturalMap.has(natural)) {
-                    return naturalMap.get(natural).style;
-                }
-                if (building && buildingMap.has(building)) {
-                    return buildingMap.get(building).style;
-                }
-                if (leisure && leisureMap.has(leisure)) {
-                    return leisureMap.get(leisure).style;
-                }
-                if (amenity && amenityMap.has(amenity)) {
-                    return amenityMap.get(amenity).style;
-                }
-                if (power && powerMap.has(power)) {
-                    return powerMap.get(power).style;
-                }
-                if (highway && highwayMap.has(highway)) {
-                    return highwayMap.get(highway).style;
-                }
-                if (waterway && waterwayMap.has(waterway)) {
-                    return waterwayMap.get(waterway).style;
-                }
-                if (construction && constructionMap.has(construction)) {
-                    return constructionMap.get(construction).style;
-                }
-                if (aeroway && aerowayMap.has(aeroway)) {
-                    return aerowayMap.get(aeroway).style;
-                }
-                if (railway && railwayMap.has(railway)) {
-                    return railwayMap.get(railway).style;
-                }
-                if (public_transport && publicTransportMap.has(public_transport)) {
-                    return publicTransportMap.get(public_transport).style;
-                }
-                return  {
-                    color: '#222',
-                    opacity: 0.5,
-                    dashArray: 'none',
-                }
-            },
-        }).on('click', e => {
-            console.log(e);
-        }).addTo(map);
+        console.log(geoJSON);
+        var vtLayer = L.geoJson.vt(data, options).addTo(map);
+        // L.geoJSON(data, {
+        //     filter: function (geoJsonFeature) {
+        //         return !geoJsonFeature.properties.boundary || geoJsonFeature.geometry.type === 'Point';
+        //     },
+        //     style: function (feature) {
+        //         const { geometry, properties } = feature;
+        //         const { waterway, highway, landuse, natural, building, leisure, amenity, power, construction, aeroway, railway, public_transport } = properties;
+        //         if (landuse && landuseMap.has(landuse)) {
+        //             return landuseMap.get(landuse).style;
+        //         }
+        //         if (natural && naturalMap.has(natural)) {
+        //             return naturalMap.get(natural).style;
+        //         }
+        //         if (building && buildingMap.has(building)) {
+        //             return buildingMap.get(building).style;
+        //         }
+        //         if (leisure && leisureMap.has(leisure)) {
+        //             return leisureMap.get(leisure).style;
+        //         }
+        //         if (amenity && amenityMap.has(amenity)) {
+        //             return amenityMap.get(amenity).style;
+        //         }
+        //         if (power && powerMap.has(power)) {
+        //             return powerMap.get(power).style;
+        //         }
+        //         if (highway && highwayMap.has(highway)) {
+        //             return highwayMap.get(highway).style;
+        //         }
+        //         if (waterway && waterwayMap.has(waterway)) {
+        //             return waterwayMap.get(waterway).style;
+        //         }
+        //         if (construction && constructionMap.has(construction)) {
+        //             return constructionMap.get(construction).style;
+        //         }
+        //         if (aeroway && aerowayMap.has(aeroway)) {
+        //             return aerowayMap.get(aeroway).style;
+        //         }
+        //         if (railway && railwayMap.has(railway)) {
+        //             return railwayMap.get(railway).style;
+        //         }
+        //         if (public_transport && publicTransportMap.has(public_transport)) {
+        //             return publicTransportMap.get(public_transport).style;
+        //         }
+        //         return  {
+        //             color: '#222',
+        //             opacity: 0.5,
+        //             dashArray: 'none',
+        //         }
+        //     },
+        // }).on('click', e => {
+        //     console.log(e);
+        // }).addTo(map);
     })
 
     // const linShuiMarker = L.marker([30.3339, 106.9303]).bindPopup(`<p>邻水</p>`).addTo(map);

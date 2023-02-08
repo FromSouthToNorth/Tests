@@ -10,7 +10,7 @@
                     if (s) return s(t, !0);
                     throw(e = new Error("Cannot find module '" + t + "'")).code = "MODULE_NOT_FOUND", e
                 }
-                n = i[t] = {exports: {}}, o[t][0].call(n.exports, function (e) {
+                n = i[t] = { exports: {} }, o[t][0].call(n.exports, function (e) {
                     return u(o[t][1][e] || e)
                 }, n, n.exports, r, o, i, a)
             }
@@ -85,7 +85,7 @@
                     var r = F.clone(e);
 
                     function n(e, t, n) {
-                        n = {type: "node", id: "_" + r.type + "/" + r.id + "bounds" + n, lat: e, lon: t};
+                        n = { type: "node", id: "_" + r.type + "/" + r.id + "bounds" + n, lat: e, lon: t };
                         r.nodes.push(n.id), s.push(n)
                     }
 
@@ -111,7 +111,7 @@
                         var n;
                         l.some(function (e) {
                             return "way" == e.type && e.id == t
-                        }) || (n = {type: "way", id: t, nodes: []}, F.each(e, function (e) {
+                        }) || (n = { type: "way", id: t, nodes: [] }, F.each(e, function (e) {
                             var t;
                             e.getAttribute("lat") ? (t = e.getAttribute("lat"), e = e.getAttribute("lon"), t = {
                                 type: "node",
@@ -152,7 +152,7 @@
                 }, N), "undefined" != typeof XMLDocument && e instanceof XMLDocument || "undefined" == typeof XMLDocument && e.childNodes ? (t = e, s = new Array, l = new Array, c = new Array, F.each(t.getElementsByTagName("node"), function (e, t) {
                     var n = {}, r = (F.each(e.getElementsByTagName("tag"), function (e) {
                         n[e.getAttribute("k")] = e.getAttribute("v")
-                    }), {type: "node"});
+                    }), { type: "node" });
                     f(e, r, "id"), f(e, r, "lat"), f(e, r, "lon"), f(e, r, "version"), f(e, r, "timestamp"), f(e, r, "changeset"), f(e, r, "uid"), f(e, r, "user"), F.isEmpty(n) || (r.tags = n), s.push(r)
                 }), F.each(t.getElementsByTagName("way"), function (e, t) {
                     var n = {}, r = [], o = (F.each(e.getElementsByTagName("tag"), function (e) {
@@ -160,14 +160,14 @@
                     }), !1), i = (F.each(e.getElementsByTagName("nd"), function (e, t) {
                         var n;
                         (n = e.getAttribute("ref")) && (r[t] = n), !o && e.getAttribute("lat") && (o = !0)
-                    }), {type: "way"});
+                    }), { type: "way" });
                     f(e, i, "id"), f(e, i, "version"), f(e, i, "timestamp"), f(e, i, "changeset"), f(e, i, "uid"), f(e, i, "user"), 0 < r.length && (i.nodes = r), F.isEmpty(n) || (i.tags = n), (a = e.getElementsByTagName("center")[0]) && p(i, a), o ? d(i, e.getElementsByTagName("nd")) : (u = e.getElementsByTagName("bounds")[0]) && y(i, u), l.push(i)
                 }), F.each(t.getElementsByTagName("relation"), function (e, t) {
                     var n = {}, r = [], o = (F.each(e.getElementsByTagName("tag"), function (e) {
                         n[e.getAttribute("k")] = e.getAttribute("v")
                     }), !1), i = (F.each(e.getElementsByTagName("member"), function (e, t) {
                         r[t] = {}, f(e, r[t], "ref"), f(e, r[t], "role"), f(e, r[t], "type"), (!o && "node" == r[t].type && e.getAttribute("lat") || "way" == r[t].type && 0 < e.getElementsByTagName("nd").length) && (o = !0)
-                    }), {type: "relation"});
+                    }), { type: "relation" });
                     f(e, i, "id"), f(e, i, "version"), f(e, i, "timestamp"), f(e, i, "changeset"), f(e, i, "uid"), f(e, i, "user"), 0 < r.length && (i.members = r), F.isEmpty(n) || (i.tags = n), (a = e.getElementsByTagName("center")[0]) && p(i, a), o ? g(i, e.getElementsByTagName("member")) : (u = e.getElementsByTagName("bounds")[0]) && y(i, u), c.push(i)
                 }), h(s, l, c)) : function (e) {
                     var a = new Array, o = new Array, t = new Array;
@@ -181,7 +181,7 @@
                         var r = F.clone(e);
 
                         function t(e, t, n) {
-                            n = {type: "node", id: "_" + r.type + "/" + r.id + "bounds" + n, lat: e, lon: t};
+                            n = { type: "node", id: "_" + r.type + "/" + r.id + "bounds" + n, lat: e, lon: t };
                             r.nodes.push(n.id), a.push(n)
                         }
 
@@ -193,7 +193,7 @@
                             return null !== e ? "_anonymous@" + e.lat + "/" + e.lon : "_anonymous@unknown_location"
                         })), r.geometry.forEach(function (e, t) {
                             var n;
-                            e && (n = e.lat, e = e.lon, t = r.nodes[t], a.push({type: "node", id: t, lat: n, lon: e}))
+                            e && (n = e.lat, e = e.lon, t = r.nodes[t], a.push({ type: "node", id: t, lat: n, lon: e }))
                         })
                     }
 
@@ -202,7 +202,7 @@
                             var n;
                             o.some(function (e) {
                                 return "way" == e.type && e.id == t
-                            }) || (n = {type: "way", id: t, nodes: []}, e.forEach(function (e) {
+                            }) || (n = { type: "way", id: t, nodes: [] }, e.forEach(function (e) {
                                 var t;
                                 e ? (t = e.lat, e = e.lon, t = {
                                     type: "node",
@@ -273,7 +273,7 @@
                         s[g] && !i[g] || c.push(f)
                     }
                     for (var d = new Array, a = 0; a < n.length; a++) d[(m = d[(m = n[a]).id] ? N.deduplicator(m, d[m.id]) : m).id] = m;
-                    var g, h, b = {node: {}, way: {}, relation: {}};
+                    var g, h, b = { node: {}, way: {}, relation: {} };
                     for (g in d) {
                         var m = d[g];
                         if (F.isArray(m.members)) for (u = 0; u < m.members.length; u++) {
@@ -296,7 +296,7 @@
                             relations: b.node[c[a].id] || [],
                             meta: p(c[a])
                         },
-                        geometry: {type: "Point", coordinates: [+c[a].lon, +c[a].lat]}
+                        geometry: { type: "Point", coordinates: [+c[a].lon, +c[a].lat] }
                     }, c[a].__is_center_placeholder && (E.properties.geometry = "center"), S ? S(E) : w.push(E));
                     for (var j = [], A = [], a = 0; a < n.length; a++) if (d[n[a].id] === n[a]) {
                         if (void 0 !== n[a].tags && ("route" == n[a].tags.type || "waterway" == n[a].tags.type)) {
@@ -356,7 +356,7 @@
                                     y[e.ref] && ("outer" !== e.role || r(y[e.ref].tags, n[a].tags) || (y[e.ref].is_skippablerelationmember = !0), "inner" !== e.role || r(y[e.ref].tags) || (y[e.ref].is_skippablerelationmember = !0))
                                 }), 0 == k) N.verbose && console.warn("Multipolygon relation", n[a].type + "/" + n[a].id, "ignored because it has no outer ways"); else {
                                     var O = !1, E = null;
-                                    if (O = 1 != k || r(n[a].tags, {type: !0}) ? O : !0) {
+                                    if (O = 1 != k || r(n[a].tags, { type: !0 }) ? O : !0) {
                                         var x = n[a].members.filter(function (e) {
                                             return "outer" === e.role
                                         })[0];
@@ -365,10 +365,12 @@
                                             continue
                                         }
                                         x.is_skippablerelationmember = !0, E = T(x, n[a])
-                                    } else E = T(n[a], n[a]);
+                                    }
+                                    else E = T(n[a], n[a]);
                                     !1 === E ? N.verbose && console.warn("Multipolygon relation", n[a].type + "/" + n[a].id, "ignored because it has invalid geometry") : S ? S(L(E)) : A.push(E)
                                 }
-                            } else N.verbose && console.warn("Multipolygon", n[a].type + "/" + n[a].id, "ignored because it has no members");
+                            }
+                            else N.verbose && console.warn("Multipolygon", n[a].type + "/" + n[a].id, "ignored because it has no members");
 
                             function T(e, t) {
                                 var n = !1, r = O ? "way" : "relation",
@@ -440,7 +442,7 @@
                                         relations: b[e.type][e.id] || [],
                                         meta: p(e)
                                     },
-                                    geometry: {type: f, coordinates: t}
+                                    geometry: { type: f, coordinates: t }
                                 }, n && (N.verbose && console.warn("Multipolygon", r + "/" + o, "is tainted"), e.properties.tainted = !0), e)
                             }
                         }
@@ -472,19 +474,20 @@
                                     relations: b.way[t[a].id] || [],
                                     meta: p(t[a])
                                 },
-                                geometry: {type: M, coordinates: B}
+                                geometry: { type: M, coordinates: B }
                             }, t[a].tainted && (N.verbose && console.warn("Way", t[a].type + "/" + t[a].id, "is tainted"), E.properties.tainted = !0), t[a].__is_bounds_placeholder && (E.properties.geometry = "bounds"), S ? S(L(E)) : ("LineString" == M ? j : A).push(E))
                         }
-                    } else N.verbose && console.warn("Way", t[a].type + "/" + t[a].id, "ignored because it has no nodes");
+                    }
+                    else N.verbose && console.warn("Way", t[a].type + "/" + t[a].id, "ignored because it has no nodes");
                     return !!S || ((h = {
                         type: "FeatureCollection",
                         features: []
                     }).features = h.features.concat(A), h.features = h.features.concat(j), h.features = h.features.concat(w), N.flatProperties && h.features.forEach(function (e) {
-                        e.properties = F.merge(e.properties.meta, e.properties.tags, {id: e.properties.type + "/" + e.properties.id})
+                        e.properties = F.merge(e.properties.meta, e.properties.tags, { id: e.properties.type + "/" + e.properties.id })
                     }), L(h))
                 }
             }).toGeojson = e
-        }, {"./lodash.custom.js": 2, "@mapbox/geojson-rewind": 3, "osm-polygon-features": 4}],
+        }, { "./lodash.custom.js": 2, "@mapbox/geojson-rewind": 3, "osm-polygon-features": 4 }],
         2: [function (e, Ht, Jt) {
             !function (Xt) {
                 !function () {
@@ -512,7 +515,8 @@
                             me = be && e.process, e = function () {
                                 try {
                                     return me && me.binding("util")
-                                } catch (e) {
+                                }
+                                catch (e) {
                                 }
                             }(), e = e && e.isTypedArray;
 
@@ -539,7 +543,8 @@
                             var t = !1;
                             if (null != e && "function" != typeof e.toString) try {
                                 t = !!(e + "")
-                            } catch (e) {
+                            }
+                            catch (e) {
                             }
                             return t
                         }
@@ -574,7 +579,7 @@
                             Re = Ee.splice, be = Object.getOwnPropertySymbols, Ee = o ? o.isBuffer : R,
                             Ie = ke(Object.keys, Object), $e = Math.max, o = p(n, "DataView"), a = p(n, "Map"),
                             Ce = p(n, "Promise"), De = p(n, "Set"), n = p(n, "WeakMap"), u = p(Object, "create"),
-                            Ge = !Pe.call({valueOf: 1}, "valueOf"), Ue = y(o), ze = y(a), We = y(Ce), qe = y(De),
+                            Ge = !Pe.call({ valueOf: 1 }, "valueOf"), Ue = y(o), ze = y(a), We = y(Ce), qe = y(De),
                             Ve = y(n), r = r ? r.prototype : R, V = r ? r.valueOf : R, Xe = r ? r.toString : R;
 
                         function s() {
@@ -647,7 +652,8 @@
                                         t && "string" == typeof e[0] && q.call(e, "index") && (n.index = e.index, n.input = e.input);
                                         return n
                                     }(n), !r) return dt(n, u)
-                                } else {
+                                }
+                                else {
                                     var s, l, c = H(n), f = c == w || c == j;
                                     if (Mt(n)) return s = n, (l = r) ? s.slice() : (l = new s.constructor(s.length), s.copy(l), l);
                                     if (c == G || c == C || f && !t) {
@@ -655,7 +661,8 @@
                                         if (u = "function" != typeof (s = f ? {} : n).constructor || wt(s) ? {} : function (e) {
                                             return Q(e) ? Le(e) : {}
                                         }(Fe(s)), !r) return f = l = n, f = (y = u) && gt(f, Z(f), y), gt(l, mt(l), f)
-                                    } else {
+                                    }
+                                    else {
                                         if (!d[c]) return t ? n : {};
                                         u = function (e, t, n, r) {
                                             var o = e.constructor;
@@ -748,7 +755,7 @@
                             var n = this.__data__, r = Ye(n, e);
                             return r < 0 ? n.push([e, t]) : n[r][1] = t, this
                         }, f.prototype.clear = function () {
-                            this.__data__ = {hash: new l, map: new (a || c), string: new l}
+                            this.__data__ = { hash: new l, map: new (a || c), string: new l }
                         }, f.prototype.delete = function (e) {
                             return bt(this, e).delete(e)
                         }, f.prototype.get = function (e) {
@@ -897,7 +904,8 @@
                                     var t = $t(e, n);
                                     return t === R && t === r ? Ct(e, n) : at(r, t, R, I | $)
                                 }
-                            } else {
+                            }
+                            else {
                                 var t = e, o = function (e) {
                                     var t = Z(e), n = t.length;
                                     for (; n--;) {
@@ -918,7 +926,8 @@
                                             var s = (u = n[o])[0], l = e[s], c = u[1];
                                             if (a && u[2]) {
                                                 if (l === R && !(s in e)) return !1
-                                            } else {
+                                            }
+                                            else {
                                                 var f, p = new X;
                                                 if (!((f = r ? r(l, c, s, e, t, p) : f) === R ? at(c, l, r, I | $, p) : f)) return !1
                                             }
@@ -1015,7 +1024,8 @@
                                         c = !1;
                                         break
                                     }
-                                } else if (y !== d && !n(y, d, r, o, i)) {
+                                }
+                                else if (y !== d && !n(y, d, r, o, i)) {
                                     c = !1;
                                     break
                                 }
@@ -1095,11 +1105,13 @@
                             if (null != e) {
                                 try {
                                     return Me.call(e)
-                                } catch (e) {
+                                }
+                                catch (e) {
                                 }
                                 try {
                                     return e + ""
-                                } catch (e) {
+                                }
+                                catch (e) {
                                 }
                             }
                             return ""
@@ -1302,9 +1314,9 @@
         }, {}],
         4: [function (e, t, n) {
             t.exports = e("./polygon-features.json")
-        }, {"./polygon-features.json": 5}],
+        }, { "./polygon-features.json": 5 }],
         5: [function (e, t, n) {
-            t.exports = [{key: "building", polygon: "all"}, {
+            t.exports = [{ key: "building", polygon: "all" }, {
                 key: "highway",
                 polygon: "whitelist",
                 values: ["services", "rest_area", "escape", "elevator"]
@@ -1312,11 +1324,11 @@
                 key: "natural",
                 polygon: "blacklist",
                 values: ["coastline", "cliff", "ridge", "arete", "tree_row"]
-            }, {key: "landuse", polygon: "all"}, {
+            }, { key: "landuse", polygon: "all" }, {
                 key: "waterway",
                 polygon: "whitelist",
                 values: ["riverbank", "dock", "boatyard", "dam"]
-            }, {key: "amenity", polygon: "all"}, {key: "leisure", polygon: "all"}, {
+            }, { key: "amenity", polygon: "all" }, { key: "leisure", polygon: "all" }, {
                 key: "barrier",
                 polygon: "whitelist",
                 values: ["city_wall", "ditch", "hedge", "retaining_wall", "wall", "spikes"]
@@ -1324,7 +1336,7 @@
                 key: "railway",
                 polygon: "whitelist",
                 values: ["station", "turntable", "roundhouse", "platform"]
-            }, {key: "area", polygon: "all"}, {key: "boundary", polygon: "all"}, {
+            }, { key: "area", polygon: "all" }, { key: "boundary", polygon: "all" }, {
                 key: "man_made",
                 polygon: "blacklist",
                 values: ["cutline", "embankment", "pipeline"]
@@ -1332,20 +1344,20 @@
                 key: "power",
                 polygon: "whitelist",
                 values: ["plant", "substation", "generator", "transformer"]
-            }, {key: "place", polygon: "all"}, {key: "shop", polygon: "all"}, {
+            }, { key: "place", polygon: "all" }, { key: "shop", polygon: "all" }, {
                 key: "aeroway",
                 polygon: "blacklist",
                 values: ["taxiway"]
-            }, {key: "tourism", polygon: "all"}, {key: "historic", polygon: "all"}, {
+            }, { key: "tourism", polygon: "all" }, { key: "historic", polygon: "all" }, {
                 key: "public_transport",
                 polygon: "all"
-            }, {key: "office", polygon: "all"}, {key: "building:part", polygon: "all"}, {
+            }, { key: "office", polygon: "all" }, { key: "building:part", polygon: "all" }, {
                 key: "military",
                 polygon: "all"
-            }, {key: "ruins", polygon: "all"}, {key: "area:highway", polygon: "all"}, {
+            }, { key: "ruins", polygon: "all" }, { key: "area:highway", polygon: "all" }, {
                 key: "craft",
                 polygon: "all"
-            }, {key: "golf", polygon: "all"}, {key: "indoor", polygon: "all"}]
+            }, { key: "golf", polygon: "all" }, { key: "indoor", polygon: "all" }]
         }, {}]
     }, {}, [1])(1)
 });
