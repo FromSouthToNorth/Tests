@@ -1,7 +1,6 @@
 /** 水路 */
 const waterwayMap = new Map();
 // 天然水道
-waterwayMap.set();
 waterwayMap.set('river', {
     title: '河岸',
     style: {
@@ -31,13 +30,7 @@ waterwayMap.set('canal', {
         opacity: 0.8,
     }
 });
-waterwayMap.set('drain', {
-    title: 'drain',
-    style: {
-        color: '#7dd',
-        opacity: 0.8,
-    }
-});
+
 waterwayMap.set('pressurised', {
     title: 'pressurised',
     style: {
@@ -45,6 +38,20 @@ waterwayMap.set('pressurised', {
         opacity: 0.8,
     }
 });
+waterwayMap.set('drain', {
+    title: 'drain',
+    style: {
+        color: '#7dd',
+        opacity: 0.8,
+    }
+});
+waterwayMap.set('ditch', {
+    title: '用于输送多余水以进行排水的小型人工自由流动水道，通常没有内衬。',
+    style: {
+        color: '#7dd',
+        opacity: 0.8,
+    }
+})
 waterwayMap.set('fairway', {
     title: 'fairway',
     style: {
@@ -133,6 +140,7 @@ highwayMap.set('service', {
     title: '服务区',
     style: {
         color: '#fff',
+        weight:  5,
     }
 });
 highwayMap.set('services', {
@@ -140,73 +148,92 @@ highwayMap.set('services', {
     style: {
         color: 'rgb(170, 170, 170)',
         opacity: 0.5,
+        weight:  5,
     }
 });
 highwayMap.set('motorway', {
     title: '高速公路',
     style: {
         color: '#CF2081',
+        weight:  5,
     },
 });
 highwayMap.set('motorway_link', {
     title: '高速公路_链接',
     style: {
         color: '#CF2081',
+        weight:  5,
     },
 });
 highwayMap.set('construction', {
     title: '建造道路',
     style: {
         color: '#fc6c14',
-        dashArray: '6, 6'
+        dashArray: '6, 6',
+        weight:  5,
     },
 });
 highwayMap.set('tertiary', {
     title: '三级道路',
     style: {
         color: '#FFF9B3',
+        weight:  5,
     },
 });
 highwayMap.set('footway', {
     title: '步行道路',
     style: {
         color: '#FFF9B3',
+        weight:  5,
     },
 });
 highwayMap.set('secondary', {
     title: '次要公路',
     style: {
         color: '#F3F312',
+        weight:  5,
     },
 });
 highwayMap.set('trunk', {
     title: '干线道路',
     style: {
         color: '#DD2F22',
+        weight:  5,
     },
 });
 highwayMap.set('trunk_link', {
     title: '住宅道路',
     style: {
         color: '#DD2F22',
+        weight:  5,
     },
 })
 highwayMap.set('unclassified', {
     title: '未分类',
     style: {
         color: '#dca',
+        weight:  5,
     },
 });
 highwayMap.set('primary', {
     title: '主要道路',
     style: {
         color: '#F99806',
+        weight:  5,
     },
 });
 highwayMap.set('residential', {
     title: '住宅道路',
     style: {
         color: '#fff',
+        weight:  5,
+    },
+});
+highwayMap.set('pedestrian', {
+    title: '对于主要/专门供行人在购物区和一些住宅区使用的道路，这些道路可能仅在一天中非常有限的时间内允许机动车辆通行。要创建一个“广场”或“广场”，请创建一个封闭的道路并将其标记为行人，并使用 area=yes。',
+    style: {
+        color: 'rgb(170, 170, 170)',
+        weight:  1,
     },
 });
 
@@ -254,7 +281,7 @@ landuseMap.set('residential', {
 landuseMap.set('retail', {
     title: '商业零售用地',
     style: {
-        color: '',
+        color: 'rgb(214, 136, 26)',
         weight: 1,
     },
 });
@@ -274,7 +301,8 @@ landuseMap.set('allotments', {
 landuseMap.set('farmland', {
     title: '农业设施，农业相关设施如农舍，农庄，庄园，棚架，马场，仓库，农机具车库，饲料仓库等，与该设施相邻之树林。',
     style: {
-        color: '',
+        color: 'rgb(191, 232, 63)',
+        weight: 1,
     },
 });
 landuseMap.set('flowerbed', {
@@ -354,7 +382,8 @@ landuseMap.set('garages', {
 landuseMap.set('grass', {
     title: '人工管理的草坪。有些人认为这不是土地利用，请参阅主页landuse=grass以获取信息。',
     style: {
-        color: '',
+        color: 'rgb(140, 208, 95)',
+        width: 1,
     },
 });
 landuseMap.set('greenfield', {
@@ -962,7 +991,8 @@ const buildingMap = new Map();
 buildingMap.set('apartments', {
     title: '公寓楼：用作分配住宅的建筑，通常有多个的楼层。也可能在首层有临街店铺。',
     style: {
-        color: '',
+        color: 'rgb(224, 110, 95)',
+        weight: 1,
     },
 });
 buildingMap.set('barracks', {
@@ -1016,7 +1046,8 @@ buildingMap.set('hotel', {
 buildingMap.set('house', {
     title: '房屋（不仅限于独栋房屋）：一栋独栋房子，或是联排房屋的其中一栋。每栋内部为一个家庭所居住（其内部也有可能是迷你民宿、迷你公寓，但至少有一个公共厨房等设施）。房屋可为多种类型：其有附属的分离式建筑（例如车库、仓库、工坊）；若其属于联排房屋中的一栋，那么应至少有两个节点与邻户共用，用以定义两套产权界线上的公共墙。',
     style: {
-        color: '',
+        color: 'rgb(224, 110, 95)',
+        weight: 1,
     },
 });
 buildingMap.set('houseboat', {
@@ -1230,7 +1261,8 @@ buildingMap.set('train_station', {
 buildingMap.set('transportation', {
     title: '与公共交通相关的建筑。您可能还想用适当的交通相关标签来标记它，例如 public_transport=station。请注意，火车站建筑物有一个特殊标签 - building=train_station。',
     style: {
-        color: '',
+        color: 'rgb(224, 110, 95)',
+        weight: 1,
     },
 });
 buildingMap.set('university', {
@@ -1316,7 +1348,8 @@ buildingMap.set('sports_hall', {
 buildingMap.set('stadium', {
     title: '建造成体育场建筑的建筑物，包括如今被遗弃和用于不同目的的建筑物。',
     style: {
-        color: '',
+        color: 'rgb(224, 110, 95)',
+        weight: 1,
     },
 });
 // 仓储
@@ -2017,7 +2050,8 @@ naturalMap.set('strait', {
 naturalMap.set('water', {
     title: '任何水体，从天然的，如湖泊或池塘，到人工的，如护城河或运河。另请参阅水路=河岸',
     style: {
-        color: '',
+        color: 'rgb(119, 211, 222)',
+        weight: 1,
     },
 });
 naturalMap.set('wetland', {
@@ -2301,5 +2335,595 @@ powerMap.set('transformer', {
     style: {
         color: '',
         weight: 1,
+    },
+});
+
+/** construction */
+// Highways
+const constructionMap = new Map();
+constructionMap.set('motorway', {
+    title: '建设中的高速公路',
+    style: {
+        color: '#CF2081',
+        dashArray: '6, 6',
+    },
+});
+constructionMap.set('motorway_link', {
+    title: '建设中的高速公路支路',
+    style: {
+        color: '#CF2081',
+        dashArray: '6, 6',
+    },
+});
+constructionMap.set('primary', {
+    title: '建设中的主要道路',
+    style: {
+        color: '#F99806',
+        dashArray: '6, 6',
+    },
+});
+constructionMap.set('primary_link', {
+    title: '建设中的主要道路支路',
+    style: {
+        color: '#CF2081',
+        dashArray: '6, 6',
+    },
+});
+constructionMap.set('secondary', {
+    title: '建设中的次要公路',
+    style: {
+        color: '#F3F312',
+        dashArray: '6, 6',
+    },
+});
+constructionMap.set('secondary_link', {
+    title: '建设中的次要公路支路',
+    style: {
+        color: '#F3F312',
+        dashArray: '6, 6',
+    },
+});
+constructionMap.set('tertiary', {
+    title: '建设中的三级道路',
+    style: {
+        color: '#FFF9B3',
+        dashArray: '6, 6',
+    },
+});
+constructionMap.set('tertiary_link', {
+    title: '建设中的三级道路支路',
+    style: {
+        color: '#FFF9B3',
+        dashArray: '6, 6',
+    },
+});
+constructionMap.set('unclassified', {
+    title: '未分类',
+    style: {
+        color: '#FFF9B3',
+        dashArray: '6, 6',
+    },
+});
+constructionMap.set('residential', {
+    title: '建设中的住宅道路',
+    style: {
+        color: '#FFF9B3',
+        dashArray: '6, 6',
+    },
+});
+constructionMap.set('living_street', {
+    title: '建设中的生活街',
+    style: {
+        color: '#1677ff',
+        dashArray: '6, 6',
+    },
+});
+constructionMap.set('road', {
+    title: '正在建设中的分类未知的道路',
+    style: {
+        color: '#1677ff',
+        dashArray: '6, 6',
+    },
+});
+constructionMap.set('raceway', {
+    title: '建设中的赛道',
+    style: {
+        color: '#1677ff',
+        dashArray: '6, 6',
+    },
+});
+constructionMap.set('pedestrian', {
+    title: '建设中的人行道',
+    style: {
+        color: '#1677ff',
+        dashArray: '6, 6',
+    },
+});
+
+constructionMap.set('service', {
+    title: '建设中的服务路',
+    style: {
+        color: '#fff',
+        dashArray: '6, 6',
+    },
+});
+constructionMap.set('track', {
+    title: '在建轨道',
+    style: {
+        color: '',
+        dashArray: '6, 6',
+    },
+});
+constructionMap.set('bridleway', {
+    title: '建设中的马道',
+    style: {
+        color: '#1677ff',
+        dashArray: '6, 6',
+    },
+});
+constructionMap.set('cycleway', {
+    title: '建设中的自行车道',
+    style: {
+        color: '#1677ff',
+        dashArray: '6, 6',
+    },
+});
+constructionMap.set('footway', {
+    title: '正在施工的人行道（替代标签 <construction=footpath>）',
+    style: {
+        color: '#1677ff',
+        dashArray: '6, 6',
+    },
+});
+constructionMap.set('path', {
+    title: '建设中的路径',
+    style: {
+        color: '#1677ff',
+        dashArray: '6, 6',
+    },
+});
+constructionMap.set('steps', {
+    title: '施工步骤',
+    style: {
+        color: '#1677ff',
+        dashArray: '4, 4',
+    },
+});
+// Railways
+constructionMap.set('rail', {
+    title: '建设中的标准轨距铁路',
+    style: {
+        color: '#1677ff',
+        dashArray: '4, 4',
+    },
+});
+constructionMap.set('narrow_gauge', {
+    title: '建设中的窄轨铁路',
+    style: {
+        color: '',
+        dashArray: '4, 4',
+    },
+});
+constructionMap.set('light_rail', {
+    title: '建设中的轻轨',
+    style: {
+        color: '#1677ff',
+        dashArray: '4, 4',
+    },
+});
+constructionMap.set('tram', {
+    title: '建设中的有轨电车',
+    style: {
+        color: '#1677ff',
+        dashArray: '4, 4',
+    },
+});
+constructionMap.set('preserved', {
+    title: '正在建设中的保留铁路，例如用于蒸汽火车',
+    style: {
+        color: '',
+        dashArray: '4, 4',
+    },
+});
+constructionMap.set('subway', {
+    title: '建设中的地铁',
+    style: {
+        color: '#eee',
+        dashArray: '4, 4',
+    },
+});
+constructionMap.set('monorail', {
+    title: '建设中的单轨电车',
+    style: {
+        color: '#1677ff',
+        dashArray: '7, 3',
+    },
+});
+
+/** aeroway  */
+const aerowayMap = new Map();
+aerowayMap.set('aerodrome', {
+    title: '英国的机场或北美的机场用于绘制主要区域详细信息（仅直升机除外）。',
+    style: {
+        color: '',
+    },
+});
+aerowayMap.set('apron', {
+    title: '机场停机坪是飞机停放、卸载或装载、加油或登机的区域。',
+    style: {
+        color: '#fff',
+        weight: 1,
+    },
+});
+aerowayMap.set('control_center', {
+    title: '控制中心（在美国称为空中航线交通控制中心 (ARTCC)）是负责控制在机场进近和起飞之间的高海拔特定空域（飞行情报区）中飞行的飞机的设施。',
+    style: {
+        color: '',
+    },
+});
+aerowayMap.set('gate', {
+    title: '机场登机口用于标记乘客在登机前等待的机场的登机口编号。',
+    style: {
+        color: '',
+    },
+});
+aerowayMap.set('hangar', {
+    title: '机库是用来容纳飞机或航天器的结构。',
+    style: {
+        color: '',
+    },
+});
+aerowayMap.set('helipad', {
+    title: '直升机停机坪用于标记直升机的着陆区或平台',
+    style: {
+        color: '',
+    },
+});
+aerowayMap.set('holding_position', {
+    title: '飞机被认为没有交叉路口的点',
+    style: {
+        color: '',
+    },
+});
+aerowayMap.set('navigationaid', {
+    title: '支持飞机视觉导航的设施',
+    style: {
+        color: '',
+    },
+});
+aerowayMap.set('beacon', {
+    title: '无线电导航设备用于标记确定地球位置的系统，帮助飞行员在飞行期间引导飞机。',
+    style: {
+        color: '',
+    },
+});
+aerowayMap.set('parking_position', {
+    title: '飞机可以停放的地方',
+    style: {
+        color: '',
+    },
+});
+aerowayMap.set('runway', {
+    title: '跑道是机场为飞机起降准备的矩形区域。',
+    style: {
+        color: '#fff',
+        weight: 2,
+        dashArray: '12, 24',
+    },
+});
+aerowayMap.set('taxilane', {
+    title: 'Taxilane 是机场中的一条路径，它是飞机停放区或停机坪的一部分（截至 2015-10 年使用率较低的拟议功能；使用时注意正确使用问题）。',
+    style: {
+        color: '',
+    },
+});
+aerowayMap.set('taxiway', {
+    title: '滑行道是机场上连接跑道和坡道、机库、航站楼和其他设施的路径。',
+    style: {
+        color: '#ff0',
+    },
+});
+aerowayMap.set('terminal', {
+    title: '机场航站楼是机场的一座建筑物，乘客在地面交通工具和允许他们登机和下飞机的设施之间转移。',
+    style: {
+        color: '',
+    },
+});
+aerowayMap.set('tower', {
+    title: '控制塔是位于机场地面上的高大窗户结构。\n' +
+        '另请参阅 aeroway=control_tower 或 man_made=tower + service=aircraft_control 的组合以了解类似方案。',
+    style: {
+        color: '',
+    },
+});
+aerowayMap.set('windsock', {
+    title: 'Windsock 旨在指示风向和相对风速。',
+    style: {
+        color: '',
+    },
+});
+aerowayMap.set('windsock', {
+    title: 'Windsock 旨在指示风向和相对风速。',
+    style: {
+        color: '',
+    },
+});
+aerowayMap.set('windsock', {
+    title: 'Windsock 旨在指示风向和相对风速。',
+    style: {
+        color: '',
+    },
+});
+aerowayMap.set('highway_strip', {
+    title: '公路跑道是指定的跑道，通常用作公路的一部分，但可以因军事演习或飞机紧急降落而关闭。',
+    style: {
+        color: '',
+    },
+});
+aerowayMap.set('User defined', {
+    title: '根据 Taginfo 的所有常用值',
+    style: {
+        color: '',
+    },
+});
+// Spaceflight 航天
+aerowayMap.set('spaceport', {
+    title: '太空港或航天发射场：发射或接收航天器的场所',
+    style: {
+        color: '',
+    },
+});
+aerowayMap.set('launch_complex', {
+    title: '太空发射场',
+    style: {
+        color: '',
+    },
+});
+aerowayMap.set('launchpad', {
+    title: '航天器发射台',
+    style: {
+        color: '',
+    },
+});
+aerowayMap.set('landingpad', {
+    title: '航天器着陆台',
+    style: {
+        color: '',
+    },
+});
+aerowayMap.set('flame_trench', {
+    title: '航天器用火焰沟槽',
+    style: {
+        color: '',
+    },
+});
+
+
+/** railway */
+const railwayMap = new Map();
+railwayMap.set('abandoned', {
+    title: '已废弃且轨道已拆除的前铁路路线。该路线仍然可以通过路堤、路堑、树木行列、桥梁、隧道、剩余的轨道枕木、建筑形状和起伏或笔直的道路来识别。对于已无法辨认的拆除钢轨，例如已经建成，有些使用高度可疑的铁路=夷为平地。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('construction', {
+    title: '建设中的铁路。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('disused', {
+    title: '不再使用但轨道和基础设施仍在原地的一段铁路。这条轨道可能长满了当地特有的植被，但只需付出很小的努力就可以恢复有用的服务。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('funicular', {
+    title: '陡坡上的电缆驱动倾斜铁路，一对车厢由一根电缆连接',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('light_rail', {
+    title: '更高标准的电车系统，通常有自己的通行权。它经常连接城镇，因此达到相当长的距离（数十公里）。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('miniature', {
+    title: '微型铁路比窄轨更窄，载客，通常与“标准尺寸”铁路的精确比例（例如“1/4 比例”）。他们经常可以在公园里找到。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('monorail', {
+    title: '只有一条铁轨的铁路。单轨铁路可以像拉斯维加斯和迪斯尼乐园那样在轨道上方运行，也可以像 Wuppertal Schwebebahn（德国）那样悬挂在轨道下方。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('narrow_gauge', {
+    title: 'way 窄轨客运或货运列车。窄轨铁路可以像瑞士的 Rhaetian 铁路那样提供干线铁路服务，也可以是小型轻工业铁路。使用 gauge=* 以毫米为单位指定导轨的实际宽度。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('preserved', {
+    title: '运行历史悠久的火车的铁路，通常是旅游景点。使用 railway:preserved=yes 是将铁路标记为保留的另一种方法。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('rail', {
+    title: '国家或州标准轨距的全尺寸客运或货运列车。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('subway', {
+    title: '一种城市客运铁路服务，主要运行在不同等级之间（参见维基百科：快速交通）。线路或其系统/网络的很大一部分通常位于地下。',
+    style: {
+        color: '#bbb',
+        opacity: 0.3,
+        weight: 2,
+        dashArray: '12, 12',
+    },
+});
+railwayMap.set('tram', {
+    title: '一节或两节车厢的轨道车辆，通常共用机动车道，有时也称为“街跑”（其他语言）。',
+    style: {
+        color: '',
+    },
+});
+// Stations and Stops 车站和停靠站
+railwayMap.set('halt', {
+    title: '没有开关的小站',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('platform', {
+    title: '这与显示实际站台位置的铁路线平行。也是为了知道在哪里换月台进站，所以要用人行道连接。这对于路由也非常有用。除了 public_transport=platform 之外还使用。',
+    style: {
+        color: 'rgb(170, 170, 170)',
+        weight: 1,
+    },
+});
+railwayMap.set('station', {
+    title: '铁路客运站和/或货运站。除了 public_transport=station 之外还使用。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('subway_entrance', {
+    title: '地铁站的入口，通常从地面到地下。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('tram_stop', {
+    title: '电车站是乘客上下电车的地方。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('buffer_stop', {
+    title: '将火车停在轨道的尽头。请参阅缓冲区停止。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('derail', {
+    title: '一种用于防止未经授权的火车或无人看管的机车车辆移动造成铁轨污染的装置。参见 Derail_（铁路）。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('crossing', {
+    title: '行人可以过马路的地方。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('level_crossing', {
+    title: '铁路和公路交叉的地方。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('tram_level_crossing', {
+    title: '电车和道路交叉的地方。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('signal', {
+    title: '任何一种铁路信号。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('switch', {
+    title: '铁路之间的完整连接（又名“点”）。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('railway_crossing', {
+    title: '没有互连的交叉轨道。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('turntable', {
+    title: '这些用于改变火车的一部分指向的方向。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('roundhouse', {
+    title: '一个半圆形的建筑，有许多维修发动机的摊位。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('traverser', {
+    title: '这些用于在铁路之间换车。也称为传输表。',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('wash', {
+    title: '铁路洗车',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('water_crane', {
+    title: '向蒸汽机车输送水的结构',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('ventilation_shaft', {
+    title: 'A structure that allows ventilation in underground tunnels',
+    style: {
+        color: '',
+    },
+});
+railwayMap.set('user defined', {
+    title: '根据 Taginfo 的所有常用值',
+    style: {
+        color: '',
+    },
+});
+
+/** public_transport */
+const publicTransportMap = new Map();
+publicTransportMap.set('stop_position', {
+    title: '公共交通车辆在街道或铁轨上停靠的位置。',
+    style: {
+        color: '',
+    },
+});
+publicTransportMap.set('platform', {
+    title: '乘客等候公共交通工具的地方。',
+    style: {
+        color: 'rgb(170, 170, 170)',
+        weight: 1,
+    },
+});
+publicTransportMap.set('station', {
+    title: '车站是设计用于使用公共交通工具的区域。',
+    style: {
+        color: 'rgb(170, 170, 170)',
+        weight: 1,
+    },
+});
+publicTransportMap.set('stop_area', {
+    title: '包含火车、地铁、单轨铁路、有轨电车、公共汽车、无轨电车、高架铁路或轮渡站的所有元素的关系。',
+    style: {
+        color: '',
     },
 });

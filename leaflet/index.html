@@ -56,7 +56,7 @@
         shadowUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAApCAQAAAACach9AAACMUlEQVR4Ae3ShY7jQBAE0Aoz/f9/HTMzhg1zrdKUrJbdx+Kd2nD8VNudfsL/Th///dyQN2TH6f3y/BGpC379rV+S+qqetBOxImNQXL8JCAr2V4iMQXHGNJxeCfZXhSRBcQMfvkOWUdtfzlLgAENmZDcmo2TVmt8OSM2eXxBp3DjHSMFutqS7SbmemzBiR+xpKCNUIRkdkkYxhAkyGoBvyQFEJEefwSmmvBfJuJ6aKqKWnAkvGZOaZXTUgFqYULWNSHUckZuR1HIIimUExutRxwzOLROIG4vKmCKQt364mIlhSyzAf1m9lHZHJZrlAOMMztRRiKimp/rpdJDc9Awry5xTZCte7FHtuS8wJgeYGrex28xNTd086Dik7vUMscQOa8y4DoGtCCSkAKlNwpgNtphjrC6MIHUkR6YWxxs6Sc5xqn222mmCRFzIt8lEdKx+ikCtg91qS2WpwVfBelJCiQJwvzixfI9cxZQWgiSJelKnwBElKYtDOb2MFbhmUigbReQBV0Cg4+qMXSxXSyGUn4UbF8l+7qdSGnTC0XLCmahIgUHLhLOhpVCtw4CzYXvLQWQbJNmxoCsOKAxSgBJno75avolkRw8iIAFcsdc02e9iyCd8tHwmeSSoKTowIgvscSGZUOA7PuCN5b2BX9mQM7S0wYhMNU74zgsPBj3HU7wguAfnxxjFQGBE6pwN+GjME9zHY7zGp8wVxMShYX9NXvEWD3HbwJf4giO4CFIQxXScH1/TM+04kkBiAAAAAElFTkSuQmCC'
     });
 
-    const map = L.map('map', { contextmenu: true, maxZoom: 18, minZoom: 3, }).setView([30.3339, 106.9303], 16);
+    const map = L.map('map', { contextmenu: true, maxZoom: 18, minZoom: 3, }).setView([27.90354, 120.84310], 16);
 
     map.on('click', (e) => {
         const { containerPoint, latlng } = e;
@@ -82,15 +82,20 @@
         tms: true
     }).addTo(map);
 
-
-    d3.json('lingshui.json').then(data => {
+    console.log(map.getBounds());
+    let geoJSON;
+    d3.json('file.geojson').then(data => {
+        geoJSON = data;
         L.geoJSON(data, {
+            filter: function (geoJsonFeature) {
+                return !geoJsonFeature.properties.boundary || geoJsonFeature.geometry.type === 'Point';
+            },
             pointToLayer: function (geoJsonPoint, latlng) {
                 return L.marker(latlng);
             },
             style: function (feature) {
                 const { geometry, properties } = feature;
-                const { waterway, highway, landuse, natural, building, leisure, amenity, power } = properties;
+                const { waterway, highway, landuse, natural, building, leisure, amenity, power, construction, aeroway, railway, public_transport } = properties;
                 if (landuse && landuseMap.has(landuse)) {
                     return landuseMap.get(landuse).style;
                 }
@@ -115,13 +120,26 @@
                 if (waterway && waterwayMap.has(waterway)) {
                     return waterwayMap.get(waterway).style;
                 }
+                if (construction && constructionMap.has(construction)) {
+                    return constructionMap.get(construction).style;
+                }
+                if (aeroway && aerowayMap.has(aeroway)) {
+                    return aerowayMap.get(aeroway).style;
+                }
+                if (railway && railwayMap.has(railway)) {
+                    return railwayMap.get(railway).style;
+                }
+                if (public_transport && publicTransportMap.has(public_transport)) {
+                    return publicTransportMap.get(public_transport).style;
+                }
+                return  {
+                    color: '#222',
+                    opacity: 0.5,
+                    dashArray: 'none',
+                }
             },
-            filter: function (geoJsonFeature) {
-                return !geoJsonFeature.properties.boundary
-            }
-        }).bindPopup(function (layer) {
-            console.log(layer.feature);
-            return layer.feature.properties.name ? layer.feature.properties.name : '无名称'
+        }).on('click', e => {
+            console.log(e);
         }).addTo(map);
     })
 
