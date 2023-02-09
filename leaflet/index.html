@@ -123,20 +123,28 @@
         return `<div>${html}</div>`;
     }).addTo(map);
 
+    const dispatch = d3.dispatch('mapZoom', 'click');
+
+    dispatch.on('mapZoom', mapZoom);
+
+    dispatch.call('mapZoom')
+
     d3.json('file.min.geojson').then(data => {
         geoJSONData = data;
     });
 
-    map.on('moveend', e => {
-        const { target } = e;
-        if (target.getZoom() >= 16) {
-            geoJSON.clearLayers();
-            geoJSON.addData(geoJSONData);
-        }
-        else {
-            geoJSON.clearLayers();
-        }
-    });
+    function mapZoom() {
+        map.on('zoom', e => {
+            const { target } = e;
+            if (target.getZoom() >= 16) {
+                geoJSON.clearLayers();
+                geoJSON.addData(geoJSONData);
+            }
+            else {
+                geoJSON.clearLayers();
+            }
+        });
+    }
 
     // const linShuiMarker = L.marker([30.3339, 106.9303]).bindPopup(`<p>邻水</p>`).addTo(map);
     // linShuiMarker.uuid = uuid.v4()
