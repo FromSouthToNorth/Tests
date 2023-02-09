@@ -1,4 +1,4 @@
-/** 水路 */
+/** waterway 水路 */
 const waterwayMap = new Map();
 // 天然水道
 waterwayMap.set('river', {
@@ -134,7 +134,7 @@ waterwayMap.set('fuel', {
 });
 
 
-/** 公路 */
+/** highway 公路 */
 const highwayMap = new Map();
 highwayMap.set('service', {
     title: '服务区',
@@ -237,7 +237,7 @@ highwayMap.set('pedestrian', {
     },
 });
 
-/** 土地利用 */
+/** landuse 土地利用 */
 const landuseMap = new Map();
 // 已开发土地
 landuseMap.set('commercial', {
@@ -447,7 +447,7 @@ landuseMap.set('winter_sports', {
     },
 });
 
-/** 设施 */
+/** amenity 设施 */
 const amenityMap = new Map();
 // 餐饮设施
 amenityMap.set('bar', {
@@ -986,7 +986,7 @@ amenityMap.set('watering_place', {
     },
 });
 
-/** 建筑 */
+/** building 建筑 */
 const buildingMap = new Map();
 buildingMap.set('apartments', {
     title: '公寓楼：用作分配住宅的建筑，通常有多个的楼层。也可能在首层有临街店铺。',
@@ -1507,6 +1507,7 @@ buildingMap.set('user defined', {
     },
 });
 
+/** leisure */
 const leisureMap = new Map();
 leisureMap.set('adult_gaming_centr', {
     title: '设有赌博机和其他付费游戏的场所。与 leisure=amusement_arcade 不同，有一定的年龄限制',
@@ -1774,106 +1775,138 @@ leisureMap.set('user defined', {
     },
 });
 
-/** 边界 */
+/** boundary 边界 */
 const boundaryMap = new Map();
 boundaryMap.set('aboriginal_lands', {
     title: '代表公认的土著/土著/土著民族的官方保留边界的边界。',
     style: {
         color: '',
+        fillOpacity: 0.1,
+        weight: 1,
     },
 });
 boundaryMap.set('administrative', {
     title: '行政边界。政府或其他组织出于行政目的认可的区域/领土/司法管辖区的细分。这些范围从大型民族国家集团到小型行政区和郊区，如“admin_level=*”组合标签所示。',
     style: {
         color: '',
+        fillOpacity: 0.1,
+        weight: 1,
     },
 });
 boundaryMap.set('border_zone', {
     title: '边境区是边界附近对行动实行特殊限制的地区。通常参观需要许可证。',
     style: {
         color: '',
+        fillOpacity: 0.1,
+        weight: 1,
     },
 });
 boundaryMap.set('forest', {
     title: '划界森林是一片以树木繁茂为主的土地，因此被赋予了明确的边界。它可能覆盖不同的林分，非林区，高速公路...但是边界内的所有区域都被视为一个单一的森林并进行管理。',
     style: {
         color: '',
+        fillOpacity: 0.1,
+        weight: 1,
     },
 });
 boundaryMap.set('forest_compartment', {
     title: '林区间是划定的林内编号的细分，物理上具有可见的、通常清除的边界。',
     style: {
         color: '',
+        fillOpacity: 0.1,
+        weight: 1,
     },
 });
 boundaryMap.set('hazard', {
     title: '指定的危险区域，对健康、生命、财产或任何其他有价利益造成潜在损害。',
     style: {
         color: '',
+        fillOpacity: 0.1,
+        weight: 1,
     },
 });
 boundaryMap.set('maritime', {
     title: '非行政边界的海洋边界：基线、毗连区和专属经济区。',
     style: {
         color: '',
+        fillOpacity: 0.1,
+        weight: 1,
     },
 });
 boundaryMap.set('marker', {
     title: '边界标记、边界标记、边界石或边界石是一种坚固的物理标记，用于标识陆地边界的开始或边界的变化，尤其是边界方向的变化。另请参阅历史=boundary_stone',
     style: {
         color: '',
+        fillOpacity: 0.1,
+        weight: 1,
     },
 });
 boundaryMap.set('national_park', {
     title: '杰出的自然美景区，留作保护和娱乐（其他语言）。',
     style: {
         color: '',
+        fillOpacity: 0.1,
+        weight: 1,
     },
 });
 boundaryMap.set('place', {
     title: '边界=地点通常用于映射地点=*的边界，当可以定义这些边界但这些不是行政边界时。',
     style: {
         color: '',
+        fillOpacity: 0.1,
+        weight: 1,
     },
 });
 boundaryMap.set('political', {
     title: '选区边界',
     style: {
         color: '',
+        fillOpacity: 0.1,
+        weight: 1,
     },
 });
 boundaryMap.set('postal_code', {
     title: '邮政编码边界',
     style: {
         color: '',
+        fillOpacity: 0.1,
+        weight: 1,
     },
 });
 boundaryMap.set('protected_area', {
     title: '保护区，如国家公园、海洋保护区、遗产地、荒野、文化资产等。',
     style: {
         color: '',
+        fillOpacity: 0.1,
+        weight: 1,
     },
 });
 boundaryMap.set('special_economic_zone', {
     title: '政府定义的领域，其中商业和贸易法律不同。',
     style: {
         color: '',
+        fillOpacity: 0.1,
+        weight: 1,
     },
 });
 boundaryMap.set('disputed', {
     title: '由两方或多方声称拥有的有地区域（谨慎使用）。另见有争议的领土。',
     style: {
         color: '',
+        fillOpacity: 0.1,
+        weight: 1,
     },
 });
 boundaryMap.set('user defined', {
     title: '根据标签信息的所有常用值',
     style: {
         color: '',
+        fillOpacity: 0.1,
+        weight: 1,
     },
 });
 
-/** 自然 */
+/** natural 自然 */
 const naturalMap = new Map();
 naturalMap.set('fell', {
     title: '树线上方的栖息地覆盖着草，矮灌木和苔藓。',
@@ -2927,3 +2960,19 @@ publicTransportMap.set('stop_area', {
         color: '',
     },
 });
+
+const styleObj = {
+    'waterway': waterwayMap,
+    'public_transport': publicTransportMap,
+    'railway': railwayMap,
+    'aeroway': aerowayMap,
+    'construction': constructionMap,
+    'power': powerMap,
+    'natural': naturalMap,
+    'boundary': boundaryMap,
+    'leisure': leisureMap,
+    'building': buildingMap,
+    'amenity': amenityMap,
+    'landuse': landuseMap,
+    'highway': highwayMap,
+}

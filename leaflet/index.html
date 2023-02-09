@@ -7,8 +7,8 @@
     <script src="./src/leaflet/tutf.js"></script>
     <link rel="stylesheet" href="src/css/leaflet.css"/>
     <script src="./src/leaflet/leaflet.js"></script>
-    <script src="https://unpkg.com/geojson-vt@3.2.0/geojson-vt.js"></script>
-    <script src="./src/leaflet/geojson-vt.js"></script>
+    <!--    <script src="https://unpkg.com/geojson-vt@3.2.0/geojson-vt.js"></script>-->
+    <!--    <script src="./src/leaflet/geojson-vt.js"></script>-->
 
     <script src="src/leaflet/leaflet.markercluster.js"></script>
     <link rel="stylesheet" href="./src/css/MarkerCluster.Default.css">
@@ -44,6 +44,17 @@
             color: #222;
             background: rgba(255, 255, 255, 0.2);
         }
+
+       .leaflet-popup-content div {
+            word-wrap: break-word;
+        }
+
+       .leaflet-popup-content div p {
+           margin: 2px;
+       }
+        .leaflet-popup-content div p span {
+            padding-left: 24px;
+        }
     </style>
 </head>
 <body>
@@ -58,7 +69,7 @@
         shadowUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAApCAQAAAACach9AAACMUlEQVR4Ae3ShY7jQBAE0Aoz/f9/HTMzhg1zrdKUrJbdx+Kd2nD8VNudfsL/Th///dyQN2TH6f3y/BGpC379rV+S+qqetBOxImNQXL8JCAr2V4iMQXHGNJxeCfZXhSRBcQMfvkOWUdtfzlLgAENmZDcmo2TVmt8OSM2eXxBp3DjHSMFutqS7SbmemzBiR+xpKCNUIRkdkkYxhAkyGoBvyQFEJEefwSmmvBfJuJ6aKqKWnAkvGZOaZXTUgFqYULWNSHUckZuR1HIIimUExutRxwzOLROIG4vKmCKQt364mIlhSyzAf1m9lHZHJZrlAOMMztRRiKimp/rpdJDc9Awry5xTZCte7FHtuS8wJgeYGrex28xNTd086Dik7vUMscQOa8y4DoGtCCSkAKlNwpgNtphjrC6MIHUkR6YWxxs6Sc5xqn222mmCRFzIt8lEdKx+ikCtg91qS2WpwVfBelJCiQJwvzixfI9cxZQWgiSJelKnwBElKYtDOb2MFbhmUigbReQBV0Cg4+qMXSxXSyGUn4UbF8l+7qdSGnTC0XLCmahIgUHLhLOhpVCtw4CzYXvLQWQbJNmxoCsOKAxSgBJno75avolkRw8iIAFcsdc02e9iyCd8tHwmeSSoKTowIgvscSGZUOA7PuCN5b2BX9mQM7S0wYhMNU74zgsPBj3HU7wguAfnxxjFQGBE6pwN+GjME9zHY7zGp8wVxMShYX9NXvEWD3HbwJf4giO4CFIQxXScH1/TM+04kkBiAAAAAElFTkSuQmCC'
     });
 
-    const map = L.map('map', { contextmenu: true, maxZoom: 18, minZoom: 3, }).setView([27.90354, 120.84310], 16);
+    const map = L.map('map', { contextmenu: true, maxZoom: 18, minZoom: 3, }).setView([27.90354, 120.84310], 3);
 
     map.on('click', (e) => {
         const { containerPoint, latlng } = e;
@@ -84,113 +95,48 @@
         tms: true
     }).addTo(map);
 
-    let geoJSON;
-    const options = {
-        maxZoom: 18,
-        tolerance: 3,
-        debug: 0,
+    let geoJSONData;
+
+    const geoJSON = L.geoJSON(null, {
+        filter: function (geoJsonFeature) {
+            return !geoJsonFeature.properties.boundary
+        },
         style: function (feature) {
-            const { waterway, highway, landuse, natural, building, leisure, amenity, power, construction, aeroway, railway, public_transport } = feature.tags;
-            if (landuse && landuseMap.has(landuse)) {
-                return landuseMap.get(landuse).style;
+            const { geometry, properties } = feature;
+            for (const property of Object.keys(properties)) {
+                if (styleObj[property] && styleObj[property].has(properties[property])) {
+                    return styleObj[property].get(properties[property]).style;
+                }
             }
-            if (natural && naturalMap.has(natural)) {
-                return naturalMap.get(natural).style;
-            }
-            if (building && buildingMap.has(building)) {
-                return buildingMap.get(building).style;
-            }
-            if (leisure && leisureMap.has(leisure)) {
-                return leisureMap.get(leisure).style;
-            }
-            if (amenity && amenityMap.has(amenity)) {
-                return amenityMap.get(amenity).style;
-            }
-            if (power && powerMap.has(power)) {
-                return powerMap.get(power).style;
-            }
-            if (highway && highwayMap.has(highway)) {
-                return highwayMap.get(highway).style;
-            }
-            if (waterway && waterwayMap.has(waterway)) {
-                return waterwayMap.get(waterway).style;
-            }
-            if (construction && constructionMap.has(construction)) {
-                return constructionMap.get(construction).style;
-            }
-            if (aeroway && aerowayMap.has(aeroway)) {
-                return aerowayMap.get(aeroway).style;
-            }
-            if (railway && railwayMap.has(railway)) {
-                return railwayMap.get(railway).style;
-            }
-            if (public_transport && publicTransportMap.has(public_transport)) {
-                return publicTransportMap.get(public_transport).style;
-            }
-            return  {
+            return {
                 color: '#222',
                 opacity: 0.5,
                 dashArray: 'none',
             }
         },
-    }
-    d3.json('file.geojson').then(data => {
-        geoJSON = data;
-        console.log(geoJSON);
-        var vtLayer = L.geoJson.vt(data, options).addTo(map);
-        // L.geoJSON(data, {
-        //     filter: function (geoJsonFeature) {
-        //         return !geoJsonFeature.properties.boundary || geoJsonFeature.geometry.type === 'Point';
-        //     },
-        //     style: function (feature) {
-        //         const { geometry, properties } = feature;
-        //         const { waterway, highway, landuse, natural, building, leisure, amenity, power, construction, aeroway, railway, public_transport } = properties;
-        //         if (landuse && landuseMap.has(landuse)) {
-        //             return landuseMap.get(landuse).style;
-        //         }
-        //         if (natural && naturalMap.has(natural)) {
-        //             return naturalMap.get(natural).style;
-        //         }
-        //         if (building && buildingMap.has(building)) {
-        //             return buildingMap.get(building).style;
-        //         }
-        //         if (leisure && leisureMap.has(leisure)) {
-        //             return leisureMap.get(leisure).style;
-        //         }
-        //         if (amenity && amenityMap.has(amenity)) {
-        //             return amenityMap.get(amenity).style;
-        //         }
-        //         if (power && powerMap.has(power)) {
-        //             return powerMap.get(power).style;
-        //         }
-        //         if (highway && highwayMap.has(highway)) {
-        //             return highwayMap.get(highway).style;
-        //         }
-        //         if (waterway && waterwayMap.has(waterway)) {
-        //             return waterwayMap.get(waterway).style;
-        //         }
-        //         if (construction && constructionMap.has(construction)) {
-        //             return constructionMap.get(construction).style;
-        //         }
-        //         if (aeroway && aerowayMap.has(aeroway)) {
-        //             return aerowayMap.get(aeroway).style;
-        //         }
-        //         if (railway && railwayMap.has(railway)) {
-        //             return railwayMap.get(railway).style;
-        //         }
-        //         if (public_transport && publicTransportMap.has(public_transport)) {
-        //             return publicTransportMap.get(public_transport).style;
-        //         }
-        //         return  {
-        //             color: '#222',
-        //             opacity: 0.5,
-        //             dashArray: 'none',
-        //         }
-        //     },
-        // }).on('click', e => {
-        //     console.log(e);
-        // }).addTo(map);
-    })
+    }).bindPopup(layer => {
+        let html = `<p>{</p>`
+        for (const property of Object.keys(layer.feature.properties)) {
+            html += `<p><span>'${property}'</span>: ${layer.feature.properties[property]}</p>`
+        }
+        html+=`<p>}</p>`
+        return `<div>${html}</div>`;
+    }).addTo(map);
+
+    d3.json('file.min.geojson').then(data => {
+        geoJSONData = data;
+    });
+
+    map.on('moveend', e => {
+        const { target } = e;
+        if (target.getZoom() >= 16) {
+            geoJSON.clearLayers();
+            geoJSON.addData(geoJSONData);
+        }
+        else {
+            geoJSON.clearLayers();
+        }
+    });
 
     // const linShuiMarker = L.marker([30.3339, 106.9303]).bindPopup(`<p>邻水</p>`).addTo(map);
     // linShuiMarker.uuid = uuid.v4()
@@ -319,6 +265,10 @@
         position: 'topleft',
         drawCircle: false,
     });
+
+    map.pm.setGlobalOptions({
+        limitMarkersToCount: 20,
+    })
 
     /** 绑定右键菜单 */
     function bindContextMenuLine(shape, layer) {
