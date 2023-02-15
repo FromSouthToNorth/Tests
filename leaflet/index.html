@@ -45,13 +45,14 @@
             background: rgba(255, 255, 255, 0.2);
         }
 
-       .leaflet-popup-content div {
+        .leaflet-popup-content div {
             word-wrap: break-word;
         }
 
-       .leaflet-popup-content div p {
-           margin: 2px;
-       }
+        .leaflet-popup-content div p {
+            margin: 2px;
+        }
+
         .leaflet-popup-content div p span {
             padding-left: 24px;
         }
@@ -69,7 +70,7 @@
         shadowUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAApCAQAAAACach9AAACMUlEQVR4Ae3ShY7jQBAE0Aoz/f9/HTMzhg1zrdKUrJbdx+Kd2nD8VNudfsL/Th///dyQN2TH6f3y/BGpC379rV+S+qqetBOxImNQXL8JCAr2V4iMQXHGNJxeCfZXhSRBcQMfvkOWUdtfzlLgAENmZDcmo2TVmt8OSM2eXxBp3DjHSMFutqS7SbmemzBiR+xpKCNUIRkdkkYxhAkyGoBvyQFEJEefwSmmvBfJuJ6aKqKWnAkvGZOaZXTUgFqYULWNSHUckZuR1HIIimUExutRxwzOLROIG4vKmCKQt364mIlhSyzAf1m9lHZHJZrlAOMMztRRiKimp/rpdJDc9Awry5xTZCte7FHtuS8wJgeYGrex28xNTd086Dik7vUMscQOa8y4DoGtCCSkAKlNwpgNtphjrC6MIHUkR6YWxxs6Sc5xqn222mmCRFzIt8lEdKx+ikCtg91qS2WpwVfBelJCiQJwvzixfI9cxZQWgiSJelKnwBElKYtDOb2MFbhmUigbReQBV0Cg4+qMXSxXSyGUn4UbF8l+7qdSGnTC0XLCmahIgUHLhLOhpVCtw4CzYXvLQWQbJNmxoCsOKAxSgBJno75avolkRw8iIAFcsdc02e9iyCd8tHwmeSSoKTowIgvscSGZUOA7PuCN5b2BX9mQM7S0wYhMNU74zgsPBj3HU7wguAfnxxjFQGBE6pwN+GjME9zHY7zGp8wVxMShYX9NXvEWD3HbwJf4giO4CFIQxXScH1/TM+04kkBiAAAAAElFTkSuQmCC'
     });
 
-    const map = L.map('map', { contextmenu: true, maxZoom: 18, minZoom: 3, }).setView([27.90354, 120.84310], 3);
+    const map = L.map('map', { contextmenu: true, maxZoom: 18, minZoom: 3, }).setView([30.3339, 106.9303], 13);
 
     map.on('click', (e) => {
         const { containerPoint, latlng } = e;
@@ -78,17 +79,22 @@
         const truncated = turf.truncate(point, options);
         const info = `<span>x: ${containerPoint.x} y: ${containerPoint.y}</span> <br/> <br/><span>${truncated.geometry.coordinates[1]}, ${truncated.geometry.coordinates[0]}</span>`;
         document.getElementById('info').innerHTML = info;
-    })
+    });
 
-    // const markerClusterGroup = L.markerClusterGroup();
-    //
-    // const markersLatLng = [[30.3374633, 106.9264582], [30.3386601, 106.9255784], [30.3386601, 106.9255784], [30.326997, 106.9268954], [30.3492779, 106.9230652], [30.2532288, 106.8837762]];
-    //
-    // const markersArray = [];
-    // for (let latLng of markersLatLng) {
-    //     markersArray.push(L.marker(latLng));
-    // }
-    // markerClusterGroup.addLayers(markersArray).addTo(map);
+
+    const markerClusterGroup = L.markerClusterGroup();
+
+    const markersLatLng = [[30.3374633, 106.9264582], [30.3386601, 106.9255784], [30.3386601, 106.9255784], [30.326997, 106.9268954], [30.3492779, 106.9230652], [30.2532288, 106.8837762]];
+
+    const markersArray = [];
+    for (let latLng of markersLatLng) {
+        const marker = L.marker(latLng);
+        markersArray.push(marker);
+    }
+    markerClusterGroup.bindPopup(e => {
+        return `<p>${JSON.stringify(e.getLatLng())}</p>`;
+    })
+    markerClusterGroup.addLayers(markersArray).addTo(map);
 
     var connectId = 'c2cbd3f2-003a-46ec-9e46-26a3996d6484';
     L.tileLayer(`https://services.digitalglobe.com/earthservice/tmsaccess/tms/1.0.0/DigitalGlobe:ImageryTileService@EPSG:3857@jpg/{z}/{x}/{y}.jpg?connectId=${connectId}`, {
@@ -97,72 +103,72 @@
 
     let geoJSONData;
 
-    const geoJSON = L.geoJSON(null, {
-        filter: function (geoJsonFeature) {
-            return !geoJsonFeature.properties.boundary
-        },
-        style: function (feature) {
-            const { geometry, properties } = feature;
-            for (const property of Object.keys(properties)) {
-                if (styleObj[property] && styleObj[property].has(properties[property])) {
-                    return styleObj[property].get(properties[property]).style;
-                }
-            }
-            return {
-                color: '#222',
-                opacity: 0.5,
-                dashArray: 'none',
-            }
-        },
-    }).bindPopup(layer => {
-        let html = `<p>{</p>`
-        for (const property of Object.keys(layer.feature.properties)) {
-            html += `<p><span>'${property}'</span>: ${layer.feature.properties[property]}</p>`
-        }
-        html+=`<p>}</p>`
-        return `<div>${html}</div>`;
-    }).addTo(map);
+    // const geoJSON = L.geoJSON(null, {
+    //     filter: function (geoJsonFeature) {
+    //         return !geoJsonFeature.properties.boundary
+    //     },
+    //     style: function (feature) {
+    //         const { geometry, properties } = feature;
+    //         for (const property of Object.keys(properties)) {
+    //             if (styleObj[property] && styleObj[property].has(properties[property])) {
+    //                 return styleObj[property].get(properties[property]).style;
+    //             }
+    //         }
+    //         return {
+    //             color: '#222',
+    //             opacity: 0.5,
+    //             dashArray: 'none',
+    //         }
+    //     },
+    // }).bindPopup(layer => {
+    //     let html = `<p>{</p>`
+    //     for (const property of Object.keys(layer.feature.properties)) {
+    //         html += `<p><span>'${property}'</span>: ${layer.feature.properties[property]}</p>`
+    //     }
+    //     html += `<p>}</p>`
+    //     return `<div>${html}</div>`;
+    // }).addTo(map);
 
     const dispatch = d3.dispatch('mapZoom', 'click');
 
-    dispatch.on('mapZoom', mapZoom);
+    // dispatch.on('mapZoom', mapZoom);
 
-    dispatch.call('mapZoom')
+    // dispatch.call('mapZoom')
 
-    d3.json('file.min.geojson').then(data => {
-        geoJSONData = data;
-    });
+    // d3.json('file.min.geojson').then(data => {
+    //     geoJSONData = data;
+    // });
 
-    function mapZoom() {
-        map.on('zoom', e => {
-            const { target } = e;
-            if (target.getZoom() >= 16) {
-                geoJSON.clearLayers();
-                geoJSON.addData(geoJSONData);
-            }
-            else {
-                geoJSON.clearLayers();
-            }
-        });
-    }
+    // function mapZoom() {
+    //     map.on('zoom', e => {
+    //         const { target } = e;
+    //         if (target.getZoom() >= 16) {
+    //             geoJSON.clearLayers();
+    //             geoJSON.addData(geoJSONData);
+    //         }
+    //         else {
+    //             geoJSON.clearLayers();
+    //         }
+    //     });
+    // }
 
-    // const linShuiMarker = L.marker([30.3339, 106.9303]).bindPopup(`<p>邻水</p>`).addTo(map);
-    // linShuiMarker.uuid = uuid.v4()
+    const linShuiMarker = L.marker([30.3339, 106.9303]).bindPopup(`<p>邻水</p>`).addTo(map);
+    linShuiMarker.uuid = uuid.v4()
 
     // 设置动画
-    // linShuiMarker.on("click", e => {
-    //     console.log(d3.select(e.target._icon));
-    //     const pos = map.latLngToLayerPoint(linShuiMarker.getLatLng());
-    //     const fx = new L.PosAnimation();
-    //     pos.y -= 10;
-    //
-    //     fx.once('end', function () {
-    //         pos.y += 10;
-    //         fx.run(linShuiMarker._icon, pos, 0.8);
-    //     });
-    //
-    //     fx.run(linShuiMarker._icon, pos, 0.3);
-    // });
+    linShuiMarker.on("click", e => {
+        console.log(d3.select(e.target._icon));
+        const pos = map.latLngToLayerPoint(linShuiMarker.getLatLng());
+        const fx = new L.PosAnimation();
+        pos.y -= 10;
+
+        fx.once('end', function () {
+            pos.y += 10;
+            fx.run(linShuiMarker._icon, pos, 0.8);
+        });
+
+        fx.run(linShuiMarker._icon, pos, 0.3);
+    });
 
     // const lineArray = [
     //     [
@@ -214,7 +220,7 @@
     //         }
     //     ]
     // ];
-    // const layerGroup = L.layerGroup().addTo(map);
+    const layerGroup = L.layerGroup().addTo(map);
 
     // for (let line of lineArray) {
     //     const polyline = L.polyline(line, {});
