@@ -56,6 +56,18 @@
         .leaflet-popup-content div p span {
             padding-left: 24px;
         }
+
+        .arrow-icon {
+            width: 14px;
+            height: 14px;
+        }
+
+        .arrow-icon > div {
+            margin-left: -1px;
+            margin-top: -3px;
+            transform-origin: center center;
+            font: 12px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif;
+        }
     </style>
 </head>
 <body>
@@ -102,6 +114,94 @@
     }).addTo(map);
 
     let geoJSONData;
+
+    function getArrows(arrLatlngs, color, arrowCount, mapObj) {
+
+        if (typeof arrLatlngs === undefined || arrLatlngs == null ||
+            (!arrLatlngs.length) || arrLatlngs.length < 2)
+            return [];
+
+        if (typeof arrowCount === 'undefined' || arrowCount == null)
+            arrowCount = 1;
+
+        if (typeof color === 'undefined' || color == null)
+            color = '';
+        else
+            color = 'color:' + color;
+
+        var result = [];
+        for (var i = 1; i < arrLatlngs.length; i++) {
+            var icon = L.divIcon({
+                className: 'arrow-icon',
+                bgPos: [5, 5],
+                html: '<div style="' + color + ';transform: rotate(' + getAngle(arrLatlngs[i - 1], arrLatlngs[i], -1).toString() + 'deg)">▶</div>'
+            });
+            for (var c = 1; c <= arrowCount; c++) {
+                result.push(L.marker(myMidPoint(arrLatlngs[i], arrLatlngs[i - 1], (c / (arrowCount + 1)), mapObj), { icon: icon }));
+            }
+        }
+        return result;
+    }
+
+    function getAngle(latLng1, latlng2, coef) {
+        var dy = latlng2[0] - latLng1[0];
+        var dx = Math.cos(Math.PI / 180 * latLng1[0]) * (latlng2[1] - latLng1[1]);
+        var ang = ((Math.atan2(dy, dx) / Math.PI) * 180 * coef);
+        return (ang).toFixed(2);
+    }
+
+    function myMidPoint(latlng1, latlng2, per, mapObj) {
+        if (!mapObj)
+            throw new Error('map is not defined');
+
+        var halfDist, segDist, dist, p1, p2, ratio,
+            points = [];
+
+        p1 = mapObj.project(new L.latLng(latlng1));
+        p2 = mapObj.project(new L.latLng(latlng2));
+
+        halfDist = distanceTo(p1, p2) * per;
+
+        if (halfDist === 0)
+            return mapObj.unproject(p1);
+
+        dist = distanceTo(p1, p2);
+
+        if (dist > halfDist) {
+            ratio = (dist - halfDist) / dist;
+            var res = mapObj.unproject(new Point(p2.x - ratio * (p2.x - p1.x), p2.y - ratio * (p2.y - p1.y)));
+            return [res.lat, res.lng];
+        }
+
+    }
+
+    function distanceTo(p1, p2) {
+        var x = p2.x - p1.x,
+            y = p2.y - p1.y;
+
+        return Math.sqrt(x * x + y * y);
+    }
+
+    function toPoint(x, y, round) {
+        if (x instanceof Point) {
+            return x;
+        }
+        if (isArray(x)) {
+            return new Point(x[0], x[1]);
+        }
+        if (x === undefined || x === null) {
+            return x;
+        }
+        if (typeof x === 'object' && 'x' in x && 'y' in x) {
+            return new Point(x.x, x.y);
+        }
+        return new Point(x, y, round);
+    }
+
+    function Point(x, y, round) {
+        this.x = (round ? Math.round(x) : x);
+        this.y = (round ? Math.round(y) : y);
+    }
 
     // const geoJSON = L.geoJSON(null, {
     //     filter: function (geoJsonFeature) {
@@ -152,11 +252,20 @@
     //     });
     // }
 
+
+    // 30.3380096, 106.9231027
+    L.marker([30.338005, 106.9231671], {
+        icon: L.icon({
+            iconUrl: './src/svg/map.svg',
+            iconSize: [32, 32], // size of the icon
+        }),
+    }).bindPopup('marker').addTo(map);
+
     const linShuiMarker = L.marker([30.3339, 106.9303]).bindPopup(`<p>邻水</p>`).addTo(map);
     linShuiMarker.uuid = uuid.v4()
 
     // 设置动画
-    linShuiMarker.on("click", e => {
+    linShuiMarker.on('click', e => {
         console.log(d3.select(e.target._icon));
         const pos = map.latLngToLayerPoint(linShuiMarker.getLatLng());
         const fx = new L.PosAnimation();
@@ -170,56 +279,65 @@
         fx.run(linShuiMarker._icon, pos, 0.3);
     });
 
-    // const lineArray = [
-    //     [
-    //         {
-    //             lat: 30.336812794354024,
-    //             lng: 106.92691951990129
-    //         },
-    //         {
-    //             lat: 30.33660213482554,
-    //             lng: 106.92676663398744
-    //         },
-    //         {
-    //             lat: 30.336396104738355,
-    //             lng: 106.92641258239748
-    //         },
-    //         {
-    //             lat: 30.33537289271365,
-    //             lng: 106.92539870738985
-    //         }
-    //     ],
-    //     [
-    //         {
-    //             lat: 30.333648223810336,
-    //             lng: 106.9262194633484
-    //         },
-    //         {
-    //             lat: 30.333129659703403,
-    //             lng: 106.92640185356142
-    //         },
-    //         {
-    //             lat: 30.332564792104783,
-    //             lng: 106.926509141922
-    //         },
-    //         {
-    //             lat: 30.331759155629687,
-    //             lng: 106.92683905363086
-    //         },
-    //         {
-    //             lat: 30.331411896484173,
-    //             lng: 106.9269034266472
-    //         },
-    //         {
-    //             lat: 30.331182704773553,
-    //             lng: 106.92686319351196
-    //         },
-    //         {
-    //             lat: 30.330879430069324,
-    //             lng: 106.92670762538911
-    //         }
-    //     ]
-    // ];
+    const lineArray = [
+        [
+            {
+                lat: 30.336812794354024,
+                lng: 106.92691951990129
+            },
+            {
+                lat: 30.33660213482554,
+                lng: 106.92676663398744
+            },
+            {
+                lat: 30.336396104738355,
+                lng: 106.92641258239748
+            },
+            {
+                lat: 30.33537289271365,
+                lng: 106.92539870738985
+            }
+        ],
+        [
+            {
+                lat: 30.333648223810336,
+                lng: 106.9262194633484
+            },
+            {
+                lat: 30.333129659703403,
+                lng: 106.92640185356142
+            },
+            {
+                lat: 30.332564792104783,
+                lng: 106.926509141922
+            },
+            {
+                lat: 30.331759155629687,
+                lng: 106.92683905363086
+            },
+            {
+                lat: 30.331411896484173,
+                lng: 106.9269034266472
+            },
+            {
+                lat: 30.331182704773553,
+                lng: 106.92686319351196
+            },
+            {
+                lat: 30.330879430069324,
+                lng: 106.92670762538911
+            }
+        ]
+    ];
+
+
+    lineArray.forEach(e => {
+        var polyline = L.polyline(e, { color: 'red' }).addTo(map);
+    });
+
+    // draw 5 arrows per line
+    L.featureGroup(getArrows(lineArray[0], 'red', 2, map)).addTo(map);
+
     const layerGroup = L.layerGroup().addTo(map);
 
     // for (let line of lineArray) {
