@@ -140,7 +140,7 @@ highwayMap.set('service', {
     title: '服务区',
     style: {
         color: '#fff',
-        weight:  5,
+        weight: 5,
     }
 });
 highwayMap.set('services', {
@@ -148,21 +148,21 @@ highwayMap.set('services', {
     style: {
         color: 'rgb(170, 170, 170)',
         opacity: 0.5,
-        weight:  5,
+        weight: 5,
     }
 });
 highwayMap.set('motorway', {
     title: '高速公路',
     style: {
         color: '#CF2081',
-        weight:  5,
+        weight: 5,
     },
 });
 highwayMap.set('motorway_link', {
     title: '高速公路_链接',
     style: {
         color: '#CF2081',
-        weight:  5,
+        weight: 5,
     },
 });
 highwayMap.set('construction', {
@@ -170,70 +170,85 @@ highwayMap.set('construction', {
     style: {
         color: '#fc6c14',
         dashArray: '6, 6',
-        weight:  5,
+        weight: 5,
     },
 });
 highwayMap.set('tertiary', {
     title: '三级道路',
     style: {
         color: '#FFF9B3',
-        weight:  5,
+        weight: 5,
     },
 });
 highwayMap.set('footway', {
     title: '步行道路',
     style: {
         color: '#FFF9B3',
-        weight:  5,
+        weight: 5,
     },
 });
 highwayMap.set('secondary', {
     title: '次要公路',
     style: {
         color: '#F3F312',
-        weight:  5,
+        weight: 5,
     },
 });
 highwayMap.set('trunk', {
     title: '干线道路',
     style: {
         color: '#DD2F22',
-        weight:  5,
+        weight: 5,
     },
 });
 highwayMap.set('trunk_link', {
     title: '住宅道路',
     style: {
         color: '#DD2F22',
-        weight:  5,
+        weight: 5,
     },
 })
 highwayMap.set('unclassified', {
     title: '未分类',
     style: {
         color: '#dca',
-        weight:  5,
+        weight: 5,
     },
 });
 highwayMap.set('primary', {
     title: '主要道路',
     style: {
         color: '#F99806',
-        weight:  5,
+        weight: 5,
+    },
+});
+highwayMap.set('primary_link', {
+    title: '主要道路连接',
+    style: {
+        color: '#F99806',
+        weight: 5,
     },
 });
 highwayMap.set('residential', {
     title: '住宅道路',
     style: {
         color: '#fff',
-        weight:  5,
+        weight: 5,
     },
 });
+highwayMap.set('steps', {
+    title: '阶梯',
+    style: {
+        color: '#81d25c',
+        weight: 5,
+        dashArray: [3, 3],
+    },
+})
 highwayMap.set('pedestrian', {
     title: '对于主要/专门供行人在购物区和一些住宅区使用的道路，这些道路可能仅在一天中非常有限的时间内允许机动车辆通行。要创建一个“广场”或“广场”，请创建一个封闭的道路并将其标记为行人，并使用 area=yes。',
     style: {
         color: 'rgb(170, 170, 170)',
-        weight:  1,
+        weight: 1,
     },
 });
 
@@ -243,13 +258,16 @@ const landuseMap = new Map();
 landuseMap.set('commercial', {
     title: '商业办公用地',
     style: {
-        color: '',
+        color: 'rgb(214, 136, 26)',
+        fill: 'rgba(214, 136, 26, 0.3)',
+        weight: 1,
     },
 });
 landuseMap.set('construction', {
     title: '建筑工地',
     style: {
-        color: '',
+        color: 'rgb(196, 189, 25)',
+        weight: 1,
     },
 });
 landuseMap.set('education', {
@@ -401,7 +419,8 @@ landuseMap.set('landfill', {
 landuseMap.set('military', {
     title: '军事用地，包括由军队拥有控制的各种用途的土地。',
     style: {
-        color: '',
+        color: 'rgb(214, 136, 26)',
+        weight: 1,
     },
 });
 landuseMap.set('port', {
@@ -431,7 +450,9 @@ landuseMap.set('recreation_ground', {
 landuseMap.set('religious', {
     title: '宗教用地',
     style: {
-        color: '',
+        color: 'rgb(170, 170, 170)',
+        weight: 1,
+        fill: 'rgba(255, 255, 255, 0.3)',
     },
 });
 landuseMap.set('village_green', {
@@ -511,16 +532,21 @@ amenityMap.set('driving_school', {
         color: '',
     },
 });
-amenityMap.set('language_school', {
+
+amenityMap.set('kindergarten', {
     title: '语言学校。',
     style: {
-        color: '',
+        color: 'rgba(255, 255, 148, 0.75)',
+        weight: 1,
+        fill: 'rgba(255, 255, 148, 0.25)',
     },
 });
 amenityMap.set('library', {
     title: '图书馆。',
     style: {
-        color: '',
+        color: 'rgb(224, 110, 95)',
+        weight: 1,
+        fill: 'rgba(224, 110, 95, 0.3)',
     },
 });
 amenityMap.set('toy_library', {
@@ -655,7 +681,9 @@ amenityMap.set('motorcycle_parking', {
 amenityMap.set('parking', {
     title: '停车场，以点(node)或区域(area)(没有access标签)显示并标注停车的符号，区域（Area）会有颜色区分，停车场内的道路长被标记为 highway=service 和 service=parking_aisle',
     style: {
-        color: '',
+        color: 'rgb(170, 170, 170)',
+        fill: 'rgba(140, 140, 140, 0.5)',
+        weight: 1,
     },
 });
 amenityMap.set('parking_entrance', {
@@ -756,7 +784,9 @@ amenityMap.set('veterinary', {
 amenityMap.set('arts_centre', {
     title: '艺术中心。',
     style: {
-        color: '',
+        color: 'rgb(224, 110, 95)',
+        weight: 1,
+        fill: 'rgba(224, 110, 95, 0.3)',
     },
 });
 amenityMap.set('cinema', {
@@ -840,7 +870,9 @@ amenityMap.set('studio', {
 amenityMap.set('theatre', {
     title: '剧院。',
     style: {
-        color: '',
+        color: 'rgb(224, 110, 95)',
+        weight: 1,
+        fill: 'rgba(224, 110, 95, 0.3)',
     },
 });
 // 公共服务
@@ -859,7 +891,9 @@ amenityMap.set('fire_station', {
 amenityMap.set('police', {
     title: '警察局、派出所。',
     style: {
-        color: '',
+        color: 'rgb(170, 170, 170)',
+        weight: 1,
+        fill: 'rgba(255, 255, 255, 0.3)',
     },
 });
 amenityMap.set('post_box', {
@@ -1040,7 +1074,9 @@ buildingMap.set('ger', {
 buildingMap.set('hotel', {
     title: '酒店：设计有多个客房用以过夜留宿的建筑物。此标签使用时，通常与 tourism=hotel 标签配合，用以表达附属娱乐设施和停车设施。',
     style: {
-        color: '',
+        color: 'rgb(224, 110, 95)',
+        weight: 1,
+        fill: 'rgba(224, 110, 95, 0.3)',
     },
 });
 buildingMap.set('house', {
@@ -1497,7 +1533,9 @@ buildingMap.set('tree_house', {
 buildingMap.set('yes', {
     title: '在无法确定更具体的值的情况下使用此值。',
     style: {
-        color: '',
+        color: 'rgb(224, 110, 95)',
+        weight: 1,
+        fill: 'rgba(224, 110, 95, 0.3)'
     },
 });
 buildingMap.set('user defined', {
@@ -1662,7 +1700,9 @@ leisureMap.set('outdoor_seating', {
 leisureMap.set('park', {
     title: '开放的绿色娱乐区，通常是市政区。',
     style: {
-        color: '',
+        color: 'rgb(140, 208, 95)',
+        weight: 1,
+        fill: 'rgba(140, 208, 95, 0.3)',
     },
 });
 leisureMap.set('picnic_table', {
@@ -2961,6 +3001,26 @@ publicTransportMap.set('stop_area', {
     },
 });
 
+const historicMap = new Map();
+historicMap.set('archaeological_site', {
+    title: '考古遗址',
+    style: {
+        color: 'rgb(170, 170, 170)',
+        fill: 'rgba(255, 255, 255, 0.3)',
+        weight: 1
+    },
+});
+
+const areaMap = new Map();
+areaMap.set('yes', {
+    title: '',
+    style: {
+        color: 'rgb(170, 170, 170)',
+        fill: 'rgba(255, 255, 255, 0.3)',
+        weight: 1
+    },
+});
+
 const styleObj = {
     'waterway': waterwayMap,
     'public_transport': publicTransportMap,
@@ -2975,4 +3035,6 @@ const styleObj = {
     'amenity': amenityMap,
     'landuse': landuseMap,
     'highway': highwayMap,
+    'historic': historicMap,
+    'area': areaMap,
 }
