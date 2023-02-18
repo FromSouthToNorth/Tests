@@ -85,7 +85,51 @@
         shadowUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAApCAQAAAACach9AAACMUlEQVR4Ae3ShY7jQBAE0Aoz/f9/HTMzhg1zrdKUrJbdx+Kd2nD8VNudfsL/Th///dyQN2TH6f3y/BGpC379rV+S+qqetBOxImNQXL8JCAr2V4iMQXHGNJxeCfZXhSRBcQMfvkOWUdtfzlLgAENmZDcmo2TVmt8OSM2eXxBp3DjHSMFutqS7SbmemzBiR+xpKCNUIRkdkkYxhAkyGoBvyQFEJEefwSmmvBfJuJ6aKqKWnAkvGZOaZXTUgFqYULWNSHUckZuR1HIIimUExutRxwzOLROIG4vKmCKQt364mIlhSyzAf1m9lHZHJZrlAOMMztRRiKimp/rpdJDc9Awry5xTZCte7FHtuS8wJgeYGrex28xNTd086Dik7vUMscQOa8y4DoGtCCSkAKlNwpgNtphjrC6MIHUkR6YWxxs6Sc5xqn222mmCRFzIt8lEdKx+ikCtg91qS2WpwVfBelJCiQJwvzixfI9cxZQWgiSJelKnwBElKYtDOb2MFbhmUigbReQBV0Cg4+qMXSxXSyGUn4UbF8l+7qdSGnTC0XLCmahIgUHLhLOhpVCtw4CzYXvLQWQbJNmxoCsOKAxSgBJno75avolkRw8iIAFcsdc02e9iyCd8tHwmeSSoKTowIgvscSGZUOA7PuCN5b2BX9mQM7S0wYhMNU74zgsPBj3HU7wguAfnxxjFQGBE6pwN+GjME9zHY7zGp8wVxMShYX9NXvEWD3HbwJf4giO4CFIQxXScH1/TM+04kkBiAAAAAElFTkSuQmCC'
     });
 
-    const map = L.map('map', { contextmenu: true, maxZoom: 18, minZoom: 3, }).setView([30.66700, 104.06135], 18);
+    const map = L.map('map', {
+        contextmenu: true,
+        maxZoom: 18,
+        minZoom: 3,
+        zoomSnap: 0.25,
+    }).setView([30.66700, 104.06135], 18);
+
+    const connectId = 'c2cbd3f2-003a-46ec-9e46-26a3996d6484';
+    const positronLabels = L.tileLayer(`https://services.digitalglobe.com/earthservice/tmsaccess/tms/1.0.0/DigitalGlobe:ImageryTileService@EPSG:3857@jpg/{z}/{x}/{y}.jpg?connectId=${connectId}`, {
+        tms: true
+    }).addTo(map);
+
+    const geoJSON = L.geoJSON(null, {
+        filter: function (geoJsonFeature) {
+            console.log(geoJsonFeature);
+            const { geometry } = geoJsonFeature;
+            if (!geometry) return true;
+            switch (geometry.type) {
+                case 'Point':
+                    return true;
+                default:
+                    return false;
+            }
+        },
+        style: function (feature) {
+            const { geometry, properties } = feature;
+            for (const property of Object.keys(properties)) {
+                if (styleObj[property] && styleObj[property].has(properties[property])) {
+                    return styleObj[property].get(properties[property]).style;
+                }
+            }
+            return {
+                color: '#222',
+                opacity: 0.5,
+                dashArray: 'none',
+            }
+        },
+    }).bindPopup(layer => {
+        let html = `<p>{</p>`
+        for (const property of Object.keys(layer.feature.properties)) {
+            html += `<p><span>'${property}'</span>: ${layer.feature.properties[property]}</p>`
+        }
+        html += `<p>}</p>`
+        return `<div>${html}</div>`;
+    }).addTo(map);
 
     map.on('click', (e) => {
         const { containerPoint, latlng } = e;
@@ -115,11 +159,6 @@
         return `<p>${JSON.stringify(e.getLatLng())}</p>`;
     })
     markerClusterGroup.addLayers(markersArray).addTo(map);
-
-    var connectId = 'c2cbd3f2-003a-46ec-9e46-26a3996d6484';
-    L.tileLayer(`https://services.digitalglobe.com/earthservice/tmsaccess/tms/1.0.0/DigitalGlobe:ImageryTileService@EPSG:3857@jpg/{z}/{x}/{y}.jpg?connectId=${connectId}`, {
-        tms: true
-    }).addTo(map);
 
     let geoJSONData;
 
@@ -210,32 +249,6 @@
         this.x = (round ? Math.round(x) : x);
         this.y = (round ? Math.round(y) : y);
     }
-
-    const geoJSON = L.geoJSON(null, {
-        filter: function (geoJsonFeature) {
-            return !geoJsonFeature.properties.boundary
-        },
-        style: function (feature) {
-            const { geometry, properties } = feature;
-            for (const property of Object.keys(properties)) {
-                if (styleObj[property] && styleObj[property].has(properties[property])) {
-                    return styleObj[property].get(properties[property]).style;
-                }
-            }
-            return {
-                color: '#222',
-                opacity: 0.5,
-                dashArray: 'none',
-            }
-        },
-    }).bindPopup(layer => {
-        let html = `<p>{</p>`
-        for (const property of Object.keys(layer.feature.properties)) {
-            html += `<p><span>'${property}'</span>: ${layer.feature.properties[property]}</p>`
-        }
-        html += `<p>}</p>`
-        return `<div>${html}</div>`;
-    }).addTo(map);
 
     const dispatch = d3.dispatch('mapZoom', 'click');
 

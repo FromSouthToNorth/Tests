@@ -53,3 +53,8 @@ table {
     border-collapse: collapse;
     border-spacing: 0;
 }
+
+#map-container {
+    width: 100%;
+    height: 100vh;
+}

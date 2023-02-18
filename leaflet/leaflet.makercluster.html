@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Leaflet.markercluster</title>
+  <link rel="stylesheet" href="../css/reset.css">
+  <script src="src/leaflet/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+        integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
+        crossorigin=""/>
+  <script src="src/leaflet/leaflet.markercluster.js"></script>
+  <link rel="stylesheet" href="src/css/MarkerCluster.Default.css">
+  <script src="../d3/src/d3.js"></script>
+  <script src="https://code.iconify.design/iconify-icon/1.0.3/iconify-icon.min.js"></script>
+  <style>
+      .json-key {
+          margin-left: 20px;
+      }
+
+      #map-container button {
+          text-align: center;
+          border: 0;
+          background: #fff;
+          color: #333;
+          font-size: 12px;
+          display: inline-block;
+          border-radius: 4px;
+      }
+
+      #map-container .edit-menu {
+          position: absolute;
+          display: flex;
+          flex-direction: column;
+          background: #fff;
+          border-radius: 4px;
+      }
+
+      .edit-menu .edit-menu-item {
+          display: flex;
+          align-items: center;
+          border-radius: 0;
+          padding: 0 12px;
+      }
+  </style>
+</head>
+<body>
+<div id="map-container">
+</div>
+<script>
+const connectId = 'c2cbd3f2-003a-46ec-9e46-26a3996d6484';
+const services = L.tileLayer(`https://services.digitalglobe.com/earthservice/tmsaccess/tms/1.0.0/DigitalGlobe:ImageryTileService@EPSG:3857@jpg/{z}/{x}/{y}.jpg?connectId=${connectId}`, {
+  tms: true,
+});
+
+const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '© OpenStreetMap',
+});
+
+const baseMaps = {
+  'OpenStreetMap': osm,
+  'services': services,
+}
+
+const map = L.map('map-container', {
+  contextmenu: true,
+  maxZoom: 18,
+  minZoom: 3,
+  zoomSnap: 0.25,
+  layers: [osm],
+}).setView([30.66700, 104.06135], 18);
+
+L.control.layers(baseMaps).addTo(map);
+
+map.on('contextmenu', e => {
+  console.log('map contextmenu: ', e);
+  const { containerPoint, latlng, layerPoint, target, sourceTarget, type } = e;
+  const { x, y } = containerPoint;
+});
+
+const markerEditMenuButton = [{
+  clazz: 'move',
+  icon: 'mdi:cursor-move',
+}, {
+  clazz: 'copy',
+  icon: 'ph:copy',
+}, {
+  clazz: 'delete',
+  icon: 'ic:baseline-delete-outline',
+}]
+
+function buildEditMenu(x, y, target) {
+  removeEditMenu();
+  const editMenu = d3.select('#map-container').append('div');
+  editMenu.attr('class', 'edit-menu')
+    .style('left', `${x}px`)
+    .style('top', `${y}px`)
+    .style('padding', '4px 0')
+    .style('z-index', '550');
+
+  markerEditMenuButton.forEach(button => {
+    const { clazz, icon } = button;
+    const el = editMenu.append('button').on('click', () => {
+      console.log(clazz);
+      if (typeof this[clazz] === 'function') {
+        this[clazz](target)
+      }
+    });
+    el.append('iconify-icon').attr('icon', icon).attr('class', clazz).style('font-size', '16px');
+  });
+}
+
+function move(layer) {
+  layer.draggable = true;
+  map.on('mousemove', e => {
+    layer.setLatLng(e.latlng);
+  });
+
+  layer.on('dragend', e => {
+    console.log('dragend');
+  })
+  layer.on('moveend', e => {
+    console.log('moveend');
+  })
+}
+
+
+function removeEditMenu() {
+  d3.select('#map-container').select('.edit-menu').remove();
+}
+
+map.on('click', e => {
+  removeEditMenu();
+});
+
+map.on('zoom', e => {
+  removeEditMenu();
+});
+
+const clusterGroup = L.markerClusterGroup().addTo(map);
+clusterGroup.on('contextmenu', e => {
+  console.log('clusterGroup marker contextmenu: ', e);
+  const { containerPoint, latlng, layerPoint, target, sourceTarget, type } = e;
+  const { x, y } = containerPoint;
+  buildEditMenu(x, y, sourceTarget);
+});
+
+d3.json('cd.geojson').then(json => {
+  const { features } = json;
+  const points = features.filter(feature => {
+    const { geometry } = feature;
+    return geometry.type === 'Point';
+  });
+  const markers = L.geoJSON(points, {
+    pointToLayer: (feature, latlng) => {
+      const { properties } = feature;
+      properties.latLng = latlng;
+      return L.marker(latlng, {
+        icon: L.icon({
+          iconUrl: 'src/svg/map.svg',
+          iconSize: [22, 22],
+        }),
+      }).bindPopup(e => {
+        let popupContent = '';
+        popupContent += `<p>{</p>`;
+        for (let key of Object.keys(properties)) {
+          popupContent += `<p><span class="json-key">"${key}":</span> <span class="json-value">${JSON.stringify(properties[key])},</span></p>`;
+        }
+        return popupContent + `<p>}</p>`;
+      });
+    }
+  });
+  map.fitBounds(markers.getBounds());
+  clusterGroup.addLayers(markers);
+});
+
+</script>
+</body>
+</html>
