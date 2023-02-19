@@ -115,13 +115,16 @@ function move(layer) {
   map.on('mousemove', e => {
     layer.setLatLng(e.latlng);
   });
-
-  layer.on('dragend', e => {
-    console.log('dragend');
+  layer.on('click', e => {
+    console.log(e);
+    map.off('mousemove');
   })
-  layer.on('moveend', e => {
-    console.log('moveend');
-  })
+  // layer.on('dragend', e => {
+  //   console.log('dragend');
+  // })
+  // layer.on('moveend', e => {
+  //   console.log('moveend');
+  // })
 }
 
 
