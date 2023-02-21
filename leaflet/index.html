@@ -87,6 +87,9 @@
 
     const map = L.map('map', {
         contextmenu: true,
+        contextmenuItems: [
+            { 'text': 'map', }
+        ],
         maxZoom: 18,
         minZoom: 3,
         zoomSnap: 0.25,
@@ -108,6 +111,15 @@
                 default:
                     return false;
             }
+        },
+        pointToLayer: function (data, latLng) {
+            const marker = new L.Marker(latLng, {
+                contextmenu: true,
+                contextmenuItems: [{
+                    text: 'Marker item',
+                }],
+            });
+            return marker;
         },
         style: function (feature) {
             const { geometry, properties } = feature;
