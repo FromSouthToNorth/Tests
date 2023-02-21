@@ -7,10 +7,9 @@
     <script src="./src/d3.js"></script>
 </head>
 <body>
-<script>
-    const width = '1';
-    const height = '1';
-    const svg = d3.select('body').append('svg').attr('viewBox', [0, 0, width, height]);
+<script type="module">
+  import { init } from './src';
+  init();
 </script>
 </body>
 </html>
