@@ -3049,9 +3049,11 @@
     linesGeoJSON2.push(L.polyline(line, { weight: 3, color: '#F44336', }));
     linesGeoJSON1.push(L.polyline(line, { weight: -2, color: '#000000', dashArray: [12, 12], }));
   }
+  const featureGroups = [];
   const lineFeatureGroup3 = L.featureGroup(linesGeoJSON3).addTo(map);
   const lineFeatureGroup2 = L.featureGroup(linesGeoJSON2).addTo(map);
   const lineFeatureGroup1 = L.featureGroup(linesGeoJSON1).addTo(map);
+  featureGroups.push(lineFeatureGroup3, lineFeatureGroup2, lineFeatureGroup1);
   let activeLine;
   lineFeatureGroup3.on('mouseover', e => {
     const { sourceTarget } = e;
@@ -3063,6 +3065,7 @@
       activeLine = undefined;
     }
   });
+  console.log(featureGroups);
   map.fitBounds(lineFeatureGroup3.getBounds());
 </script>
 </body>
