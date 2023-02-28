@@ -2,53 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Leaflet.markercluster</title>
-  <link rel="stylesheet" href="../css/reset.css">
-  <script src="src/leaflet/leaflet.js"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
-        integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
-        crossorigin=""/>
-  <script src="src/leaflet/leaflet-geoman.js"></script>
-  <link rel="stylesheet" href="src/css/leaflet-geoman.css"/>
-  <script src="src/leaflet/tutf.js"></script>
-  <script src="src/leaflet/leaflet.markercluster.js"></script>
-  <link rel="stylesheet" href="src/css/MarkerCluster.Default.css">
-  <script src="../d3/src/d3.js"></script>
-  <script src="https://code.iconify.design/iconify-icon/1.0.3/iconify-icon.min.js"></script>
-  <style>
-      .json-key {
-          margin-left: 20px;
-      }
-
-      #map-container button {
-          text-align: center;
-          border: 0;
-          background: #fff;
-          color: #333;
-          font-size: 12px;
-          display: inline-block;
-          border-radius: 4px;
-      }
-
-      #map-container .edit-menu {
-          position: absolute;
-          display: flex;
-          flex-direction: column;
-          background: #fff;
-          border-radius: 4px;
-      }
-
-      .edit-menu .edit-menu-item {
-          display: flex;
-          align-items: center;
-          border-radius: 0;
-          padding: 0 12px;
-      }
-  </style>
+  <title>Line</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/leaflet.js"
+          integrity="sha512-Dqm3h1Y4qiHUjbhxTuBGQsza0Tfppn53SHlu/uj1f+RT+xfShfe7r6czRf5r2NmllO2aKx+tYJgoxboOkn1Scg=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/leaflet.css"
+        integrity="sha512-mD70nAW2ThLsWH0zif8JPbfraZ8hbCtjQ+5RU1m4+ztZq6/MymyZeB55pWsi4YAX+73yvcaJyk61mzfYMvtm9w=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reseter.css/2.0.0/reseter.min.css"
+        integrity="sha512-gCJkkUMGTe73+FMwog6gIBCVJIMXRoc21l6/IPCuzxCex/1sxvO8ctb6Zd4/WWs2UMqmtnDrAdhJht5pEY0LXg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"/>
 </head>
+<style>
+    #map-container {
+        width: 100%;
+        height: 100vh;
+    }
+</style>
 <body>
-<div id="map-container">
-</div>
+<div id="map-container"></div>
 <script>
   const connectId = 'c2cbd3f2-003a-46ec-9e46-26a3996d6484';
   const services = L.tileLayer(`https://services.digitalglobe.com/earthservice/tmsaccess/tms/1.0.0/DigitalGlobe:ImageryTileService@EPSG:3857@jpg/{z}/{x}/{y}.jpg?connectId=${connectId}`, {
@@ -65,126 +37,17 @@
     'services': services,
   }
 
+
   const map = L.map('map-container', {
-    contextmenu: true,
+    zoom: 8,
     maxZoom: 18,
     minZoom: 3,
     zoomSnap: 0.25,
     layers: [osm],
-  }).setView([30.66700, 104.06135], 18);
+    center: [34.3227, 108, 5525],
+  });
 
   L.control.layers(baseMaps).addTo(map);
-
-  map.on('contextmenu', e => {
-    console.log('map contextmenu: ', e);
-    const { containerPoint, latlng, layerPoint, target, sourceTarget, type } = e;
-    const { x, y } = containerPoint;
-  });
-
-  const markerEditMenuButton = [{
-    clazz: 'move',
-    icon: 'mdi:cursor-move',
-  }, {
-    clazz: 'copy',
-    icon: 'ph:copy',
-  }, {
-    clazz: 'delete',
-    icon: 'ic:baseline-delete-outline',
-  }]
-
-  function buildEditMenu(x, y, target) {
-    removeEditMenu();
-    const editMenu = d3.select('#map-container').append('div');
-    editMenu.attr('class', 'edit-menu')
-      .style('left', `${x}px`)
-      .style('top', `${y}px`)
-      .style('padding', '4px 0')
-      .style('z-index', '550');
-
-    markerEditMenuButton.forEach(button => {
-      const { clazz, icon } = button;
-      const el = editMenu.append('button').on('click', () => {
-        console.log(clazz);
-        if (typeof this[clazz] === 'function') {
-          this[clazz](target)
-        }
-      });
-      el.append('iconify-icon').attr('icon', icon).attr('class', clazz).style('font-size', '16px');
-    });
-  }
-
-  function move(layer) {
-    layer.draggable = true;
-    map.on('mousemove', e => {
-      layer.setLatLng(e.latlng);
-    });
-    layer.on('click', e => {
-      console.log(e);
-      map.off('mousemove');
-    })
-    // layer.on('dragend', e => {
-    //   console.log('dragend');
-    // })
-    // layer.on('moveend', e => {
-    //   console.log('moveend');
-    // })
-  }
-
-
-  function removeEditMenu() {
-    d3.select('#map-container').select('.edit-menu').remove();
-  }
-
-  map.on('click', e => {
-    removeEditMenu();
-  });
-
-  map.on('zoom', e => {
-    removeEditMenu();
-  });
-
-  const clusterGroup = L.markerClusterGroup().addTo(map);
-  clusterGroup.on('contextmenu', e => {
-    console.log('clusterGroup marker contextmenu: ', e);
-    const { containerPoint, latlng, layerPoint, target, sourceTarget, type } = e;
-    const { x, y } = containerPoint;
-    buildEditMenu(x, y, sourceTarget);
-  });
-
-  d3.json('cd.geojson').then(json => {
-    const { features } = json;
-    const points = features.filter(feature => {
-      const { geometry } = feature;
-      return geometry.type === 'Point';
-    });
-    const markers = L.geoJSON(points, {
-      pointToLayer: (feature, latlng) => {
-        const { properties } = feature;
-        properties.latLng = latlng;
-        return L.marker(latlng, {
-          icon: L.icon({
-            iconUrl: 'src/svg/map.svg',
-            iconSize: [22, 22],
-          }),
-        }).bindPopup(e => {
-          let popupContent = '';
-          popupContent += `<p>{</p>`;
-          for (let key of Object.keys(properties)) {
-            popupContent += `<p><span class="json-key">"${key}":</span> <span class="json-value">${JSON.stringify(properties[key])},</span></p>`;
-          }
-          return popupContent + `<p>}</p>`;
-        });
-      }
-    });
-    map.fitBounds(markers.getBounds());
-    clusterGroup.addLayers(markers);
-  });
-
-  map.pm.setLang('zh');
-  map.pm.addControls({
-    position: 'topleft',
-    drawCircle: false,
-  });
 
   const lines = [
     [
@@ -3182,13 +3045,25 @@
   const linesGeoJSON2 = [];
   const linesGeoJSON3 = [];
   for (let line of lines) {
-    linesGeoJSON2.push(L.polyline(line, { weight: 6, color: '#F44336' }));
-    linesGeoJSON2.push(L.polyline(line, { weight: 3, color: '#E57373' }));
-    linesGeoJSON1.push(L.polyline(line, { weight: -3, color: '#000000', dashArray: [6, 6] }));
+    linesGeoJSON3.push(L.polyline(line, { weight: 6, color: 'rgba(0, 0, 0, 0.8)', }));
+    linesGeoJSON2.push(L.polyline(line, { weight: 3, color: '#F44336', }));
+    linesGeoJSON1.push(L.polyline(line, { weight: -2, color: '#000000', dashArray: [12, 12], }));
   }
   const lineFeatureGroup3 = L.featureGroup(linesGeoJSON3).addTo(map);
   const lineFeatureGroup2 = L.featureGroup(linesGeoJSON2).addTo(map);
   const lineFeatureGroup1 = L.featureGroup(linesGeoJSON1).addTo(map);
+  let activeLine;
+  lineFeatureGroup3.on('mouseover', e => {
+    const { sourceTarget } = e;
+    activeLine = L.polyline(sourceTarget.getLatLngs(), { weight: 8, color: '#FF1744' });
+    lineFeatureGroup3.addLayer(activeLine);
+  }).on('mouseout', e => {
+    if (activeLine && lineFeatureGroup3.hasLayer(activeLine)) {
+      lineFeatureGroup3.removeLayer(activeLine);
+      activeLine = undefined;
+    }
+  });
+  map.fitBounds(lineFeatureGroup3.getBounds());
 </script>
 </body>
 </html>
