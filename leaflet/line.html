@@ -14,6 +14,7 @@
         crossorigin="anonymous" referrerpolicy="no-referrer"/>
   <script src="src/leaflet/tutf.js"></script>
   <script src="../d3/src/d3.js"></script>
+  <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
 </head>
 <style>
     #map-container path {
@@ -266,7 +267,7 @@
     const pointGeoJSON = L.geoJSON(json, {
       bubblingMouseEvents: false,
       pointToLayer: function (geoJsonPoint, latlng) {
-        const divIcon = L.divIcon({ className: 'my-div-icon', iconSize: [12, 12], });
+        const divIcon = L.divIcon({ className: 'my-div-icon', iconSize: [12, 12], html: `<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24"><path fill="currentColor" d="M10.5 15.5h3V13H16v-3h-2.5V7.5h-3V10H8v3h2.5v2.5ZM12 22q-3.475-.875-5.738-3.988T4 11.1V5l8-3l8 3v6.1q0 3.8-2.263 6.913T12 22Z"/></svg>` });
         return L.marker(latlng, { icon: divIcon, });
       },
       filter: function ({ geometry, properties, type }) {
