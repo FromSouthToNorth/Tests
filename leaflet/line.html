@@ -241,6 +241,8 @@
       style: function (feature) {
         return { className: 'working-face-fill', };
       },
+    }).bindPopup(function (layer) {
+      return bindPopup(layer);
     }).on('mouseover', e => {
       const { sourceTarget } = e
       layerMouseover({ sourceTarget, layers: areaShadowGeoJSON });
@@ -398,10 +400,8 @@
   function layerHighlightClick({ sourceTarget }) {
     clearLineMakers();
     const latLngs = sourceTarget.getLatLngs();
-    console.log(sourceTarget);
     const lineMarkers = [];
     for (let i = 0; i < latLngs.length; i++) {
-      console.log(Array.isArray(latLngs));
       if (Array.isArray(latLngs[i])) {
         for (let j = 0; j < latLngs[i].length; j++) {
           const className = i === 0 && j === 0 ? 'start-lien-icon' : i === latLngs.length - 1 && j === latLngs[i].length - 1 ? 'end-lien-icon' : 'lien-icon';
@@ -422,7 +422,6 @@
     if (sourceTarget.feature.geometry.type === 'Polygon') {
       latLngs[0].push(latLngs[0][0])
     }
-    console.log(latLngs);
     lineMarkerFeatureGroup = L.featureGroup(lineMarkers).addTo(map);
     highlightLayer.setLatLngs(latLngs).addTo(map);
     highlightLayer._path.setAttribute('class', highlightLayer._path.getAttribute('class') + ' active');
