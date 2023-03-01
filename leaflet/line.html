@@ -195,252 +195,278 @@
 <body>
 <div id="map-container"></div>
 <script>
-  const connectId = 'c2cbd3f2-003a-46ec-9e46-26a3996d6484';
-  const services = L.tileLayer(`https://services.digitalglobe.com/earthservice/tmsaccess/tms/1.0.0/DigitalGlobe:ImageryTileService@EPSG:3857@jpg/{z}/{x}/{y}.jpg?connectId=${connectId}`, {
-    tms: true,
-  });
 
-  const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap',
-  });
+const accessToken = 'pk.eyJ1IjoiaHlzZSIsImEiOiJjbGVwcWg0bDkwZXNlM3pvNXNleWUzcTQ0In0.S3VTf9vqYTAAF725ukcDjQ';
+const mapboxStreets = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/512/{z}/{x}/{y}@2x?access_token={accessToken}', {
+  maxZoom: 19,
+  attribution: '© mapbox',
+  accessToken,
+});
+const mapboxSatellite = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/512/{z}/{x}/{y}@2x?access_token={accessToken}', {
+  maxZoom: 19,
+  attribution: '© mapbox',
+  accessToken,
+});
+const mapboxSatelliteStreets = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/tiles/512/{z}/{x}/{y}@2x?access_token={accessToken}', {
+  maxZoom: 19,
+  attribution: '© mapbox',
+  accessToken,
+});
 
-  const baseMaps = {
-    'OpenStreetMap': osm,
-    'services': services,
-  }
+const services = L.tileLayer(`https://services.digitalglobe.com/earthservice/tmsaccess/tms/1.0.0/DigitalGlobe:ImageryTileService@EPSG:3857@jpg/{z}/{x}/{y}.jpg?connectId={connectId}`, {
+  maxZoom: 18,
+  tms: true,
+  connectId: 'c2cbd3f2-003a-46ec-9e46-26a3996d6484',
+});
 
-  const map = L.map('map-container', {
-    zoom: 8,
-    maxZoom: 18,
-    minZoom: 3,
-    zoomSnap: 0.25,
-    layers: [osm],
-    center: [34.3227, 108, 5525],
-  });
+const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '© OpenStreetMap',
+});
 
-  L.control.layers(baseMaps).addTo(map);
+const baseMaps = {
+  'mapboxStreets': mapboxStreets,
+  'mapboxSatellite': mapboxSatellite,
+  'mapboxSatelliteStreets': mapboxSatelliteStreets,
+  'OpenStreetMap': osm,
+  'services': services,
+}
 
-  function randomClassName() {
-    const classNames = ['unclassified', 'line-stroke', 'tag-highway', 'tag-highway-motorway'];
-    return classNames[Math.floor(Math.random() * classNames.length)];
-  }
+const map = L.map('map-container', {
+  zoom: 8,
+  maxZoom: 19,
+  minZoom: 3,
+  zoomSnap: 0.25,
+  layers: [mapboxStreets],
+  center: [34.3227, 108, 5525],
+});
 
-  let activeLayer, lineMarkerFeatureGroup, lineWayGeoJSON, lineShadowGeoJSON, lineCasingGeoJSON, lineStrokeGeoJSON,
-    lineOnewayGeoJSON, areaFillGeoJSON, areaShadowGeoJSON, areaStrokeGeoJSON;
+L.control.layers(baseMaps).addTo(map);
 
-  const highlightLayer = L.polyline([], { className: 'line-shadow' });
+function randomClassName() {
+  const classNames = ['unclassified', 'line-stroke', 'tag-highway', 'tag-highway-motorway'];
+  return classNames[Math.floor(Math.random() * classNames.length)];
+}
 
-  d3.json('./src/data/map.geojson').then(json => {
+let activeLayer, lineMarkerFeatureGroup, lineWayGeoJSON, lineShadowGeoJSON, lineCasingGeoJSON, lineStrokeGeoJSON,
+  lineOnewayGeoJSON, areaFillGeoJSON, areaShadowGeoJSON, areaStrokeGeoJSON;
 
-    /**  area  */
-    areaShadowGeoJSON = L.geoJSON(json, {
-      bubblingMouseEvents: false,
-      filter: function ({ geometry, properties, type }) {
-        return geometry.type === 'Polygon';
-      },
-      style: function (feature) {
-        return { className: 'shadow', };
-      },
-    }).addTo(map);
+const highlightLayer = L.polyline([], { className: 'line-shadow' });
 
-    areaFillGeoJSON = L.geoJSON(json, {
-      bubblingMouseEvents: false,
-      filter: function ({ geometry, properties, type }) {
-        return geometry.type === 'Polygon';
-      },
-      style: function (feature) {
-        return { className: 'working-face-fill', };
-      },
-    }).bindPopup(function (layer) {
-      return bindPopup(layer);
-    }).on('mouseover', e => {
-      const { sourceTarget } = e
-      layerMouseover({ sourceTarget, layers: areaShadowGeoJSON });
-    }).on('mouseout', e => {
-      clearActiveLine();
-    }).on('click', e => {
-      layerHighlightClick(e);
-    }).addTo(map);
+d3.json('./src/data/map.geojson').then(json => {
 
-    areaStrokeGeoJSON = L.geoJSON(json, {
-      bubblingMouseEvents: false,
-      filter: function ({ geometry, properties, type }) {
-        return geometry.type === 'Polygon';
-      },
-      style: function (feature) {
-        return { className: 'working-face', };
-      },
-    }).addTo(map);
+  /**  area  */
+  areaShadowGeoJSON = L.geoJSON(json, {
+    bubblingMouseEvents: false,
+    filter: function ({ geometry, properties, type }) {
+      return geometry.type === 'Polygon';
+    },
+    style: function (feature) {
+      return { className: 'shadow', };
+    },
+  }).addTo(map);
 
-
-    const iconMap = new Map();
-    iconMap.set('baseStation', 'iconoir:antenna');
-    iconMap.set('safetyMonitoring', 'iconoir:high-priority');
-    /**  point  */
-    const pointGeoJSON = L.geoJSON(json, {
-      bubblingMouseEvents: false,
-      pointToLayer: function (geoJsonPoint, latlng) {
-        const divIcon = L.divIcon({ className: 'my-div-icon', iconSize: [16, 16], html: `<iconify-icon icon="${iconMap.get(geoJsonPoint.properties.modalType)}"></iconify-icon>` });
-        return L.marker(latlng, { icon: divIcon, });
-      },
-      filter: function ({ geometry, properties, type }) {
-        return geometry.type === 'Point';
-      }
-    }).bindPopup(function (layer) {
-      return bindPopup(layer);
-    }).addTo(map);
-
-    pointGeoJSON.on('click', ({ sourceTarget }) => {
-      const pos = map.latLngToLayerPoint(sourceTarget.getLatLng());
-      const fx = new L.PosAnimation();
-      pos.y -= 2;
-      // map.scrollWheelZoom.disable();
-      // map.dragging.disable();
-      // map.doubleClickZoom.disable();
-      // map.scrollWheelZoom.enabled();
-      // map.dragging.enabled();
-      // map.doubleClickZoom.enabled();
-      fx.once('end', function () {
-        pos.y += 2;
-        fx.run(sourceTarget._icon, pos, 0.8);
-      });
-      fx.run(sourceTarget._icon, pos, 0.3);
-    });
-
-
-    /**  line  */
-    lineShadowGeoJSON = L.geoJSON(json, {
-      bubblingMouseEvents: false,
-      filter: function ({ geometry, properties, type }) {
-        return geometry.type === 'LineString';
-      },
-      style: function (feature) {
-        return { className: 'line-shadow', };
-      },
-    }).addTo(map);
-
-    lineCasingGeoJSON = L.geoJSON(json, {
-      bubblingMouseEvents: false,
-      filter: function ({ geometry, properties, type }) {
-        return geometry.type === 'LineString';
-      },
-      style: function (feature) {
-        return { className: 'line-casing', };
-      },
-    }).addTo(map);
-
-    lineStrokeGeoJSON = L.geoJSON(json, {
-      bubblingMouseEvents: false,
-      filter: function ({ geometry, properties, type }) {
-        return geometry.type === 'LineString';
-      },
-      style: function (feature) {
-        return { className: randomClassName(), };
-      },
-    }).addTo(map);
-
-    lineOnewayGeoJSON = L.geoJSON(json, {
-      bubblingMouseEvents: false,
-      filter: function ({ geometry, properties, type }) {
-        return geometry.type === 'LineString';
-      },
-      style: function (feature) {
-        return { className: 'oneway', };
-      },
-    }).addTo(map);
-
-    lineWayGeoJSON = L.geoJSON(json, {
-      bubblingMouseEvents: false,
-      filter: function ({ geometry, properties, type }) {
-        return geometry.type === 'LineString';
-      },
-      style: function (feature) {
-        return { className: 'way', };
-      },
-    }).bindPopup(function (layer) {
-      return bindPopup(layer);
-    }).on('mouseover', e => {
-      const { sourceTarget } = e
-      layerMouseover({ sourceTarget, layers: lineShadowGeoJSON });
-    }).on('mouseout', e => {
-      clearActiveLine();
-    }).on('click', e => {
-      layerHighlightClick(e);
-    }).addTo(map);
-
-    map.fitBounds(lineShadowGeoJSON.getBounds());
-  });
-
-  map.on('click', e => {
-    console.log('[map click]: ', e);
-    clearLineMakers();
-    if (map.hasLayer(highlightLayer)) {
-      map.removeLayer(highlightLayer);
-    }
-  })
-
-  function bindPopup(layer) {
-    let html = `<p>{</p>`;
-    for (const property of Object.keys(layer.feature.properties)) {
-      html += `<p><span>'${property}'</span>: ${layer.feature.properties[property]}</p>`;
-    }
-    html += `<p>}</p>`;
-    return `<div>${html}</div>`;
-  }
-
-  function clearActiveLine() {
-    if (activeLayer) {
-      // activeLayer._path.setAttribute('class', activeLayer._path.getAttribute('class').replace('hover', ''));
-      d3.select(activeLayer._path).classed('hover', false);
-    }
-  }
-
-  function clearLineMakers() {
-    if (lineMarkerFeatureGroup) {
-      lineMarkerFeatureGroup.clearLayers();
-      lineMarkerFeatureGroup.remove();
-    }
-  }
-
-  function layerMouseover({ sourceTarget, layers }) {
+  areaFillGeoJSON = L.geoJSON(json, {
+    bubblingMouseEvents: false,
+    filter: function ({ geometry, properties, type }) {
+      return geometry.type === 'Polygon';
+    },
+    style: function (feature) {
+      return { className: 'working-face-fill', };
+    },
+  }).bindPopup(function (layer) {
+    return bindPopup(layer);
+  }).on('mouseover', e => {
+    const { sourceTarget } = e
+    layerMouseover({ sourceTarget, layers: areaShadowGeoJSON });
+  }).on('mouseout', e => {
     clearActiveLine();
-    activeLayer = layers.getLayers().find(e => {
-      return e.feature.properties.id === sourceTarget.feature.properties.id;
-    });
-    // activeLayer._path.setAttribute('class', activeLayer._path.getAttribute('class') + ' hover');
-    d3.select(activeLayer._path).classed('hover', true);
-  }
+  }).on('click', e => {
+    layerHighlightClick(e);
+  }).addTo(map);
 
-  function layerHighlightClick({ sourceTarget }) {
-    clearLineMakers();
-    const latLngs = sourceTarget.getLatLngs();
-    const lineMarkers = [];
-    for (let i = 0; i < latLngs.length; i++) {
-      if (Array.isArray(latLngs[i])) {
-        for (let j = 0; j < latLngs[i].length; j++) {
-          const className = i === 0 && j === 0 ? 'start-lien-icon' : i === latLngs.length - 1 && j === latLngs[i].length - 1 ? 'end-lien-icon' : 'lien-icon';
-          const iconSize = i === 0 && j === 0 || i === latLngs.length - 1 && j === latLngs[i].length - 1 ? [10, 10] : [8, 8];
-          const divIcon = L.divIcon({ className, iconSize, });
-          const lineMarker = L.marker(latLngs[i][j], { icon: divIcon, });
-          lineMarkers.push(lineMarker);
-        }
-      }
-      else if (typeof latLngs === 'object') {
-        const className = i === 0 ? 'start-lien-icon' : i === latLngs.length - 1 ? 'end-lien-icon' : 'lien-icon';
-        const iconSize = i === 0 || i === latLngs.length - 1 ? [10, 10] : [8, 8];
+  areaStrokeGeoJSON = L.geoJSON(json, {
+    bubblingMouseEvents: false,
+    filter: function ({ geometry, properties, type }) {
+      return geometry.type === 'Polygon';
+    },
+    style: function (feature) {
+      return { className: 'working-face', };
+    },
+  }).addTo(map);
+
+
+  const iconMap = new Map();
+  iconMap.set('baseStation', 'iconoir:antenna');
+  iconMap.set('safetyMonitoring', 'iconoir:high-priority');
+  /**  point  */
+  const pointGeoJSON = L.geoJSON(json, {
+    bubblingMouseEvents: false,
+    pointToLayer: function (geoJsonPoint, latlng) {
+      const divIcon = L.divIcon({
+        className: 'my-div-icon',
+        iconSize: [16, 16],
+        html: `<iconify-icon icon="${iconMap.get(geoJsonPoint.properties.modalType)}"></iconify-icon>`
+      });
+      return L.marker(latlng, { icon: divIcon, });
+    },
+    filter: function ({ geometry, properties, type }) {
+      return geometry.type === 'Point';
+    }
+  }).bindPopup(function (layer) {
+    return bindPopup(layer);
+  }).addTo(map);
+
+  pointGeoJSON.on('click', ({ sourceTarget }) => {
+    const pos = map.latLngToLayerPoint(sourceTarget.getLatLng());
+    const fx = new L.PosAnimation();
+    pos.y -= 2;
+    // map.scrollWheelZoom.disable();
+    // map.dragging.disable();
+    // map.doubleClickZoom.disable();
+    // map.scrollWheelZoom.enabled();
+    // map.dragging.enabled();
+    // map.doubleClickZoom.enabled();
+    fx.once('end', function () {
+      pos.y += 2;
+      fx.run(sourceTarget._icon, pos, 0.8);
+    });
+    fx.run(sourceTarget._icon, pos, 0.3);
+  });
+
+
+  /**  line  */
+  lineShadowGeoJSON = L.geoJSON(json, {
+    bubblingMouseEvents: false,
+    filter: function ({ geometry, properties, type }) {
+      return geometry.type === 'LineString';
+    },
+    style: function (feature) {
+      return { className: 'line-shadow', };
+    },
+  }).addTo(map);
+
+  lineCasingGeoJSON = L.geoJSON(json, {
+    bubblingMouseEvents: false,
+    filter: function ({ geometry, properties, type }) {
+      return geometry.type === 'LineString';
+    },
+    style: function (feature) {
+      return { className: 'line-casing', };
+    },
+  }).addTo(map);
+
+  lineStrokeGeoJSON = L.geoJSON(json, {
+    bubblingMouseEvents: false,
+    filter: function ({ geometry, properties, type }) {
+      return geometry.type === 'LineString';
+    },
+    style: function (feature) {
+      return { className: randomClassName(), };
+    },
+  }).addTo(map);
+
+  lineOnewayGeoJSON = L.geoJSON(json, {
+    bubblingMouseEvents: false,
+    filter: function ({ geometry, properties, type }) {
+      return geometry.type === 'LineString';
+    },
+    style: function (feature) {
+      return { className: 'oneway', };
+    },
+  }).addTo(map);
+
+  lineWayGeoJSON = L.geoJSON(json, {
+    bubblingMouseEvents: false,
+    filter: function ({ geometry, properties, type }) {
+      return geometry.type === 'LineString';
+    },
+    style: function (feature) {
+      return { className: 'way', };
+    },
+  }).bindPopup(function (layer) {
+    return bindPopup(layer);
+  }).on('mouseover', e => {
+    const { sourceTarget } = e
+    layerMouseover({ sourceTarget, layers: lineShadowGeoJSON });
+  }).on('mouseout', e => {
+    clearActiveLine();
+  }).on('click', e => {
+    layerHighlightClick(e);
+  }).addTo(map);
+
+  map.fitBounds(lineShadowGeoJSON.getBounds());
+});
+
+map.on('click', e => {
+  console.log('[map click]: ', e);
+  clearLineMakers();
+  if (map.hasLayer(highlightLayer)) {
+    map.removeLayer(highlightLayer);
+  }
+})
+
+function bindPopup(layer) {
+  let html = `<p>{</p>`;
+  for (const property of Object.keys(layer.feature.properties)) {
+    html += `<p><span>'${property}'</span>: ${layer.feature.properties[property]}</p>`;
+  }
+  html += `<p>}</p>`;
+  return `<div>${html}</div>`;
+}
+
+function clearActiveLine() {
+  if (activeLayer) {
+    // activeLayer._path.setAttribute('class', activeLayer._path.getAttribute('class').replace('hover', ''));
+    d3.select(activeLayer._path).classed('hover', false);
+  }
+}
+
+function clearLineMakers() {
+  if (lineMarkerFeatureGroup) {
+    lineMarkerFeatureGroup.clearLayers();
+    lineMarkerFeatureGroup.remove();
+  }
+}
+
+function layerMouseover({ sourceTarget, layers }) {
+  clearActiveLine();
+  activeLayer = layers.getLayers().find(e => {
+    return e.feature.properties.id === sourceTarget.feature.properties.id;
+  });
+  // activeLayer._path.setAttribute('class', activeLayer._path.getAttribute('class') + ' hover');
+  d3.select(activeLayer._path).classed('hover', true);
+}
+
+function layerHighlightClick({ sourceTarget }) {
+  clearLineMakers();
+  const latLngs = sourceTarget.getLatLngs();
+  const lineMarkers = [];
+  for (let i = 0; i < latLngs.length; i++) {
+    if (Array.isArray(latLngs[i])) {
+      for (let j = 0; j < latLngs[i].length; j++) {
+        const className = i === 0 && j === 0 ? 'start-lien-icon' : i === latLngs.length - 1 && j === latLngs[i].length - 1 ? 'end-lien-icon' : 'lien-icon';
+        const iconSize = i === 0 && j === 0 || i === latLngs.length - 1 && j === latLngs[i].length - 1 ? [10, 10] : [8, 8];
         const divIcon = L.divIcon({ className, iconSize, });
-        const lineMarker = L.marker(latLngs[i], { icon: divIcon, });
+        const lineMarker = L.marker(latLngs[i][j], { icon: divIcon, });
         lineMarkers.push(lineMarker);
       }
     }
-    if (sourceTarget.feature.geometry.type === 'Polygon') {
-      latLngs[0].push(latLngs[0][0])
+    else if (typeof latLngs === 'object') {
+      const className = i === 0 ? 'start-lien-icon' : i === latLngs.length - 1 ? 'end-lien-icon' : 'lien-icon';
+      const iconSize = i === 0 || i === latLngs.length - 1 ? [10, 10] : [8, 8];
+      const divIcon = L.divIcon({ className, iconSize, });
+      const lineMarker = L.marker(latLngs[i], { icon: divIcon, });
+      lineMarkers.push(lineMarker);
     }
-    lineMarkerFeatureGroup = L.featureGroup(lineMarkers).addTo(map);
-    highlightLayer.setLatLngs(latLngs).addTo(map);
-    highlightLayer._path.setAttribute('class', highlightLayer._path.getAttribute('class') + ' active');
   }
+  if (sourceTarget.feature.geometry.type === 'Polygon') {
+    latLngs[0].push(latLngs[0][0])
+  }
+  lineMarkerFeatureGroup = L.featureGroup(lineMarkers).addTo(map);
+  highlightLayer.setLatLngs(latLngs).addTo(map);
+  highlightLayer._path.setAttribute('class', highlightLayer._path.getAttribute('class') + ' active');
+}
 </script>
 </body>
 </html>
