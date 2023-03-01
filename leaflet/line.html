@@ -16,6 +16,10 @@
   <script src="../d3/src/d3.js"></script>
 </head>
 <style>
+    #map-container path {
+        fill: none;
+    }
+
     #map-container {
         width: 100%;
         height: 100vh;
@@ -78,7 +82,7 @@
     }
 
     #map-container path.unclassified {
-        stroke: #FFF9B3;
+        stroke: #DD2F22;
         stroke-width: 5;
     }
 
@@ -120,10 +124,25 @@
         border-radius: 8px;
     }
 
-    #map-container .start-lien-icon, .end-lien-icon {
+    #map-container .start-lien-icon, #map-container .end-lien-icon {
         background-color: #BDBDBD;
         border: 1px solid #616161;
         border-radius: 8px;
+    }
+
+    #map-container .lien-icon:hover {
+        background-color: #444444;
+        border: 1px solid #fff;
+    }
+
+    #map-container .start-lien-icon:hover {
+        background-color: #444444;
+        border: 1px solid #fff;
+    }
+
+    #map-container .end-lien-icon:hover {
+        background-color: #444444;
+        border: 1px solid #fff;
     }
 
     #map-container .leaflet-popup-content p {
@@ -134,6 +153,32 @@
 
     #map-container .leaflet-popup-content p span {
         margin-left: 12px;
+    }
+
+    #map-container path.shadow {
+        stroke: #f6634f;
+        stroke-width: 16;
+        stroke-opacity: 0;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    #map-container path.shadow.hover {
+        stroke-opacity: 0.3;
+    }
+
+    #map-container path.working-face {
+        stroke: rgb(170, 170, 170);
+        stroke-width: 1;
+    }
+
+    #map-container path.working-face-fill {
+        pointer-events: visibleStroke;
+        fill-opacity: 0;
+        stroke-width: 30px;
+        stroke: rgba(140, 140, 140, 0.5);
+        fill: rgba(140, 140, 140, 0.5);
+        fill-rule: evenodd;
     }
 </style>
 <body>
@@ -170,12 +215,52 @@
     return classNames[Math.floor(Math.random() * classNames.length)];
   }
 
-  let activeLine, lineMarkerFeatureGroup, lineWayGeoJSON, lineShadowGeoJSON, lineCasingGeoJSON, lineStrokeGeoJSON,
-    lineOnewayGeoJSON;
+  let activeLayer, lineMarkerFeatureGroup, lineWayGeoJSON, lineShadowGeoJSON, lineCasingGeoJSON, lineStrokeGeoJSON,
+    lineOnewayGeoJSON, areaFillGeoJSON, areaShadowGeoJSON, areaStrokeGeoJSON;
 
-  const highlightLine = L.polyline([], { className: 'line-shadow' });
+  const highlightLayer = L.polyline([], { className: 'line-shadow' });
 
   d3.json('./src/data/map.geojson').then(json => {
+
+    /**  area  */
+    areaShadowGeoJSON = L.geoJSON(json, {
+      bubblingMouseEvents: false,
+      filter: function ({ geometry, properties, type }) {
+        return geometry.type === 'Polygon';
+      },
+      style: function (feature) {
+        return { className: 'shadow', };
+      },
+    }).addTo(map);
+
+    areaFillGeoJSON = L.geoJSON(json, {
+      bubblingMouseEvents: false,
+      filter: function ({ geometry, properties, type }) {
+        return geometry.type === 'Polygon';
+      },
+      style: function (feature) {
+        return { className: 'working-face-fill', };
+      },
+    }).on('mouseover', e => {
+      const { sourceTarget } = e
+      layerMouseover({ sourceTarget, layers: areaShadowGeoJSON });
+    }).on('mouseout', e => {
+      clearActiveLine();
+    }).on('click', e => {
+      layerHighlightClick(e);
+    }).addTo(map);
+
+    areaStrokeGeoJSON = L.geoJSON(json, {
+      bubblingMouseEvents: false,
+      filter: function ({ geometry, properties, type }) {
+        return geometry.type === 'Polygon';
+      },
+      style: function (feature) {
+        return { className: 'working-face', };
+      },
+    }).addTo(map);
+
+    /**  point  */
     const pointGeoJSON = L.geoJSON(json, {
       bubblingMouseEvents: false,
       pointToLayer: function (geoJsonPoint, latlng) {
@@ -207,6 +292,7 @@
     });
 
 
+    /**  line  */
     lineShadowGeoJSON = L.geoJSON(json, {
       bubblingMouseEvents: false,
       filter: function ({ geometry, properties, type }) {
@@ -258,11 +344,12 @@
     }).bindPopup(function (layer) {
       return bindPopup(layer);
     }).on('mouseover', e => {
-      lineWayMouseover(e);
+      const { sourceTarget } = e
+      layerMouseover({ sourceTarget, layers: lineShadowGeoJSON });
     }).on('mouseout', e => {
       clearActiveLine();
     }).on('click', e => {
-      lineWayClick(e);
+      layerHighlightClick(e);
     }).addTo(map);
 
     map.fitBounds(lineShadowGeoJSON.getBounds());
@@ -271,8 +358,8 @@
   map.on('click', e => {
     console.log('[map click]: ', e);
     clearLineMakers();
-    if (map.hasLayer(highlightLine)) {
-      map.removeLayer(highlightLine);
+    if (map.hasLayer(highlightLayer)) {
+      map.removeLayer(highlightLayer);
     }
   })
 
@@ -286,9 +373,9 @@
   }
 
   function clearActiveLine() {
-    if (activeLine) {
-      // activeLine._path.setAttribute('class', activeLine._path.getAttribute('class').replace('hover', ''));
-      d3.select(activeLine._path).classed('hover', false);
+    if (activeLayer) {
+      // activeLayer._path.setAttribute('class', activeLayer._path.getAttribute('class').replace('hover', ''));
+      d3.select(activeLayer._path).classed('hover', false);
     }
   }
 
@@ -299,29 +386,46 @@
     }
   }
 
-  function lineWayMouseover({ sourceTarget }) {
+  function layerMouseover({ sourceTarget, layers }) {
     clearActiveLine();
-    activeLine = lineShadowGeoJSON.getLayers().find(e => {
+    activeLayer = layers.getLayers().find(e => {
       return e.feature.properties.id === sourceTarget.feature.properties.id;
     });
-    // activeLine._path.setAttribute('class', activeLine._path.getAttribute('class') + ' hover');
-    d3.select(activeLine._path).classed('hover', true);
+    // activeLayer._path.setAttribute('class', activeLayer._path.getAttribute('class') + ' hover');
+    d3.select(activeLayer._path).classed('hover', true);
   }
 
-  function lineWayClick({ sourceTarget }) {
+  function layerHighlightClick({ sourceTarget }) {
     clearLineMakers();
     const latLngs = sourceTarget.getLatLngs();
+    console.log(sourceTarget);
     const lineMarkers = [];
     for (let i = 0; i < latLngs.length; i++) {
-      let className = i === 0 ? 'start-lien-icon' : i === latLngs.length - 1 ? 'end-lien-icon' : 'lien-icon';
-      const iconSize = i === 0 || i === latLngs.length - 1 ? [10, 10] : [8, 8];
-      const divIcon = L.divIcon({ className, iconSize, });
-      const lineMarker = L.marker(latLngs[i], { icon: divIcon, });
-      lineMarkers.push(lineMarker);
+      console.log(Array.isArray(latLngs));
+      if (Array.isArray(latLngs[i])) {
+        for (let j = 0; j < latLngs[i].length; j++) {
+          const className = i === 0 && j === 0 ? 'start-lien-icon' : i === latLngs.length - 1 && j === latLngs[i].length - 1 ? 'end-lien-icon' : 'lien-icon';
+          const iconSize = i === 0 && j === 0 || i === latLngs.length - 1 && j === latLngs[i].length - 1 ? [10, 10] : [8, 8];
+          const divIcon = L.divIcon({ className, iconSize, });
+          const lineMarker = L.marker(latLngs[i][j], { icon: divIcon, });
+          lineMarkers.push(lineMarker);
+        }
+      }
+      else if (typeof latLngs === 'object') {
+        const className = i === 0 ? 'start-lien-icon' : i === latLngs.length - 1 ? 'end-lien-icon' : 'lien-icon';
+        const iconSize = i === 0 || i === latLngs.length - 1 ? [10, 10] : [8, 8];
+        const divIcon = L.divIcon({ className, iconSize, });
+        const lineMarker = L.marker(latLngs[i], { icon: divIcon, });
+        lineMarkers.push(lineMarker);
+      }
     }
+    if (sourceTarget.feature.geometry.type === 'Polygon') {
+      latLngs[0].push(latLngs[0][0])
+    }
+    console.log(latLngs);
     lineMarkerFeatureGroup = L.featureGroup(lineMarkers).addTo(map);
-    highlightLine.setLatLngs(latLngs).addTo(map);
-    highlightLine._path.setAttribute('class', activeLine._path.getAttribute('class') + ' active');
+    highlightLayer.setLatLngs(latLngs).addTo(map);
+    highlightLayer._path.setAttribute('class', highlightLayer._path.getAttribute('class') + ' active');
   }
 </script>
 </body>
