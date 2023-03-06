@@ -391,7 +391,7 @@
       layerHighlightClick(e);
     }).addTo(map);
 
-    map.fitBounds(lineShadowGeoJSON.getBounds());
+    map.fitBounds(lineShadowGeoJSON.getBounds(), { padding: [10, 10] });
   });
 
   map.on('click', e => {
@@ -465,15 +465,11 @@
   }
 
   map.on('moveend', ({ sourceTarget }) => {
-    const zoom = sourceTarget.getZoom();
-    const { lat, lng } = sourceTarget.getCenter();
-    const truncate = turf.truncate(turf.point([lng, lat]), { precision: 5, coordinates: 2 });
-    // GeoJSON to in Layer
-    // L.GeoJSON.geometryToLayer(truncate, {}).addTo(map);
-    // let url = window.location;
-    // console.log(url.pathname.split('/'));
-    // history.pushState('', '', location + `?map=${zoom}/${truncate.geometry.coordinates[1]}/${truncate.geometry.coordinates[0]}`);
-  })
+    const { _zoom } = sourceTarget;
+    if (_zoom >= 16) {
+      console.log(16);
+    }
+  });
 </script>
 </body>
 </html>

@@ -93,7 +93,7 @@
     maxZoom: 18,
     minZoom: 3,
     zoomSnap: 0.25,
-  }).setView([30.66700, 104.06135], 18);
+  }).setView([30.66700, 104.06135], 12);
 
   const connectId = 'c2cbd3f2-003a-46ec-9e46-26a3996d6484';
   const positronLabels = L.tileLayer(`https://services.digitalglobe.com/earthservice/tmsaccess/tms/1.0.0/DigitalGlobe:ImageryTileService@EPSG:3857@jpg/{z}/{x}/{y}.jpg?connectId=${connectId}`, {
@@ -102,15 +102,8 @@
 
   const geoJSON = L.geoJSON(null, {
     filter: function (geoJsonFeature) {
-      console.log(geoJsonFeature);
-      const { geometry } = geoJsonFeature;
-      if (!geometry) return true;
-      switch (geometry.type) {
-        case 'Point':
-          return true;
-        default:
-          return false;
-      }
+      const layer = L.GeoJSON.geometryToLayer(geoJsonFeature);
+      return layer && map.getBounds().contains(layer.getBounds ? layer.getBounds() : layer.getLatLng());
     },
     pointToLayer: function (data, latLng) {
       const marker = new L.Marker(latLng, {
@@ -150,6 +143,17 @@
     const truncated = turf.truncate(point, options);
     const info = `<span>x: ${containerPoint.x} y: ${containerPoint.y}</span> <br/> <br/><span>${truncated.geometry.coordinates[1]}, ${truncated.geometry.coordinates[0]}</span>`;
     document.getElementById('info').innerHTML = info;
+  });
+
+  map.on('moveend', ({ sourceTarget }) => {
+    const { _zoom } = sourceTarget;
+    geoJSON.clearLayers();
+    if (_zoom >= 16) {
+      d3.json('cd.geojson').then(data => {
+        // geoJSONData = data;
+        geoJSON.addData(data);
+      });
+    }
   });
 
   const search = new GeoSearch.GeoSearchControl({
@@ -267,11 +271,6 @@
   // dispatch.on('mapZoom', mapZoom);
 
   // dispatch.call('mapZoom')
-
-  d3.json('cd.geojson').then(data => {
-    // geoJSONData = data;
-    geoJSON.addData(data);
-  });
 
 
   // function mapZoom() {
