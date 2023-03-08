@@ -39,21 +39,15 @@
   }
 
   #map-container path.line-shadow.active {
-    animation: fade 700ms infinite;
+    animation: fade 800ms infinite;
   }
 
   @keyframes fade {
     from {
-      stroke-opacity: 0.99;
-    }
-    70% {
-      solid-opacity: 0.77;
-    }
-    40% {
-      stroke-opacity: 0.44;
-    }
-    to {
       stroke-opacity: 0.3;
+    }
+    100% {
+      stroke-opacity: 0.8;
     }
   }
 
@@ -180,6 +174,14 @@
     stroke: rgba(255, 255, 255, 0.3);
     fill: rgba(255, 255, 255, 0.3);
     fill-rule: evenodd;
+  }
+
+  .shadow {
+    stroke-width: 16;
+    fill: none;
+  }
+  .shadow:hover {
+    fill: #3388ff;
   }
 </style>
 <body>
