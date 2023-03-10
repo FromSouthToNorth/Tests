@@ -24,11 +24,8 @@
   }
 
   #map-container {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    width: 100%;
+    height: 100vh;
   }
 
   #map-container path.line-shadow {
@@ -470,12 +467,67 @@
     highlightLayer._path.setAttribute('class', highlightLayer._path.getAttribute('class') + ' active');
   }
 
-  map.on('moveend', ({ sourceTarget }) => {
-    const { _zoom } = sourceTarget;
-    if (_zoom >= 16) {
-      console.log(16);
-    }
+  map.on('moveend', () => {
+    updateHashIfNeeded();
   });
+
+  function updateHashIfNeeded() {
+    window.history.replaceState(null, '', computedHash());
+  }
+
+  function computedHash() {
+    return '#' + utilQsString(computedHashParameters(), true);
+  }
+
+  function utilQsString(obj, noencode) {
+    // encode everything except special characters used in certain hash parameters:
+    // "/" in map states, ":", ",", {" and "}" in background
+    function softEncode(s) {
+      return encodeURIComponent(s).replace(/(%2F|%3A|%2C|%7B|%7D)/g, decodeURIComponent);
+    }
+
+    return Object.keys(obj).sort().map(function (key) {
+      return encodeURIComponent(key) + '=' + (
+        noencode ? softEncode(obj[key]) : encodeURIComponent(obj[key]));
+    }).join('&');
+  }
+
+  function computedHashParameters() {
+    const center = map.getCenter();
+    const zoom = map.getZoom();
+    const precision = Math.max(0, Math.ceil(Math.log(zoom) / Math.LN2));
+    const oldParams = utilObjectOmit(utilStringQs(window.location.hash), ['comment', 'source', 'hashtags', 'walkthrough']);
+    const newParams = {};
+    newParams.map = zoom.toFixed(2) +
+      '/' + center.lat.toFixed(precision) +
+      '/' + center.lng.toFixed(precision);
+
+    return Object.assign(oldParams, newParams);
+  }
+
+
+  function utilStringQs(str) {
+    var i = 0;  // advance past any leading '?' or '#' characters
+    while (i < str.length && (str[i] === '?' || str[i] === '#')) i++;
+    str = str.slice(i);
+
+    return str.split('&').reduce(function (obj, pair) {
+      var parts = pair.split('=');
+      if (parts.length === 2) {
+        obj[parts[0]] = (null === parts[1]) ? '' : decodeURIComponent(parts[1]);
+      }
+      return obj;
+    }, {});
+  }
+
+  function utilObjectOmit(obj, omitKeys) {
+    return Object.keys(obj).reduce(function (result, key) {
+      if (omitKeys.indexOf(key) === -1) {
+        result[key] = obj[key];  // keep
+      }
+      return result;
+    }, {});
+  }
 </script>
 </body>
 </html>
