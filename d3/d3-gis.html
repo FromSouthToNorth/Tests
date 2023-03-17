@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <link rel="stylesheet" href="../css/reset.css">
+  <script src="src/d3.js"></script>
+  <style>
+    path {
+      stroke: #F44336;
+      stroke-width: 0.5;
+      fill: #EEEEEE;
+    }
+  </style>
+</head>
+<body>
+<script>
+  const width = 900;
+  const height = 600;
+  const projection = d3.geoMercator()
+                       .center([104.0633717, 30.6598628])
+                       .scale(99999)
+                       .translate([width / 2, height / 2]);
+
+  const svg = d3.select('body').append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+  const path = d3.geoPath().projection(projection);
+  const g = svg.append('g');
+  d3.json('../leaflet/cd.geojson').then(json => {
+    const { features, type } = json;
+    g.selectAll('path')
+     .data(features)
+     .enter()
+     .append('path')
+     .attr('d', path);
+  });
+</script>
+</body>
+</html>

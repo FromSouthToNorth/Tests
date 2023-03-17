@@ -5,14 +5,65 @@
   <title>D3.js</title>
   <link rel="stylesheet" href="/css/reset.css">
   <script src="./src/d3.js"></script>
-  <script src="./src/d3-tile.js"></script>
+  <script src="../utils/rebind.js"></script>
+  <style>
+    div.bar {
+      display: inline-block;
+      width: 20px;
+      height: 75px;
+      background-color: #E91E63;
+      border-radius: 4px 4px 0 0;
+      border: 1px #FCE4EC solid;
+      overflow: hidden;
+    }
+  </style>
 </head>
 <body>
-<div class="layer layer-background"></div>
-<script type="module">
-  import { init } from './src/script';
+<div class="layer"></div>
+<script>
+  // d3.select('.layer').append('p').text('p element');
+  d3.csv('food.csv', data => {
+    // console.log('food.csv: ', data);
+  });
+  const dataset = [25, 7, 5, 26, 11, 8, 25, 14, 23, 19, 14, 11, 22, 29, 11, 13, 12, 17, 18, 10, 24, 18, 25, 9, 3];
+  const pAll = d3.select('.layer')
+                 .selectAll('p')
+                 .append('p')
+                 .data(dataset)
+                 .enter()
+                 .append('p')
+                 .text(d => { return d; })
+                 .style('color', d => { return d > 15 ? '#F44336' : '#2196F3'; });
+  // console.log(pAll);
+  for (let p of pAll) {
+    // console.log('p: ', p);
+    // console.log('p.__data__: ', p.__data__);
+  }
 
-  init();
+  d3.dispatch('move', 'drawn');
+
+  d3.select('body')
+    .selectAll('div')
+    .data(dataset)
+    .enter()
+    .append('div')
+    .attr('class', 'bar')
+    .style('height', d => { return (d * 5) + 'px'; })
+    .call((e) => {
+      console.log(e);
+    })
+    .on('mousedown.zoom', e => {
+      console.log(e);
+    });
+
+
+  // const svg = d3.select('body').append('svg').attr('width', 500).attr('height', 50);
+  // const dispatch = d3.dispatch('exit');
+  // const context = utiRebind({}, dispatch, 'on');
+  // let _deferred = new Set();
+  // context.privacyVersion = '202331614';
+  // context.initalHashParams = window.location.hash ?
+  // console.log(context);
 </script>
 </body>
 </html>
