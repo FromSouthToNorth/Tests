@@ -18,19 +18,22 @@
   <link rel="stylesheet" href="src/css/leaflet-geoman.css"/>
   <script src="./src/leaflet/leaflet-geoman.js"></script>
 
-  <script src="./src/leaflet/leaflet.contextmenu.js"></script>
-  <link rel="stylesheet" href="src/css/leaflet.contextmenu.css"/>
-
   <script src="./src/uuid/uuid.js"></script>
 
   <script src="./src/leaflet/leaflet.textpath.js"></script>
 
   <script src="../d3/src/d3.js"></script>
 
+  <script src="../utils/keybinding.js"></script>
+
   <style>
     #map {
-      width: 100%;
-      height: 100vh;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #555555;
     }
 
     #info {
@@ -70,6 +73,42 @@
       transform-origin: center center;
       font: 12px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif;
     }
+
+    /* edit-menu */
+    .edit-menu {
+      position: absolute;
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-orient: vertical;
+      -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+      flex-direction: column;
+      background: #fff;
+      border-radius: 4px;
+    }
+
+    button {
+      text-align: center;
+      border: 0;
+      background: #fff;
+      color: #333;
+      font-size: 12px;
+      display: inline-block;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .edit-menu-item {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+      border-radius: 0;
+      padding: 0 12px;
+    }
   </style>
 </head>
 <body>
@@ -77,6 +116,18 @@
 <pre id="info"></pre>
 <script src="src/data/geoJSONStyle.js"></script>
 <script>
+
+  let _keybinding = utilKeybinding('context');
+  d3.select(document)
+    .call(_keybinding);
+
+  _keybinding
+    .on('⌫', function(d3_event) {
+      console.log(d3_event);
+    })
+    .on('⌘C', function(d3_event) {
+      console.log(d3_event);
+    });
 
   delete L.Icon.Default.prototype._getIconUrl;
   L.Icon.Default.mergeOptions({
@@ -86,20 +137,12 @@
   });
 
   const map = L.map('map', {
-    contextmenu: true,
-    contextmenuItems: [
-      { 'text': 'map' },
-    ],
+    center: [30.3339, 106.9303],
     maxZoom: 18,
     minZoom: 3,
-    zoomSnap: 0.25,
-  })
-    .setView([30.66700, 104.06135], 12);
-
-  const connectId = 'c2cbd3f2-003a-46ec-9e46-26a3996d6484';
-  const positronLabels = L.tileLayer(`https://services.digitalglobe.com/earthservice/tmsaccess/tms/1.0.0/DigitalGlobe:ImageryTileService@EPSG:3857@jpg/{z}/{x}/{y}.jpg?connectId=${connectId}`, {
-    tms: true,
-  })
+    zoom: 12,
+  });
+  const positronLabels = L.tileLayer(`https://tile.openstreetmap.org/{z}/{x}/{y}.png`)
     .addTo(map);
 
   const geoJSON = L.geoJSON(null, {
@@ -109,12 +152,7 @@
         .contains(layer.getBounds ? layer.getBounds() : layer.getLatLng());
     },
     pointToLayer: function(data, latLng) {
-      const marker = new L.Marker(latLng, {
-        contextmenu: true,
-        contextmenuItems: [{
-          text: 'Marker item',
-        }],
-      });
+      const marker = new L.Marker(latLng, {});
       return marker;
     },
     style: function(feature) {
@@ -148,6 +186,23 @@
     const truncated = turf.truncate(point, options);
     const info = `<span>x: ${containerPoint.x} y: ${containerPoint.y}</span> <br/> <br/><span>${truncated.geometry.coordinates[1]}, ${truncated.geometry.coordinates[0]}</span>`;
     document.getElementById('info').innerHTML = info;
+    editMenu()
+      .close();
+  });
+
+  map.on('contextmenu', e => {
+    const context = {
+      event: e,
+      operations: getOperations('Map'),
+    };
+    const menu = editMenu(context);
+    menu.close();
+    menu();
+  });
+
+  map.on('move', () => {
+    editMenu()
+      .close();
   });
 
   map.on('moveend', ({ sourceTarget }) => {
@@ -162,136 +217,9 @@
     }
   });
 
-  const search = new GeoSearch.GeoSearchControl({
-    provider: new GeoSearch.OpenStreetMapProvider(),
-  });
-
   const markerClusterGroup = L.markerClusterGroup();
 
-  const markersLatLng = [[30.3374633, 106.9264582], [30.3386601, 106.9255784], [30.3386601, 106.9255784], [30.326997, 106.9268954], [30.3492779, 106.9230652], [30.2532288, 106.8837762]];
-
-  const markersArray = [];
-  for (let latLng of markersLatLng) {
-    const marker = L.marker(latLng);
-    markersArray.push(marker);
-  }
-  markerClusterGroup.bindPopup(e => {
-    return `<p>${JSON.stringify(e.getLatLng())}</p>`;
-  });
-  markerClusterGroup.addLayers(markersArray)
-    .addTo(map);
-
-  let geoJSONData;
-
-  function getArrows(arrLatlngs, color, arrowCount, mapObj) {
-
-    if (typeof arrLatlngs === undefined || arrLatlngs == null ||
-      (!arrLatlngs.length) || arrLatlngs.length < 2)
-      return [];
-
-    if (typeof arrowCount === 'undefined' || arrowCount == null)
-      arrowCount = 1;
-
-    if (typeof color === 'undefined' || color == null)
-      color = '';
-    else
-      color = 'color:' + color;
-
-    var result = [];
-    for (var i = 1; i < arrLatlngs.length; i++) {
-      var icon = L.divIcon({
-        className: 'arrow-icon',
-        bgPos: [5, 5],
-        html: '<div style="' + color + ';transform: rotate(' + getAngle(arrLatlngs[i - 1], arrLatlngs[i], -1)
-          .toString() + 'deg)">▶</div>',
-      });
-      for (var c = 1; c <= arrowCount; c++) {
-        result.push(L.marker(myMidPoint(arrLatlngs[i], arrLatlngs[i - 1], (c / (arrowCount + 1)), mapObj), { icon: icon }));
-      }
-    }
-    return result;
-  }
-
-  function getAngle(latLng1, latlng2, coef) {
-    var dy = latlng2[0] - latLng1[0];
-    var dx = Math.cos(Math.PI / 180 * latLng1[0]) * (latlng2[1] - latLng1[1]);
-    var ang = ((Math.atan2(dy, dx) / Math.PI) * 180 * coef);
-    return (ang).toFixed(2);
-  }
-
-  function myMidPoint(latlng1, latlng2, per, mapObj) {
-    if (!mapObj)
-      throw new Error('map is not defined');
-
-    var halfDist, segDist, dist, p1, p2, ratio,
-      points = [];
-
-    p1 = mapObj.project(new L.latLng(latlng1));
-    p2 = mapObj.project(new L.latLng(latlng2));
-
-    halfDist = distanceTo(p1, p2) * per;
-
-    if (halfDist === 0)
-      return mapObj.unproject(p1);
-
-    dist = distanceTo(p1, p2);
-
-    if (dist > halfDist) {
-      ratio = (dist - halfDist) / dist;
-      var res = mapObj.unproject(new Point(p2.x - ratio * (p2.x - p1.x), p2.y - ratio * (p2.y - p1.y)));
-      return [res.lat, res.lng];
-    }
-
-  }
-
-  function distanceTo(p1, p2) {
-    var x = p2.x - p1.x,
-      y = p2.y - p1.y;
-
-    return Math.sqrt(x * x + y * y);
-  }
-
-  function toPoint(x, y, round) {
-    if (x instanceof Point) {
-      return x;
-    }
-    if (isArray(x)) {
-      return new Point(x[0], x[1]);
-    }
-    if (x === undefined || x === null) {
-      return x;
-    }
-    if (typeof x === 'object' && 'x' in x && 'y' in x) {
-      return new Point(x.x, x.y);
-    }
-    return new Point(x, y, round);
-  }
-
-  function Point(x, y, round) {
-    this.x = (round ? Math.round(x) : x);
-    this.y = (round ? Math.round(y) : y);
-  }
-
   const dispatch = d3.dispatch('mapZoom', 'click');
-
-  // dispatch.on('mapZoom', mapZoom);
-
-  // dispatch.call('mapZoom')
-
-
-  // function mapZoom() {
-  //     map.on('zoom', e => {
-  //         const { target } = e;
-  //         if (target.getZoom() >= 16) {
-  //             geoJSON.clearLayers();
-  //             geoJSON.addData(geoJSONData);
-  //         }
-  //         else {
-  //             geoJSON.clearLayers();
-  //         }
-  //     });
-  // }
-
 
   // 30.3380096, 106.9231027
   L.marker([30.338005, 106.9231671], {
@@ -300,140 +228,34 @@
       iconSize: [32, 32], // size of the icon
     }),
   })
+    .on('contextmenu', e => {
+      const context = {
+        event: e,
+        operations: getOperations('Marker'),
+      };
+      const menu = editMenu(context);
+      menu.close();
+      menu();
+    })
     .bindPopup('marker')
     .addTo(map);
 
   const linShuiMarker = L.marker([30.3339, 106.9303])
     .bindPopup(`<p>邻水</p>`)
+    .on('contextmenu', e => {
+      const context = {
+        event: e,
+        operations: getOperations('Marker'),
+      };
+      const menu = editMenu(context);
+      menu.close();
+      menu();
+    })
     .addTo(map);
   linShuiMarker.uuid = uuid.v4();
 
-  // 设置动画
-  linShuiMarker.on('click', e => {
-    console.log(d3.select(e.target._icon));
-    const pos = map.latLngToLayerPoint(linShuiMarker.getLatLng());
-    const fx = new L.PosAnimation();
-    pos.y -= 10;
-
-    fx.once('end', function() {
-      pos.y += 10;
-      fx.run(linShuiMarker._icon, pos, 0.8);
-    });
-
-    fx.run(linShuiMarker._icon, pos, 0.3);
-  });
-
-  const lineArray = [
-    [
-      {
-        lat: 30.336812794354024,
-        lng: 106.92691951990129,
-      },
-      {
-        lat: 30.33660213482554,
-        lng: 106.92676663398744,
-      },
-      {
-        lat: 30.336396104738355,
-        lng: 106.92641258239748,
-      },
-      {
-        lat: 30.33537289271365,
-        lng: 106.92539870738985,
-      },
-    ],
-    [
-      {
-        lat: 30.333648223810336,
-        lng: 106.9262194633484,
-      },
-      {
-        lat: 30.333129659703403,
-        lng: 106.92640185356142,
-      },
-      {
-        lat: 30.332564792104783,
-        lng: 106.926509141922,
-      },
-      {
-        lat: 30.331759155629687,
-        lng: 106.92683905363086,
-      },
-      {
-        lat: 30.331411896484173,
-        lng: 106.9269034266472,
-      },
-      {
-        lat: 30.331182704773553,
-        lng: 106.92686319351196,
-      },
-      {
-        lat: 30.330879430069324,
-        lng: 106.92670762538911,
-      },
-    ],
-  ];
-
-
-  lineArray.forEach(e => {
-    var polyline = L.polyline(e, { color: 'red' })
-      .addTo(map);
-  });
-
-  // draw 5 arrows per line
-  L.featureGroup(getArrows(lineArray[0], 'red', 2, map))
-    .addTo(map);
-
   const layerGroup = L.layerGroup()
     .addTo(map);
-
-  // for (let line of lineArray) {
-  //     const polyline = L.polyline(line, {});
-  //     polyline.uuid = uuid.v4();
-  //     bindContextMenuLine('Line', polyline);
-  //     polyline.on('mouseover', e => {
-  //         // this.setText(' \u21e6 ', { repeat: true, offset: 4, attributes: { 'font-size': '12' } });
-  //         console.log(e);
-  //     });
-  //
-  //     layerGroup.addLayer(polyline);
-  // }
-  // map.on('contextmenu', e => {
-  //     const { latlng } = e;
-  //     const pt = turf.point([latlng.lng, latlng.lat]);
-  //     let recentLayer;
-  //     const layers = layerGroup.getLayers();
-  //     let distance = 0.003
-  //     for (let layer of layers) {
-  //         const geoJSON = layer.toGeoJSON();
-  //         if (geoJSON.geometry.type === 'LineString') {
-  //             const { geometry, properties } = turf.nearestPointOnLine(geoJSON, pt, { units: 'miles' });
-  //             distance = Math.min(properties.dist, distance);
-  //             if (distance < 0.003) {
-  //                 recentLayer = layer;
-  //             }
-  //         }
-  //     }
-  //     if (!recentLayer) {
-  //         for (let drawLayer of drawLayers) {
-  //             const geoJSON = drawLayer.toGeoJSON();
-  //             if (geoJSON.geometry.type === 'LineString') {
-  //                 const { geometry, properties } = turf.nearestPointOnLine(geoJSON, pt, { units: 'miles' });
-  //                 distance = Math.min(properties.dist, distance);
-  //                 if (distance < 0.003) {
-  //                     recentLayer = drawLayer;
-  //                 }
-  //             }
-  //         }
-  //     }
-  //     if (recentLayer && distance > 0.001) {
-  //         const fn = recentLayer._events['contextmenu'][0].fn;
-  //         if (typeof fn === "function") {
-  //             stop()
-  //             fn.apply(recentLayer, [e])
-  //         }
-  //     }
-  // })
 
   /*****  Leaflet-Geoman  *****/
 
@@ -449,19 +271,175 @@
     limitMarkersToCount: 20,
   });
 
+  let _menu = d3.select(null);
+
+  function editMenu(context) {
+    const selection = d3.select('#map');
+
+    const editMenu = function() {
+      const { operations, event } = context;
+      console.log(event);
+
+      const { containerPoint, sourceTarget } = event;
+
+      let _menuHeight;
+      let _menuWidth = 44;
+      const buttonHeight = 34;
+      // 稍微偏离目标位置的菜单
+      const _menuSideMargin = 10;
+      const _vpBottomMargin = 12; // viewport bottom margin
+      const _verticalPadding = 4;
+
+      _menuHeight = _verticalPadding * 2 + operations.length * buttonHeight;
+
+      if (!operations.length) return;
+      _menu = selection.append('dev')
+        .attr('class', 'edit-menu')
+        .style('padding', _verticalPadding + 'px 0');
+
+      const buttons = _menu.selectAll('.edit-menu-item')
+        .data(operations);
+
+      const buttonsEnter = buttons.enter()
+        .append('button')
+        .attr('class', 'edit-menu-item')
+        .style('height', buttonHeight + 'px')
+        .text(function(d) {
+          return d.title;
+        })
+        .on('click', click);
+
+      updatePosition();
+
+      function click(d3_event, e) {
+        d3_event.stopPropagation();
+        e.operation(sourceTarget);
+        editMenu.close();
+      }
+
+      function updatePosition() {
+        if (!_menu || _menu.empty()) return;
+        const viewport = selection.node()
+          .getBoundingClientRect();
+
+        if (containerPoint.x < 0 ||
+          containerPoint.x > viewport.width ||
+          containerPoint.y < 0 ||
+          containerPoint.y > viewport.height) {
+
+          editMenu.close();
+          return;
+        }
+        const menuLeft = displayOnLeft(viewport);
+        const offset = [0, 0];
+        offset[0] = menuLeft ? -1 * (_menuSideMargin + _menuWidth) : _menuSideMargin;
+        const menuBottom = displayOnBottom(viewport);
+        offset[1] = menuBottom ? -containerPoint.y - _menuHeight + viewport.height - _vpBottomMargin : 0;
+        const origin = [containerPoint.x + offset[0], containerPoint.y + offset[1]];
+
+        _menu.style('left', origin[0] + 'px')
+          .style('top', origin[1] + 'px')
+          .style('z-index', 999);
+      }
+
+      function displayOnLeft(viewport) {
+        return (containerPoint.x + _menuSideMargin + _menuWidth) > viewport.width;
+      }
+
+      function displayOnBottom(viewport) {
+        return (containerPoint.y + _menuHeight > (viewport.height + _vpBottomMargin));
+      }
+    };
+
+
+    editMenu.close = function() {
+      _menu.remove();
+    };
+
+    return editMenu;
+  };
+
+  function getOperations(key) {
+    const operationMap = new Map();
+    let markerOperations;
+    let lineOperations = markerOperations = [
+      {
+        title: '移动',
+        operation: move,
+      },
+      {
+        title: '复制',
+        operation: copy,
+      },
+    ];
+    operationMap.set('Marker', markerOperations);
+    operationMap.set('Line', lineOperations);
+    const mapOperations = [
+      {
+        title: '当前位置',
+        operation: location,
+      },
+    ];
+    operationMap.set('Map', mapOperations);
+
+    function location(layer) {
+      console.log(layer);
+    }
+
+    function move(layer) {
+      console.log('移动: ', layer);
+      if (layer) {
+        layer.pm.enableLayerDrag();
+        layer.on('pm:dragend', e => {
+          const { sourceTarget } = e;
+          sourceTarget.pm.disableLayerDrag();
+          sourceTarget.off('pm:dragend');
+        });
+      }
+    }
+
+    function copy(layer) {
+      map.on('click', copyClick);
+
+      function copyClick(event) {
+        let options = layer.options;
+        const copyMarker = L.marker(event.latlng, options)
+          .on('contextmenu', e => {
+            L.DomEvent.stopPropagation(e);
+            const context = {
+              event: e,
+              operations: getOperations('Marker'),
+            };
+            const menu = editMenu(context);
+            menu.close();
+            menu();
+          })
+          .addTo(map);
+        copyMarker.uuid = uuid.v4();
+        map.off('click', copyClick);
+      }
+    }
+
+    return operationMap.get(key);
+  }
+
+  function bindContextMenu(layer, operations) {
+    console.log(operations);
+  }
+
   /** 绑定右键菜单 */
   function bindContextMenuLine(shape, layer) {
     if (shape.includes('Line')) {
-      layer.bindContextMenu({
-        contextmenu: true,
-        contextmenuItems: [{
-          text: '分割',
-          callback: segmentation,
-        }, {
-          text: '编辑',
-          callback: edit,
-        }],
-      });
+      // layer.bindContextMenu({
+      //   contextmenu: true,
+      //   contextmenuItems: [{
+      //     text: '分割',
+      //     callback: segmentation,
+      //   }, {
+      //     text: '编辑',
+      //     callback: edit,
+      //   }],
+      // });
     }
   }
 
@@ -485,24 +463,45 @@
     map.pm.enableDraw('Marker', {});
   }
 
+  function pointToLineDistance(pt) {
+    const minMap = [];
+    drawLayers.forEach(layer => {
+      const geoJSON = layer.toGeoJSON();
+      const distance = turf.pointToLineDistance(pt, geoJSON, { units: 'kilometers' });
+      minMap.push({
+        layer,
+        distance,
+      });
+    });
+    let min = Infinity, res;
+    minMap.forEach(e => {
+      if (e.distance < min) {
+        min = e.distance;
+        res = e.layer;
+      }
+    });
+    return res;
+  }
+
   function segmentationLine(layer) {
     const splitter = layer.toGeoJSON();
-    const line = relatedLayer.toGeoJSON();
-    const split = turf.lineSplit(line, splitter);
-    map.removeLayer(layer);
-    const { features } = split;
-    for (let i = 0; i < features.length; i++) {
-      const line = L.GeoJSON.geometryToLayer(features[i], {});
-      bindContextMenuLine('Line', line);
-      line.uuid = uuid.v4();
-      drawLayers.push(line);
-      line.addTo(map);
-    }
-    const index = drawLayersFindIndex(relatedLayer.uuid);
-    if (index !== -1) {
-      map.removeLayer(relatedLayer);
-      drawLayers.splice(index, 1);
-    }
+    const { lat, lng } = layer.getLatLng();
+    const line = pointToLineDistance(turf.point([lng, lat]));
+    const split = turf.lineSplit(line.toGeoJSON(), splitter);
+    // map.removeLayer(layer);
+    // const { features } = split;
+    // for (let i = 0; i < features.length; i++) {
+    //   const line = L.GeoJSON.geometryToLayer(features[i], {});
+    //   bindContextMenuLine('Line', line);
+    //   line.uuid = uuid.v4();
+    //   drawLayers.push(line);
+    //   line.addTo(map);
+    // }
+    // const index = drawLayersFindIndex(relatedLayer.uuid);
+    // if (index !== -1) {
+    //   map.removeLayer(relatedLayer);
+    //   drawLayers.splice(index, 1);
+    // }
     relatedLayer = undefined;
     isSegmentation = !isSegmentation;
   }
@@ -522,18 +521,50 @@
     });
   }
 
+  map.on('pm:vertexadded', e => {
+    console.log(e);
+  });
+
+  // 监听绘制开始
+  // map.on('pm:drawstart', e => {
+  //   console.log('pm:drawstart: ', e);
+  //   const { workingLayer } = e;
+  //   // 监听绘制定点
+  //   workingLayer.on('pm:vertexadded', e => {
+  //     drawLayers.forEach(layer => {
+  //       const geoJSON = layer.toGeoJSON(7);
+  //       geoJSON.properties.id = layer.uuid;
+  //       console.log(geoJSON);
+  //     });
+  //     console.log('pm:vertexadded: ', e);
+  //   });
+  // });
+
   map.on('pm:create', (e) => {
+    console.log('pm:create');
+    console.log(e);
     const { layer, shape } = e;
     layer.isSegmentation = isSegmentation;
+    layer.on('contextmenu', e => {
+      L.DomEvent.stopPropagation(e);
+      const context = {
+        event: e,
+        operations: getOperations(shape),
+      };
+      const menu = editMenu(context);
+      menu.close();
+      menu();
+    });
     if (!isSegmentation) {
       layer.uuid = uuid.v4();
+      layer.bindPopup(`<sapn>${layer.uuid}</sapn>`);
       drawLayers.push(layer);
     }
     else {
       segmentationLine(layer);
     }
     bindContextMenuLine(shape, layer);
-    map.pm.disableDraw();
+    // map.pm.disableDraw();
   });
 </script>
 </body>

@@ -6,9 +6,9 @@ function utiRebind(target, source) {
   return target;
 }
 
-function d3_rebind(target, sourec, method) {
-  return function () {
-    const value = method.apply(sourec, arguments);
-    return value === sourec ? target : value;
+function d3_rebind(target, source, method) {
+  return function() {
+    const value = method.apply(source, arguments);
+    return value === source ? target : value;
   };
 }
