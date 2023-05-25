@@ -144,17 +144,7 @@
       .close();
   });
 
-  map.on('contextmenu', mapContextmenu);
-
-  function mapContextmenu(e) {
-    const context = {
-      event: e,
-      operations: getOperations('Map'),
-    };
-    const menu = editMenu(context);
-    menu.close();
-    menu();
-  }
+  bindContextMenu('Map', map);
 
   map.on('move', () => {
     editMenu()
@@ -163,16 +153,8 @@
 
   const linShuiMarker = L.marker([30.3339, 106.9303])
     .bindPopup(`<p>邻水</p>`)
-    .on('contextmenu', e => {
-      const context = {
-        event: e,
-        operations: getOperations('Marker'),
-      };
-      const menu = editMenu(context);
-      menu.close();
-      menu();
-    })
     .addTo(map);
+  bindContextMenu('Marker', linShuiMarker);
   linShuiMarker.uuid = uuid.v4();
 
   const layerGroup = L.layerGroup()
@@ -199,7 +181,6 @@
 
     const editMenu = function() {
       const { operations, event } = context;
-      console.log(event);
 
       const { containerPoint, sourceTarget } = event;
 
@@ -282,8 +263,7 @@
 
   function getOperations(key) {
     const operationMap = new Map();
-    let markerOperations;
-    let lineOperations = markerOperations = [
+    const markerOperations = [
       {
         title: '移动',
         operation: move,
@@ -298,6 +278,24 @@
       },
     ];
     operationMap.set('Marker', markerOperations);
+    const lineOperations = [
+      {
+        title: '移动',
+        operation: move,
+      },
+      {
+        title: '复制',
+        operation: copy,
+      },
+      {
+        title: '截取',
+        operation: segmentation,
+      },
+      {
+        title: '删除',
+        operation: remove,
+      },
+    ];
     operationMap.set('Line', lineOperations);
     const mapOperations = [
       {
@@ -312,7 +310,6 @@
     }
 
     function move(layer) {
-      console.log('移动: ', layer);
       if (layer) {
         layer.pm.enableLayerDrag();
         layer.on('pm:dragend', e => {
@@ -329,17 +326,8 @@
       function copyClick(event) {
         let options = layer.options;
         const copyMarker = L.marker(event.latlng, options)
-          .on('contextmenu', e => {
-            L.DomEvent.stopPropagation(e);
-            const context = {
-              event: e,
-              operations: getOperations('Marker'),
-            };
-            const menu = editMenu(context);
-            menu.close();
-            menu();
-          })
           .addTo(map);
+        bindContextMenu('Marker', copyMarker);
         copyMarker.uuid = uuid.v4();
         map.off('click', copyClick);
       }
@@ -354,24 +342,19 @@
     return operationMap.get(key);
   }
 
-  function bindContextMenu(layer, operations) {
-    console.log(operations);
-  }
 
   /** 绑定右键菜单 */
-  function bindContextMenuLine(shape, layer) {
-    if (shape.includes('Line')) {
-      // layer.bindContextMenu({
-      //   contextmenu: true,
-      //   contextmenuItems: [{
-      //     text: '分割',
-      //     callback: segmentation,
-      //   }, {
-      //     text: '编辑',
-      //     callback: edit,
-      //   }],
-      // });
-    }
+  function bindContextMenu(shape, layer) {
+    layer.on('contextmenu', e => {
+      L.DomEvent.stopPropagation(e);
+      const context = {
+        event: e,
+        operations: getOperations(shape),
+      };
+      const menu = editMenu(context);
+      menu.close();
+      menu();
+    });
   }
 
   let isSegmentation = false;
@@ -389,11 +372,11 @@
   /** 裁剪方法 */
   function segmentation(e) {
     isSegmentation = true;
-    const { relatedTarget } = e;
-    relatedLayer = relatedTarget;
+    relatedLayer = e;
     map.pm.enableDraw('Marker', {});
   }
 
+  /** 计算距离点最近的线 */
   function pointToLineDistance(pt) {
     const minMap = [];
     drawLayers.forEach(layer => {
@@ -414,25 +397,45 @@
     return res;
   }
 
+
+  var pt = turf.point([0, 0]);
+  var line = turf.lineString([[-1, -1],[1, 1],[1.5, 2.2]]);
+  var isPointOnLine = turf.booleanPointOnLine(pt, line);
+
+
+  /** 计算点是否在线上 */
+  function booleanPointOnLine(pt) {
+    for (const drawLayer of drawLayers) {
+      const geoJSON = drawLayer.toGeoJSON();
+      console.log(turf.booleanPointOnLine(pt, geoJSON));
+    }
+  }
+
   function segmentationLine(layer) {
-    const splitter = layer.toGeoJSON();
-    const { lat, lng } = layer.getLatLng();
-    const line = pointToLineDistance(turf.point([lng, lat]));
-    const split = turf.lineSplit(line.toGeoJSON(), splitter);
-    // map.removeLayer(layer);
-    // const { features } = split;
-    // for (let i = 0; i < features.length; i++) {
-    //   const line = L.GeoJSON.geometryToLayer(features[i], {});
-    //   bindContextMenuLine('Line', line);
-    //   line.uuid = uuid.v4();
-    //   drawLayers.push(line);
-    //   line.addTo(map);
-    // }
-    // const index = drawLayersFindIndex(relatedLayer.uuid);
-    // if (index !== -1) {
-    //   map.removeLayer(relatedLayer);
-    //   drawLayers.splice(index, 1);
-    // }
+    const pt = layer.toGeoJSON();
+    console.log(booleanPointOnLine(pt));
+    const line = pointToLineDistance(pt);
+    if (line && line === relatedLayer) {
+      const split = turf.lineSplit(line.toGeoJSON(), pt);
+      const { features } = split;
+      for (let i = 0; i < features.length; i++) {
+        const line = L.GeoJSON.geometryToLayer(features[i], {});
+        bindContextMenu('Line', line);
+        line.uuid = uuid.v4();
+        drawLayers.push(line);
+        line.addTo(map);
+      }
+      const index = drawLayersFindIndex(relatedLayer.uuid);
+      if (index !== -1) {
+        map.removeLayer(relatedLayer);
+        drawLayers.splice(index, 1);
+      }
+    }
+    else {
+      alert('请将截取点放在线上');
+    }
+    map.removeLayer(layer);
+    map.pm.disableDraw();
     relatedLayer = undefined;
     isSegmentation = !isSegmentation;
   }
@@ -507,17 +510,8 @@
     const layer = layers[setCopyLayer.size - 1];
     const options = layer.options;
     copyMarker = L.marker(mousemoveLatlng, options)
-      .on('contextmenu', e => {
-        L.DomEvent.stopPropagation(e);
-        const context = {
-          event: e,
-          operations: getOperations('Marker'),
-        };
-        const menu = editMenu(context);
-        menu.close();
-        menu();
-      })
       .addTo(map);
+    bindContextMenu('Marker', copyMarker);
     copyMarker.uuid = uuid.v4();
     arrayCopyLayer.push(copyMarker);
     d3.select(document)
@@ -552,20 +546,11 @@
     const { layer, shape } = e;
     console.log('create one', shape, e);
     layer.isSegmentation = isSegmentation;
-    layer.on('contextmenu', e => {
+    bindContextMenu(shape, layer);
+    layer.on('click', e => {
       L.DomEvent.stopPropagation(e);
-      const context = {
-        event: e,
-        operations: getOperations(shape),
-      };
-      const menu = editMenu(context);
-      menu.close();
-      menu();
-    })
-      .on('click', e => {
-        L.DomEvent.stopPropagation(e);
-        selectLayer = e.sourceTarget;
-      });
+      selectLayer = e.sourceTarget;
+    });
     if (!isSegmentation) {
       layer.uuid = uuid.v4();
       layer.bindPopup(`<sapn>${layer.uuid}</sapn>`);
