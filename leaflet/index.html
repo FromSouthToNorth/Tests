@@ -39,6 +39,10 @@
       background: #555555;
     }
 
+    .leaflet-popup-content p {
+      font-size: 10px;
+    }
+
     #info {
       position: fixed;
       z-index: 999;
@@ -457,7 +461,7 @@
       const { features } = split;
       for (let i = 0; i < features.length; i++) {
         const line = L.GeoJSON.geometryToLayer(features[i], {});
-        bindContextMenu('Line', line);
+        bindContextMenu('polyline', line);
         line.uuid = uuid.v4();
         drawLayers.push(line);
         line.addTo(map);
@@ -695,13 +699,35 @@
         selectLayer = e.sourceTarget;
       });
       layer.uuid = uuid.v4();
-      layer.bindPopup(`<sapn>${layer.uuid}</sapn>`);
+      layer.bindPopup(`<sapn>${popup(layer)}</sapn>`);
       drawLayers.push(layer);
     }
     else {
       segmentationLine(layer);
     }
   });
+
+  function popup(layer) {
+    const res = {};
+    res['编号'] = layer.uuid;
+    if (layer.shape === 'polygon') {
+      res['面积'] = turf.round(turf.area(layer.toGeoJSON()), 2) + '㎡';
+    }
+    if (layer.shape === 'polyline') {
+      res['长度'] = turf.round(turf.length(layer.toGeoJSON(), { units: 'kilometers' }), 3) + '㎞';
+    }
+    if (layer.shape === 'marker' || layer.shape === 'circleMarker') {
+      const latLng = turf.truncate(layer.toGeoJSON());
+      res['经度'] = latLng.geometry.coordinates[0];
+      res['纬度'] = latLng.geometry.coordinates[1];
+    }
+    let html = '';
+    Object.keys(res)
+      .forEach(key => {
+        html += `<p>${key}: ${res[key]}</p>`;
+      });
+    return html;
+  }
 </script>
 </body>
 </html>
