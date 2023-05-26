@@ -1,4 +1,4 @@
-const uiCmd = function (code) {
+const uiCmd = function(code) {
   const detected = utilDetect();
 
   if (detected.os === 'mac') {
@@ -15,13 +15,14 @@ const uiCmd = function (code) {
       '⇧': 'Shift',
       '⌥': 'Alt',
       '⌫': 'Backspace',
-      '⌦': 'Delete'
+      '⌦': 'Delete',
     };
 
   for (var i = 0; i < code.length; i++) {
     if (code[i] in replacements) {
-      result += replacements[code[i]] + (i < code.length - 1 ? '+' : '');
-    } else {
+      result += replacements[code[i]];
+    }
+    else {
       result += code[i];
     }
   }
