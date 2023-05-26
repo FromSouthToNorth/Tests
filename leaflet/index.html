@@ -169,6 +169,7 @@
 
   map.pm.setLang('zh');
   const drawLayers = [];
+  const drawShadowLayers = [];
   // add Leaflet-Geoman controls with some options to the map
   map.pm.addControls({
     position: 'topleft',
@@ -359,12 +360,20 @@
 
     function move(d3_event) {
       const { sourceTarget } = d3_event;
+      console.log(drawLayers);
       if (sourceTarget) {
         sourceTarget.pm.enableLayerDrag();
+        sourceTarget.on('pm:dragstart', e => {
+          console.log('pm:dragstart: ', e);
+        });
+        sourceTarget.on('pm:drag', e => {
+          console.log(e);
+        });
         sourceTarget.on('pm:dragend', e => {
           const { sourceTarget } = e;
           sourceTarget.pm.disableLayerDrag();
           sourceTarget.off('pm:dragend');
+          sourceTarget.off('pm:drag');
         });
       }
     }
@@ -373,7 +382,6 @@
       selectLayer = d3_event.sourceTarget;
       setCopyLayer.add(selectLayer);
       origLatLng = selectLayer.getLatLng ? selectLayer.getLatLng() : selectLayer.getCenter();
-      map.on('mousemove', mapMousemove);
     }
 
     function remove(d3_event) {
@@ -505,13 +513,13 @@
 
   let selectLayer;
   const setCopyLayer = new Set();
+  map.on('mousemove', mapMousemove);
 
   const key = {
     '⌘+C': () => {
       if (!selectLayer) return;
       setCopyLayer.add(selectLayer);
       origLatLng = selectLayer.getLatLng ? selectLayer.getLatLng() : selectLayer.getCenter();
-      map.on('mousemove', mapMousemove);
     },
     '⌘+V': () => {
       copyLayer();
@@ -529,6 +537,7 @@
       if (copyMarker && map.hasLayer(copyMarker)) {
         map.removeLayer(copyMarker);
       }
+      map.pm.disableDraw();
     },
   };
 
@@ -579,6 +588,7 @@
   }
 
   function mapMousemoveLatLng(event) {
+    if (!copyMarker && !selectLayer || !origLatLng) return;
     const { latlng } = event;
     const { shape } = copyMarker || selectLayer;
     const currMove = map.latLngToLayerPoint(latlng);
@@ -644,28 +654,46 @@
       map.off('contextmenu', disableDraw);
     }
 
-    let { layer, shape } = e;
-    console.log('create one', shape, e);
-    if (polygon.includes(shape)) {
-      shape = 'polygon';
-    }
-    if (marker.includes(shape)) {
-      shape = 'marker';
-    }
-    if (polyline.includes(shape)) {
-      shape = 'polyline';
-    }
-    if (circleMarker.includes(shape)) {
-      shape = 'circleMarker';
-    }
-    layer.shape = shape;
-    layer.isSegmentation = isSegmentation;
-    bindContextMenu(shape, layer);
-    layer.on('click', e => {
-      L.DomEvent.stopPropagation(e);
-      selectLayer = e.sourceTarget;
-    });
     if (!isSegmentation) {
+      let { layer, shape } = e;
+      console.log('create one', shape, e);
+      if (polygon.includes(shape)) {
+        shape = 'polygon';
+        layer.setStyle({
+          color: '#4CAF50',
+        });
+      }
+      if (marker.includes(shape)) {
+        shape = 'marker';
+      }
+      if (polyline.includes(shape)) {
+        shape = 'polyline';
+        layer
+          .on('mouseover', function(e) {
+            e.sourceTarget.setStyle({
+              weight: 8,
+              opacity: 0.6,
+              color: '#f6634f',
+            });
+          })
+          .on('mouseout', function(e) {
+            e.sourceTarget.setStyle({
+              weight: 3,
+              opacity: 1,
+              color: '#3388ff',
+            });
+          });
+      }
+      if (circleMarker.includes(shape)) {
+        shape = 'circleMarker';
+      }
+      layer.shape = shape;
+      layer.isSegmentation = isSegmentation;
+      bindContextMenu(shape, layer);
+      layer.on('click', e => {
+        L.DomEvent.stopPropagation(e);
+        selectLayer = e.sourceTarget;
+      });
       layer.uuid = uuid.v4();
       layer.bindPopup(`<sapn>${layer.uuid}</sapn>`);
       drawLayers.push(layer);
