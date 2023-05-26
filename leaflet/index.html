@@ -26,6 +26,8 @@
 
   <script src="../utils/keybinding.js"></script>
   <script src="../utils/hotkeys.js"></script>
+  <script src="../utils/detect.js"></script>
+  <script src="../utils/cmd.js"></script>
 
   <style>
     #map {
@@ -135,13 +137,15 @@
     .addTo(map);
 
   map.on('click', (e) => {
+    L.DomEvent.stopPropagation(e);
     const { containerPoint, latlng } = e;
     const point = turf.point([latlng.lng, latlng.lat]);
     const options = { precision: 7, coordinates: 2 };
     const truncated = turf.truncate(point, options);
-    document.getElementById('info').innerHTML = `<span>x: ${containerPoint.x} y: ${containerPoint.y}</span> <br/> <br/><span>${truncated.geometry.coordinates[1]}, ${truncated.geometry.coordinates[0]}</span>`;
     editMenu()
       .close();
+    document.getElementById('info').innerHTML =
+      `<span>x: ${containerPoint.x} y: ${containerPoint.y}</span> <br/> <br/><span>${truncated.geometry.coordinates[1]}, ${truncated.geometry.coordinates[0]}</span>`;
   });
 
   bindContextMenu('Map', map);
@@ -397,12 +401,6 @@
     return res;
   }
 
-
-  var pt = turf.point([0, 0]);
-  var line = turf.lineString([[-1, -1],[1, 1],[1.5, 2.2]]);
-  var isPointOnLine = turf.booleanPointOnLine(pt, line);
-
-
   /** 计算点是否在线上 */
   function booleanPointOnLine(pt) {
     for (const drawLayer of drawLayers) {
@@ -413,10 +411,9 @@
 
   function segmentationLine(layer) {
     const pt = layer.toGeoJSON();
-    console.log(booleanPointOnLine(pt));
-    const line = pointToLineDistance(pt);
-    if (line && line === relatedLayer) {
-      const split = turf.lineSplit(line.toGeoJSON(), pt);
+    const geoJSON = relatedLayer.toGeoJSON();
+    if (turf.booleanWithin(pt, geoJSON)) {
+      const split = turf.lineSplit(geoJSON, pt);
       const { features } = split;
       for (let i = 0; i < features.length; i++) {
         const line = L.GeoJSON.geometryToLayer(features[i], {});
@@ -432,7 +429,7 @@
       }
     }
     else {
-      alert('请将截取点放在线上');
+      alert('请将截取点放在线内的点上');
     }
     map.removeLayer(layer);
     map.pm.disableDraw();
@@ -475,29 +472,43 @@
   // });
 
   let selectLayer;
-  const setCopyLayer = new Set();
   let arrayCopyLayer = [];
+  const setCopyLayer = new Set();
 
-  hotkeys('Ctrl+C, Ctrl+V, Ctrl+Z', function(event, handler) {
-    switch (handler.key) {
-      case 'Ctrl+C':
-        if (!selectLayer) return;
-        setCopyLayer.add(selectLayer);
-        map.on('mousemove', mapMousemove);
-        break;
-      case 'Ctrl+V':
-        copyLayer();
-        break;
-      case 'Ctrl+Z':
-        const popLayer = arrayCopyLayer.pop();
-        if (popLayer && map.hasLayer(popLayer)) {
-          map.removeLayer(popLayer);
-        }
-        break;
-      default:
-        console.log('switch on case select: ', handler.key);
-    }
-  });
+  const key = {
+    '⌘+C': () => {
+      if (!selectLayer) return;
+      setCopyLayer.add(selectLayer);
+      map.on('mousemove', mapMousemove);
+    },
+    '⌘+V': () => {
+      copyLayer();
+    },
+    '⌘+Z': () => {
+      const popLayer = arrayCopyLayer.pop();
+      if (popLayer && map.hasLayer(popLayer)) {
+        map.removeLayer(popLayer);
+      }
+      if (copyMarker && map.hasLayer(copyMarker)) {
+        map.removeLayer(copyMarker);
+      }
+      map.off('mousemove', mapMousemove);
+    },
+  };
+
+
+  const keys = {}, keyboards = [];
+  Object.keys(key)
+    .forEach(e => {
+      let keyboard = [uiCmd(e)];
+      keyboards.push(keyboard);
+      Object.assign(keys, { [keyboard]: key[e] });
+    });
+
+  hotkeys(keyboards.join(','), function(event, handler) {
+      keys[handler.key]();
+    },
+  );
 
   let isCopyLayer = true;
 
@@ -529,7 +540,9 @@
   let mousemoveLatlng;
 
   function mapMousemove(e) {
-    mousemoveLatlng = e.latlng;
+    const { latlng } = e;
+    console.log(map.latLngToLayerPoint(latlng));
+    mousemoveLatlng = latlng;
     if (copyMarker && map.hasLayer(copyMarker)) {
       copyMarker.setLatLng(mousemoveLatlng);
     }
