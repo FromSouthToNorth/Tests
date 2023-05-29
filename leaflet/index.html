@@ -28,7 +28,8 @@
   <script src="../utils/hotkeys.js"></script>
   <script src="../utils/detect.js"></script>
   <script src="../utils/cmd.js"></script>
-
+  <script src="src/leaflet/L.Control.Layers.Minimap.js"></script>
+  <link rel="stylesheet" href="src/css/control.layers.minimap.css">
   <style>
     #map {
       position: absolute;
@@ -36,7 +37,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: #555555;
+      background: #000;
     }
 
     .leaflet-popup-content p {
@@ -46,15 +47,15 @@
     #info {
       position: fixed;
       z-index: 999;
-      bottom: 10px;
-      left: 10px;
+      bottom: 5px;
+      left: 120px;
       padding: 10px;
       border: none;
       border-radius: 3px;
       font-size: 12px;
       text-align: center;
       color: #222;
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.6);
     }
 
     .leaflet-popup-content div {
@@ -116,6 +117,11 @@
       border-radius: 0;
       padding: 0 12px;
     }
+
+    #map .leaflet-control-scale-line {
+      color: #000;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -132,12 +138,20 @@
   });
 
   const map = L.map('map', {
-    center: [30.3339, 106.9303],
-    maxZoom: 18,
-    minZoom: 3,
     zoom: 12,
+    minZoom: 3,
+    maxZoom: 18,
+    center: [30.3339, 106.9303],
   });
   const positronLabels = L.tileLayer(`https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}`)
+    .addTo(map);
+
+  const positionAssistOverlay = L.tileLayer(`https://api.mapbox.com/styles/v1/openstreetmap/ckasmteyi1tda1ipfis6wqhuq/tiles/256/{z}/{x}/{y}?access_token={access_token}`, {
+    access_token: 'pk.eyJ1Ijoib3BlbnN0cmVldG1hcCIsImEiOiJjbGRlaXd3cHUwYXN3M29waWp0bGNnYWdyIn0.RRlhUnKlUFNhKsKjhaZ2zA',
+  })
+    .addTo(map);
+
+  L.control.scale()
     .addTo(map);
 
   map.on('click', (e) => {
@@ -146,6 +160,11 @@
     const point = turf.point([latlng.lng, latlng.lat]);
     const options = { precision: 7, coordinates: 2 };
     const truncated = turf.truncate(point, options);
+    drawLayers.forEach(e => {
+      if (e.pm.enabled()) {
+        e.pm.disable();
+      }
+    });
     editMenu()
       .close();
     document.getElementById('info').innerHTML =
@@ -160,6 +179,10 @@
   });
 
   const linShuiMarker = L.marker([30.3339, 106.9303])
+    .on('click', e => {
+      L.DomEvent.stopPropagation(e);
+      selectLayer = e.sourceTarget;
+    })
     .bindPopup(`<p>邻水</p>`)
     .addTo(map);
   linShuiMarker.shape = 'marker';
@@ -464,7 +487,23 @@
         bindContextMenu('polyline', line);
         line.uuid = uuid.v4();
         drawLayers.push(line);
-        line.addTo(map);
+        line.shape = 'polyline';
+        line
+          .on('mouseover', function(e) {
+            e.sourceTarget.setStyle({
+              weight: 8,
+              opacity: 0.6,
+              color: '#f6634f',
+            });
+          })
+          .on('mouseout', function(e) {
+            e.sourceTarget.setStyle({
+              weight: 3,
+              opacity: 1,
+              color: '#3388ff',
+            });
+          })
+          .addTo(map);
       }
       const index = drawLayersFindIndex(relatedLayer.uuid);
       if (index !== -1) {
@@ -658,8 +697,8 @@
       map.off('contextmenu', disableDraw);
     }
 
+    let { layer, shape } = e;
     if (!isSegmentation) {
-      let { layer, shape } = e;
       console.log('create one', shape, e);
       if (polygon.includes(shape)) {
         shape = 'polygon';
