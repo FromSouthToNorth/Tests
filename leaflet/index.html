@@ -118,6 +118,12 @@
       padding: 0 12px;
     }
 
+    button.disabled {
+      background-color: rgba(255, 255, 255, .25);
+      color: rgba(0, 0, 0, .4);
+      cursor: not-allowed;
+    }
+
     #map .leaflet-control-scale-line {
       color: #000;
       font-weight: bold;
@@ -220,7 +226,7 @@
 
       let _menuHeight;
       let _menuWidth = 44;
-      const buttonHeight = 34;
+      const buttonHeight = 24;
       // 稍微偏离目标位置的菜单
       const _menuSideMargin = 26;
       const _vpBottomMargin = 12; // viewport bottom margin
@@ -244,14 +250,21 @@
         })
         .on('click', click);
 
+      buttonsEnter.merge(buttons)
+        .classed('disabled', function(d) {
+          return d.disabled();
+        });
+
       updatePosition();
 
       function click(d3_event, e) {
         d3_event.stopPropagation();
-        e.operation({
-          event: d3_event,
-          sourceTarget,
-        });
+        if (!e.disabled()) {
+          e.operation({
+            event: d3_event,
+            sourceTarget,
+          });
+        }
         editMenu.close();
       }
 
@@ -306,14 +319,23 @@
       {
         title: '移动',
         operation: move,
+        disabled: () => {
+          return false;
+        },
       },
       {
         title: '复制',
         operation: copy,
+        disabled: () => {
+          return false;
+        },
       },
       {
         title: '删除',
         operation: remove,
+        disabled: () => {
+          return false;
+        },
       },
     ];
     operationMap.set('marker', markerOperations);
@@ -322,22 +344,37 @@
       {
         title: '移动',
         operation: move,
+        disabled: () => {
+          return false;
+        },
       },
       {
         title: '编辑',
         operation: edit,
+        disabled: () => {
+          return false;
+        },
       },
       {
         title: '复制',
         operation: copy,
+        disabled: () => {
+          return false;
+        },
       },
       {
         title: '截取',
         operation: segmentation,
+        disabled: () => {
+          return false;
+        },
       },
       {
         title: '删除',
         operation: remove,
+        disabled: () => {
+          return false;
+        },
       },
     ];
     operationMap.set('polyline', lineOperations);
@@ -345,18 +382,30 @@
       {
         title: '移动',
         operation: move,
+        disabled: () => {
+          return false;
+        },
       },
       {
         title: '编辑',
         operation: edit,
+        disabled: () => {
+          return false;
+        },
       },
       {
         title: '复制',
         operation: copy,
+        disabled: () => {
+          return false;
+        },
       },
       {
         title: '删除',
         operation: remove,
+        disabled: () => {
+          return false;
+        },
       },
     ];
     operationMap.set('polygon', polygonOperations);
@@ -364,6 +413,16 @@
       {
         title: '当前位置',
         operation: location,
+        disabled: () => {
+          return false;
+        },
+      },
+      {
+        title: '粘贴',
+        operation: copyLayer,
+        disabled: () => {
+          return setCopyLayer.size === 0;
+        },
       },
     ];
     operationMap.set('Map', mapOperations);
