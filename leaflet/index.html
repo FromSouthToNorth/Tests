@@ -141,7 +141,7 @@
     zoom: 12,
     minZoom: 3,
     maxZoom: 18,
-    center: [30.3339, 106.9303],
+    center: [30.6600, 104.0633],
   });
   const positronLabels = L.tileLayer(`https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}`)
     .addTo(map);
@@ -150,9 +150,6 @@
     access_token: 'pk.eyJ1Ijoib3BlbnN0cmVldG1hcCIsImEiOiJjbGRlaXd3cHUwYXN3M29waWp0bGNnYWdyIn0.RRlhUnKlUFNhKsKjhaZ2zA',
   })
     .addTo(map);
-  const pao = L.tileLayer(`https://api.mapbox.com/styles/v1/openstreetmap/ckasmteyi1tda1ipfis6wqhuq/tiles/256/{z}/{x}/{y}?access_token={access_token}`, {
-    access_token: 'pk.eyJ1Ijoib3BlbnN0cmVldG1hcCIsImEiOiJjbGRlaXd3cHUwYXN3M29waWp0bGNnYWdyIn0.RRlhUnKlUFNhKsKjhaZ2zA',
-  });
 
   const colorMapOfChina = L.tileLayer(`https://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineCommunity/MapServer/tile/{z}/{y}/{x}?blankTile=false`);
   const miniMap = new L.Control.MiniMap(colorMapOfChina).addTo(map);
@@ -502,62 +499,97 @@
     },
   ];
   const geoJSON = L.geoJSON()
+    .on('click', e => {
+      L.DomEvent.stopPropagation(e);
+      console.log(e);
+    })
+    .on('contextmenu', e => {
+      L.DomEvent.stopPropagation(e);
+      const { sourceTarget } = e;
+      const context = {
+        event: e,
+        operations: getOperations(sourceTarget.feature.geometry.type.toLowerCase()),
+      };
+      const menu = editMenu(context);
+      menu.close();
+      menu();
+    })
     .addTo(map);
   map.on('moveend', event => {
     geoJSON.clearLayers();
+    clipLayer();
+  });
+  clipLayer();
+
+  function clipLayer() {
+    if (map.getZoom() >= 16) {
+      d3.json('cd.geojson')
+        .then(json => {
+          const arr = [];
+          json.features.forEach(geoJson => {
+            const res = clip(geoJson);
+            if (res) {
+              arr.push(res);
+            }
+          });
+          geoJSON.addData(arr);
+        });
+    }
+  }
+
+  function clip(geoJson) {
     /**
      * getBounds()
      * _northEast 边界的东北点。
      * _southWest 边界的西南点。
      */
-    const { _northEast, _southWest } = event.target.getBounds();
+    const { _northEast, _southWest } = map.getBounds();
     const northEastPoint = map.latLngToLayerPoint(_northEast);
     const southWestPoint = map.latLngToLayerPoint(_southWest);
-    const polygonPoints = [];
-    // 过滤 marker
-    markers.forEach(marker => {
-      const bound = event.target.getBounds()
-        .contains(marker);
-      if (bound) {
-        geoJSON.addData(L.marker(marker)
-          .toGeoJSON());
-      }
-    });
-    polygons.forEach(e => {
-      e.forEach(e => {
-        const point = map.latLngToLayerPoint(e);
-        polygonPoints.push(point);
-      });
-    });
     const bounds = L.bounds(northEastPoint, southWestPoint);
-    const clipPolygon = L.PolyUtil.clipPolygon(polygonPoints, bounds);
-    const clipPolygonLatLng = [];
-    if (clipPolygon.length) {
-      clipPolygon.forEach(e => {
-        clipPolygonLatLng.push(map.layerPointToLatLng(e));
-      });
-      geoJSON.addData(L.polygon([clipPolygonLatLng])
-        .toGeoJSON());
+    const polygonPoints = [];
+    const layer = L.GeoJSON.geometryToLayer(geoJson);
+    switch (geoJson.geometry.type) {
+      case 'Point':
+        // 过滤 Point
+        const bound = map.getBounds()
+          .contains(layer.getLatLng());
+        if (bound) {
+          return geoJson;
+        }
+        break;
+      case 'LineString':
+        return lineString();
+      case 'Polygon':
+        return polygon();
     }
-    let clipSegment = [];
-    for (let i = 0, j = i + 1; j < line.length;) {
-      const start = map.latLngToLayerPoint(line[i++]);
-      const end = map.latLngToLayerPoint(line[j++]);
-      const boundsPoints = L.LineUtil.clipSegment(start, end, bounds);
-      if (boundsPoints.length) {
-        clipSegment = [...clipSegment, ...boundsPoints];
+
+    function polygon() {
+      const latLng = layer.getLatLngs();
+      latLng.forEach(e => {
+        e.forEach(e => {
+          const point = map.latLngToLayerPoint(e);
+          polygonPoints.push(point);
+        });
+      });
+      const clipPolygon = L.PolyUtil.clipPolygon(polygonPoints, bounds);
+      if (clipPolygon.length) {
+        return geoJson;
       }
     }
-    const clipSegmentLatLng = [];
-    if (clipSegment.length) {
-      clipSegment.forEach(e => {
-        clipSegmentLatLng.push(map.layerPointToLatLng(e));
-      });
-      const geoJsonLine = L.polyline(clipSegmentLatLng)
-        .toGeoJSON();
-      geoJSON.addData(turf.cleanCoords(geoJsonLine));
+
+    function lineString() {
+      const latLng = layer.getLatLngs();
+      for (let i = 0, j = i + 1; j < latLng.length;) {
+        const start = map.latLngToLayerPoint(latLng[i++]);
+        const end = map.latLngToLayerPoint(latLng[j++]);
+        const boundsPoints = L.LineUtil.clipSegment(start, end, bounds);
+        if (boundsPoints.length) {
+          return geoJson
+        }
+      }
     }
-  });
+  }
 
   const linShuiMarker = L.marker([30.3339, 106.9303])
     .on('click', e => {
