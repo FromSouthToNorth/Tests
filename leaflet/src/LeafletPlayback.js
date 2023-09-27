@@ -581,11 +581,14 @@
         },
 
         tock: function (timestamp, transitionTime) {
+            const latlngs = []
             for (var i = 0, len = this._tracks.length; i < len; i++) {
                 var lngLat = this._tracks[i].tick(timestamp);
                 var latLng = new L.LatLng(lngLat[1], lngLat[0]);
+                latlngs.push(latLng)
                 this._tracks[i].moveMarker(latLng, transitionTime, timestamp);
             }
+            return latlngs;
         },
 
         getStartTime: function () {
@@ -644,15 +647,15 @@
                 clearInterval(self._intervalID);
                 return;
             }
-            self._trackController.tock(self._cursor, self._transitionTime);
-            self._callbacks(self._cursor);
+            const latlngs = self._trackController.tock(self._cursor, self._transitionTime);
+            self._callbacks(self._cursor, latlngs);
             self._cursor += self._tickLen;
         },
 
-        _callbacks: function (cursor) {
+        _callbacks: function (cursor, latlngs) {
             var arry = this._callbacksArry;
             for (var i = 0, len = arry.length; i < len; i++) {
-                arry[i](cursor);
+                arry[i](cursor, latlngs);
             }
         },
 
@@ -699,8 +702,8 @@
                 time += this._tickLen - mod;
             }
             this._cursor = time;
-            this._trackController.tock(this._cursor, 0);
-            this._callbacks(this._cursor);
+            const latlngs = this._trackController.tock(this._cursor, 0);
+            this._callbacks(this._cursor, latlngs);
         },
 
         getTime: function () {
