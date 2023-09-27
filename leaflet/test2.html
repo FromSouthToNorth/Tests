@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="./leaflet-src.js"></script>
+  <link rel="stylesheet" href="./src/css/leaflet.css">
+  <script src="./resultData.js"></script>
+  <script src="./src/LeafletPlayback.js"></script>
+  <script src="./src/moment.js"></script>
+  <style>
+    #map {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+
+    .my-div-icon {
+      background-color: #fff;
+      width: 10px;
+      height: 10px;
+      border-radius: 10px;
+      border: 1px solid #000;
+    }
+
+    .control-container {
+      position: fixed;
+      bottom: 10px;
+      left: 0;
+      right: 0;
+    }
+
+    .control-inner {
+      margin: 0 auto;
+      width: 300px;
+      background: #fff;
+      padding: 8px;
+      border-radius: 8px;
+      box-shadow: 0 .75rem 2rem 0 rgba(0, 0, 0, .1);
+    }
+
+    #time {
+      height: 20px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="map"></div>
+  <script>
+    const _map = L.map('map', {
+      zoom: 10,
+      center: [0, 0]
+    })
+    const tileLayers = [
+      {
+        url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      },
+      {
+        url: 'https://api.mapbox.com/styles/v1/openstreetmap/ckasmteyi1tda1ipfis6wqhuq/tiles/256/{z}/{x}/{y}?access_token={access_token}',
+        options: {
+          access_token: 'pk.eyJ1IjoiaHlzZSIsImEiOiJjbGVwcWg0bDkwZXNlM3pvNXNleWUzcTQ0In0.S3VTf9vqYTAAF725ukcDjQ',
+          key: 'Position Assist Overlay',
+        },
+      },
+    ]
+
+    tileLayers.forEach(({ url, options }) => {
+      L.tileLayer(url, options).addTo(_map)
+    })
+
+    const line = [
+      {
+        "lat": 30.676232144737615,
+        "lng": 103.98782730102539
+      },
+      {
+        "lat": 30.67630596459335,
+        "lng": 103.99100303649904
+      },
+      {
+        "lat": 30.676158324825444,
+        "lng": 103.99357795715333
+      },
+      {
+        "lat": 30.676075277356837,
+        "lng": 103.99431824684144
+      },
+      {
+        "lat": 30.676038367347864,
+        "lng": 103.99458646774293
+      },
+      {
+        "lat": 30.676006071078458,
+        "lng": 103.9948332309723
+      },
+      {
+        "lat": 30.675978388553226,
+        "lng": 103.99514973163606
+      },
+      {
+        "lat": 30.675964547287606,
+        "lng": 103.99534821510316
+      },
+      {
+        "lat": 30.67590918220541,
+        "lng": 103.9956057071686
+      },
+      {
+        "lat": 30.67585843085217,
+        "lng": 103.99594366550447
+      },
+      {
+        "lat": 30.67583074828462,
+        "lng": 103.99636745452882
+      },
+      {
+        "lat": 30.675756928065667,
+        "lng": 103.99694681167604
+      },
+      {
+        "lat": 30.675756928065667,
+        "lng": 103.9972096681595
+      },
+      {
+        "lat": 30.675687721559203,
+        "lng": 103.99768173694612
+      },
+      {
+        "lat": 30.67564619763151,
+        "lng": 103.99815380573274
+      },
+      {
+        "lat": 30.675576991045663,
+        "lng": 103.99857223033906
+      },
+      {
+        "lat": 30.675526239517897,
+        "lng": 103.99905502796175
+      },
+      {
+        "lat": 30.675457032846122,
+        "lng": 103.99960219860078
+      },
+      {
+        "lat": 30.67541550881925,
+        "lng": 104.00002598762512
+      },
+      {
+        "lat": 30.67534630206814,
+        "lng": 104.00072872638704
+      },
+      {
+        "lat": 30.67529093663155,
+        "lng": 104.00127053260805
+      },
+      {
+        "lat": 30.675263253901363,
+        "lng": 104.00186598300935
+      },
+      {
+        "lat": 30.67520788841717,
+        "lng": 104.00254726409914
+      },
+      {
+        "lat": 30.675143295312168,
+        "lng": 104.0031909942627
+      },
+      {
+        "lat": 30.67509715735357,
+        "lng": 104.00368452072145
+      },
+      {
+        "lat": 30.675041791774188,
+        "lng": 104.00446236133577
+      },
+      {
+        "lat": 30.674963357149046,
+        "lng": 104.00524556636812
+      },
+      {
+        "lat": 30.67486646723008,
+        "lng": 104.00563716888429
+      },
+      {
+        "lat": 30.67466345946564,
+        "lng": 104.00690317153932
+      },
+      {
+        "lat": 30.674552727777915,
+        "lng": 104.00728940963747
+      },
+      {
+        "lat": 30.67362995877729,
+        "lng": 104.00706946849824
+      },
+      {
+        "lat": 30.673168570971352,
+        "lng": 104.00684416294098
+      },
+      {
+        "lat": 30.67284098429138,
+        "lng": 104.00681734085084
+      },
+      {
+        "lat": 30.67239804842236,
+        "lng": 104.00665640830994
+      },
+      {
+        "lat": 30.672065845187827,
+        "lng": 104.00654911994936
+      },
+      {
+        "lat": 30.671738254768385,
+        "lng": 104.00654911994936
+      },
+      {
+        "lat": 30.671802850150282,
+        "lng": 104.00569081306459
+      },
+      {
+        "lat": 30.671812078058462,
+        "lng": 104.00478959083559
+      },
+      {
+        "lat": 30.67196895236257,
+        "lng": 104.00384545326233
+      },
+      {
+        "lat": 30.671950496575295,
+        "lng": 104.00330901145936
+      },
+      {
+        "lat": 30.671978180254868,
+        "lng": 104.00236487388612
+      },
+      {
+        "lat": 30.6721258264119,
+        "lng": 104.00186061859132
+      },
+      {
+        "lat": 30.6721073706546,
+        "lng": 104.00157094001771
+      },
+      {
+        "lat": 30.671249174046775,
+        "lng": 104.00143146514893
+      },
+      {
+        "lat": 30.670197180707863,
+        "lng": 104.00120615959169
+      },
+      {
+        "lat": 30.66932973898686,
+        "lng": 104.00107741355896
+      },
+      {
+        "lat": 30.668489974156756,
+        "lng": 104.00098085403444
+      },
+      {
+        "lat": 30.668093159664704,
+        "lng": 104.00098085403444
+      },
+      {
+        "lat": 30.66770557184336,
+        "lng": 104.00114178657533
+      },
+      {
+        "lat": 30.667244155743106,
+        "lng": 104.00125980377199
+      },
+      {
+        "lat": 30.66681965098478,
+        "lng": 104.00143146514893
+      },
+      {
+        "lat": 30.666496656984524,
+        "lng": 104.00131344795228
+      },
+      {
+        "lat": 30.66601677819046,
+        "lng": 104.0012812614441
+      },
+      {
+        "lat": 30.665546125519825,
+        "lng": 104.00069117546082
+      },
+      {
+        "lat": 30.66514929893787,
+        "lng": 104.0002727508545
+      },
+      {
+        "lat": 30.664973956440676,
+        "lng": 103.99988651275636
+      },
+      {
+        "lat": 30.664669413452508,
+        "lng": 103.9996612071991
+      },
+      {
+        "lat": 30.66426335464196,
+        "lng": 103.99962902069093
+      },
+      {
+        "lat": 30.663894208788076,
+        "lng": 103.99943590164186
+      },
+      {
+        "lat": 30.663645034539538,
+        "lng": 103.99933934211731
+      },
+      {
+        "lat": 30.6632851150463,
+        "lng": 103.99927496910097
+      },
+      {
+        "lat": 30.663008252985453,
+        "lng": 103.99938225746156
+      },
+      {
+        "lat": 30.662795991535006,
+        "lng": 103.99982213974
+      },
+      {
+        "lat": 30.662426840075888,
+        "lng": 104.00018692016603
+      },
+      {
+        "lat": 30.662334551990806,
+        "lng": 104.00047659873964
+      },
+      {
+        "lat": 30.66226995027879,
+        "lng": 104.00080919265748
+      },
+      {
+        "lat": 30.662242263817557,
+        "lng": 104.00110960006715
+      },
+      {
+        "lat": 30.662371467235428,
+        "lng": 104.0017318725586
+      },
+      {
+        "lat": 30.662639102337174,
+        "lng": 104.00206446647645
+      },
+      {
+        "lat": 30.662666788684696,
+        "lng": 104.00245070457458
+      },
+      {
+        "lat": 30.663054396717346,
+        "lng": 104.0025043487549
+      },
+      {
+        "lat": 30.663442003195335,
+        "lng": 104.0025043487549
+      },
+      {
+        "lat": 30.663746550051695,
+        "lng": 104.00251507759096
+      },
+      {
+        "lat": 30.66382037944808,
+        "lng": 104.00278329849243
+      },
+      {
+        "lat": 30.66376500740609,
+        "lng": 104.00339484214784
+      },
+      {
+        "lat": 30.663746550051695,
+        "lng": 104.00383472442627
+      },
+      {
+        "lat": 30.6637188640135,
+        "lng": 104.00434970855714
+      },
+      {
+        "lat": 30.66372809269379,
+        "lng": 104.00504708290102
+      },
+      {
+        "lat": 30.66372809269379,
+        "lng": 104.00537967681886
+      },
+      {
+        "lat": 30.6637188640135,
+        "lng": 104.00554060935976
+      },
+      {
+        "lat": 30.664217211487355,
+        "lng": 104.00551915168764
+      },
+      {
+        "lat": 30.66522312726256,
+        "lng": 104.00558352470398
+      },
+      {
+        "lat": 30.666219804124946,
+        "lng": 104.00558352470398
+      },
+      {
+        "lat": 30.667004218500175,
+        "lng": 104.00563716888429
+      },
+      {
+        "lat": 30.667308754129813,
+        "lng": 104.0056049823761
+      },
+      {
+        "lat": 30.667585603869266,
+        "lng": 104.00562644004822
+      },
+      {
+        "lat": 30.667733256739304,
+        "lng": 104.00566935539247
+      },
+      {
+        "lat": 30.66765943033249,
+        "lng": 104.0060877799988
+      },
+      {
+        "lat": 30.66743795077361,
+        "lng": 104.00698900222778
+      },
+      {
+        "lat": 30.66746563574622,
+        "lng": 104.0074396133423
+      },
+      {
+        "lat": 30.667364124141155,
+        "lng": 104.00796532630922
+      },
+      {
+        "lat": 30.66733643913944,
+        "lng": 104.00881290435792
+      },
+      {
+        "lat": 30.66733643913944,
+        "lng": 104.0093493461609
+      },
+      {
+        "lat": 30.667244155743106,
+        "lng": 104.01008963584901
+      },
+      {
+        "lat": 30.667013446866683,
+        "lng": 104.01050806045532
+      },
+      {
+        "lat": 30.666561255870956,
+        "lng": 104.01113033294679
+      },
+      {
+        "lat": 30.666233646786775,
+        "lng": 104.01157557964326
+      },
+      {
+        "lat": 30.665984478570632,
+        "lng": 104.0120315551758
+      },
+      {
+        "lat": 30.665726081223397,
+        "lng": 104.01240706443788
+      },
+      {
+        "lat": 30.665435383381812,
+        "lng": 104.0129864215851
+      },
+      {
+        "lat": 30.66518159883685,
+        "lng": 104.01350677013399
+      },
+      {
+        "lat": 30.665103156206303,
+        "lng": 104.01391983032228
+      },
+      {
+        "lat": 30.665380012265214,
+        "lng": 104.01375889778139
+      },
+      {
+        "lat": 30.665786066383447,
+        "lng": 104.01352286338808
+      },
+      {
+        "lat": 30.666247489446597,
+        "lng": 104.01326537132263
+      },
+      {
+        "lat": 30.666561255870956,
+        "lng": 104.01306688785553
+      },
+      {
+        "lat": 30.66681503679238,
+        "lng": 104.0129005908966
+      },
+      {
+        "lat": 30.66696269083996,
+        "lng": 104.01281476020814
+      },
+      {
+        "lat": 30.66722569905327,
+        "lng": 104.01266992092134
+      }
+    ]
+    const radius = 4
+
+    const time = [
+      1695798116591,
+      1695798118591,
+      1695798120591,
+      1695798122591,
+      1695798124591,
+      1695798126591,
+      1695798128591,
+      1695798130591,
+      1695798132591,
+      1695798134591,
+      1695798136591,
+      1695798138591,
+      1695798140591,
+      1695798142591,
+      1695798144591,
+      1695798146591,
+      1695798148591,
+      1695798150591,
+      1695798152591,
+      1695798154591,
+      1695798156591,
+      1695798158591,
+      1695798160591,
+      1695798162591,
+      1695798164591,
+      1695798166591,
+      1695798168591,
+      1695798170591,
+      1695798172591,
+      1695798174591,
+      1695798176591,
+      1695798178591,
+      1695798180591,
+      1695798182591,
+      1695798184591,
+      1695798186591,
+      1695798188591,
+      1695798190591,
+      1695798192591,
+      1695798194591,
+      1695798196591,
+      1695798198591,
+      1695798200591,
+      1695798202591,
+      1695798204591,
+      1695798206591,
+      1695798208591,
+      1695798210591,
+      1695798212591,
+      1695798214591,
+      1695798216591,
+      1695798218591,
+      1695798220591,
+      1695798222591,
+      1695798224591,
+      1695798226591,
+      1695798228591,
+      1695798230591,
+      1695798232591,
+      1695798234591,
+      1695798236591,
+      1695798238591,
+      1695798240591,
+      1695798242591,
+      1695798244591,
+      1695798246591,
+      1695798248591,
+      1695798250591,
+      1695798252591,
+      1695798254591,
+      1695798256591,
+      1695798258591,
+      1695798260591,
+      1695798262591,
+      1695798264591,
+      1695798266591,
+      1695798268591,
+      1695798270591,
+      1695798272591,
+      1695798274591,
+      1695798276591,
+      1695798278591,
+      1695798280591,
+      1695798282591,
+      1695798284591,
+      1695798286591,
+      1695798288591,
+      1695798290591,
+      1695798292591,
+      1695798294591,
+      1695798296591,
+      1695798298591,
+      1695798300591,
+      1695798302591,
+      1695798304591,
+      1695798306591,
+      1695798308591,
+      1695798310591,
+      1695798312591,
+      1695798314591,
+      1695798316591,
+      1695798318591,
+      1695798320591,
+      1695798322591,
+      1695798324591,
+      1695798326591,
+      1695798328591,
+      1695798330591,
+      1695798332591
+    ]
+
+    // const circleMarkers = line.map((latLng) => {
+    //   return L.circleMarker(latLng, { radius })
+    // })
+
+    // const featureGroup = L.featureGroup(circleMarkers)
+    const lineLayer = L.polyline(line)
+    const geoJSON = lineLayer.toGeoJSON()
+    geoJSON.geometry.type = 'MultiPoint'
+    geoJSON.properties.time = time
+
+    _map.fitBounds(lineLayer.getBounds())
+
+    // Playback options
+    const playbackOptions = {
+      // layer and marker options
+      layer: {
+        pointToLayer: function (featureData, latlng) {
+          const result = {};
+
+          if (featureData && featureData.properties && featureData.properties.path_options) {
+            result = featureData.properties.path_options;
+          }
+
+          if (!result.radius) {
+            result.radius = 2;
+          }
+
+          return new L.CircleMarker(latlng, result);
+        }
+      },
+      marker: function () {
+        return {
+          icon: L.divIcon({ className: 'my-div-icon' })
+        };
+      }
+    };
+
+    const onPlaybackTimeChange = function (timestamp) {
+      console.log(moment(timestamp).format('YYYY-MM-DD HH:mm:ss'));
+    }
+
+    const playback = new L.Playback(_map, [geoJSON], onPlaybackTimeChange, playbackOptions)
+    playback.addData(geoJSON)
+
+    L.Playback = L.Playback || {};
+    L.Playback.Control = L.Control.extend({
+      _html: '<div class="control-container">' +
+        '<div class="control-inner">' +
+        '<div class="control-btn">' +
+        '<button id="startPause">开始</button>' +
+        '<button id="speedUp">加速</button>' +
+        '<button id="speedCut">减速</button>' +
+        '<div id="time"></div>' +
+        '</div>' +
+        '</div>' +
+        '</div>',
+
+      initialize: function (playback) {
+        this.playback = playback
+        playback.addCallback(this._clockCallback)
+      },
+
+      onAdd: function (map) {
+        const html = this._html
+        document.querySelector('#map').after(htmlToElements(html))
+        this._setup()
+        return L.DomUtil.create('div')
+      },
+
+      _setup: function () {
+        const self = this
+        const _speedUp = document.querySelector('#speedUp')
+        const _speedCut = document.querySelector('#speedCut')
+        const _startPause = document.querySelector('#startPause')
+        let isStartPause = true
+        _startPause.addEventListener('click', function () {
+          isStartPause = !isStartPause
+          this.textContent = isStartPause ? '开始' : '暂停'
+          if (isStartPause) {
+            self.playback.stop()
+          }
+          else {
+            self.playback.start()
+          }
+        })
+        _speedUp.addEventListener('click', function () {
+          let speed = parseFloat(self.playback.getSpeed() + 1)
+          self.playback.setSpeed(speed)
+        })
+        _speedCut.addEventListener('click', function () {
+          let speed = parseFloat(self.playback.getSpeed() - 1)
+          if (speed > 1) {
+            self.playback.setSpeed(speed)
+          }
+        })
+      },
+
+      _clockCallback: function (ms) {
+        document.querySelector('#time').textContent = moment(ms).format('YYYY年MM月DD日 HH:mm:ss')
+      }
+    })
+
+    function htmlToElements(html) {
+      var template = document.createElement('template');
+      template.innerHTML = html;
+      return template.content;
+    }
+
+    var control = new L.Playback.Control(playback);
+    control.addTo(_map);
+
+
+    // playback.start()
+
+    // const featureGroup = L.featureGroup().addTo(_map)
+    // dataLineString.forEach(({ id, latLngs }) => {
+    //   featureGroup.addLayer(L.polyline(latLngs, { color: 'red' }))
+    // })
+    // _map.fitBounds(featureGroup.getBounds())
+
+    // const targetArray = ['ID', 'MineName', 'HorizontalID', 'DistrictID', 'WorkFaceID', 'TunnelName', 'TunnelStyle', 'EnableMid', 'EnableTraverse', 'OneTunnel', 'HideLeft', 'HideRight', 'TunnelSection', 'Supports', 'Length', 'CreateDate', 'SystemID', 'OutOffUse', 'Coalbed', 'BulkDensity', 'Width', 'Height', 'BasalArea', 'Feature', 'Heading', 'ConstructionTeam', 'State', 'PlanStarttime', 'PlanEndtime', 'ActualStarttime', 'ActualEndtime', 'TunnelType', 'UpperMouthHeight', 'LowerMouthHeight', 'UpperMouthSection', 'LowerMouthSection', 'UpperTunnelID', 'LowerTunnelID', 'AuxiliaryHaulageLane', 'IsWalk', 'AreaTypeID', 'create_by', 'create_time', 'update_by', 'update_time', 'sys_org_code', 'VersionDate', 'ComputerEnviron', 'Version', 'venttype', 'ventdirec', 'ventbridge', 'obstacle', 'ventspeed', 'vertical_tunnel_z', 'escape_exit', 'slope']
+    // const sourceArray = ['ID', 'MineName', 'HorizontalID', 'DistrictID', 'WorkFaceID', 'TunnelName', 'TunnelStyle', 'EnableMid', 'EnableTraverse', 'OneTunnel', 'HideLeft', 'HideRight', 'TunnelSection', 'Supports', 'Length', 'CreateDate', 'SystemID', 'OutOffUse', 'Coalbed', 'BulkDensity', 'Width', 'Height', 'BasalArea', 'Feature', 'Heading', 'ConstructionTeam', 'State', 'PlanStarttime', 'PlanEndtime', 'ActualStarttime', 'ActualEndtime', 'TunnelType', 'UpperMouthHeight', 'LowerMouthHeight', 'UpperMouthSection', 'LowerMouthSection', 'UpperTunnelID', 'LowerTunnelID', 'AuxiliaryHaulageLane', 'IsWalk', 'AreaTypeID', 'create_by', 'create_time', 'update_by', 'update_time', 'sys_org_code', 'venttype']
+    // const filterArray = targetArray.filter(e => {
+    //   return !sourceArray.includes(e)
+    // })
+
+    // 'VersionDate', 'ComputerEnviron', 'Version', 'ventdirec', 'ventbridge', 'obstacle', 'ventspeed', 'vertical_tunnel_z', 'escape_exit', 'slope'
+
+    // console.log(filterArray);
+
+    // const dataArr = []
+    // const idsMap = new Map()
+    // const jsonData = []
+    // for (const geoJson of lineString.result) {
+    //   const { geometry, properties, id } = geoJson
+    //   const { coordinates, type, dimension } = geometry
+    //   if (type !== 'LineString' || !Array.isArray(coordinates)) break
+    //   idsMap.set(id, [])
+    //   let xyzArr = []
+    //   for (let i = 0; i < coordinates.length; i++) {
+    //     xyzArr.push(coordinates[i])
+    //     if ((i + 1) % 3 === 0) {
+    //       dataArr.push({
+    //         id,
+    //         xyzArr,
+    //       })
+    //       xyzArr = []
+    //     }
+    //   }
+    // }
+    // dataArr.forEach(({ id, xyzArr }) => {
+    //   idsMap.get(id).push({
+    //     x: xyzArr[0],
+    //     y: xyzArr[1],
+    //     z: xyzArr[2],
+    //   })
+    // })
+    // idsMap.forEach((value, key) => {
+    //   console.log(value, key);
+    //   jsonData.push({
+    //     id: key,
+    //     xyzArr: value
+    //   })
+    // })
+    // // 1130#9
+    // console.log(jsonData);
+  </script>
+</body>
+
+</html>

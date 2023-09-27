@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="./src/css/leaflet.css">
+  <script src="./leaflet-src.js"></script>
+  <script src="./src/leaflet.trackplayback.js"></script>
+</head>
+
+<body>
+  <div id="map-container"></div>
+
+</body>
+<script>
+  const map = L.map('map-container', {
+    zoom: 12,
+    minZoom: 2,
+    maxZoom: 24,
+    zoomSnap: 0.5,
+    wheelPxPerZoomLevel: 500,
+    center: [30.66071, 104.06167],
+  })
+  const tileLayers = [
+    {
+      url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    },
+  ]
+
+  tileLayers.forEach(layer => {
+    L.tileLayer(layer.url, layer.options)
+      .addTo(map)
+  })
+
+  const data = [
+    [
+      {
+        "lat": 30.67367609743668,
+        "lng": 103.86401653289796,
+        "time": 1693901811460,
+      },
+      {
+        "lat": 30.672421118049016,
+        "lng": 103.86324405670166,
+        "time": 1693901837091,
+      },
+      {
+        "lat": 30.671858217586117,
+        "lng": 103.86285781860352,
+        "time": 1693901841345,
+      },
+      {
+        "lat": 30.669975706966294,
+        "lng": 103.86129140853883,
+        "time": 1693901860367,
+      },
+      {
+        "lat": 30.6685084306051,
+        "lng": 103.8601005077362,
+        "time": 1693901866100,
+      },
+      {
+        "lat": 30.668065474871884,
+        "lng": 103.85951042175294,
+        "time": 1693901870886,
+      }
+    ]
+  ]
+  const trackplayback = L.trackplayback(data, map, {
+    trackPointOptions: {
+      // whether draw track point
+      isDraw: false,
+      // whether use canvas to draw it, if false, use leaflet api `L.circleMarker`
+      useCanvas: false,
+      stroke: false,
+      color: '#ef0300',
+      fill: true,
+      fillColor: '#ef0300',
+      opacity: 0.3,
+      radius: 4
+    },
+  });
+  trackplayback.showTrackLine()
+  trackplayback.showTrackPoint()
+  console.log(trackplayback.start());
+</script>
+
+</html>
