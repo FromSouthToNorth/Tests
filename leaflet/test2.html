@@ -10,6 +10,8 @@
   <script src="./resultData.js"></script>
   <script src="./src/LeafletPlayback.js"></script>
   <script src="./src/moment.js"></script>
+  <script src="./src/L.KML.js"></script>
+  <script src="src/turf.js"></script>
   <style>
     #map {
       position: fixed;
@@ -20,11 +22,40 @@
     }
 
     .my-div-icon {
-      background-color: #fff;
+      background-color: #1677ff;
       width: 10px;
       height: 10px;
       border-radius: 10px;
-      border: 1px solid #000;
+      border: 1px solid #002c8c;
+    }
+
+    .control-btn {
+      height: 36px;
+      line-height: 36px;
+    }
+
+    button {
+      color: #000;
+      border-radius: 5px;
+      border: none;
+      padding: 6px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      background: transparent;
+      cursor: pointer;
+      transition: all .3s ease;
+      display: inline-block;
+      box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, .5),
+      7px 7px 20px 0px rgba(0, 0, 0, .1),
+      4px 4px 5px 0px rgba(0, 0, 0, .1);
+      outline: none;
+    }
+
+    #sliderInput {
+      border: none;
+      width: 30px;
+      border-bottom: 1px solid #8c8c8c;
+      margin-right: 8px;
     }
 
     .control-container {
@@ -36,7 +67,7 @@
 
     .control-inner {
       margin: 0 auto;
-      width: 300px;
+      width: 474px;
       background: #fff;
       padding: 8px;
       border-radius: 8px;
@@ -44,491 +75,543 @@
     }
 
     #time {
-      height: 20px;
+      height: 16px;
+      line-height: 16px;
       font-size: 12px;
     }
   </style>
 </head>
 
 <body>
-  <div id="map"></div>
-  <script>
-    const _map = L.map('map', {
-      zoom: 10,
-      center: [0, 0]
-    })
-    const tileLayers = [
-      {
-        url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+<div id="map"></div>
+<script>
+  const _map = L.map('map', {
+    zoom: 10,
+    maxZoom: 25,
+    center: [0, 0],
+  });
+  const tileLayers = [
+    {
+      url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    },
+    {
+      url: 'https://api.mapbox.com/styles/v1/openstreetmap/ckasmteyi1tda1ipfis6wqhuq/tiles/256/{z}/{x}/{y}?access_token={access_token}',
+      options: {
+        access_token: 'pk.eyJ1IjoiaHlzZSIsImEiOiJjbGVwcWg0bDkwZXNlM3pvNXNleWUzcTQ0In0.S3VTf9vqYTAAF725ukcDjQ',
+        key: 'Position Assist Overlay',
       },
-      {
-        url: 'https://api.mapbox.com/styles/v1/openstreetmap/ckasmteyi1tda1ipfis6wqhuq/tiles/256/{z}/{x}/{y}?access_token={access_token}',
-        options: {
-          access_token: 'pk.eyJ1IjoiaHlzZSIsImEiOiJjbGVwcWg0bDkwZXNlM3pvNXNleWUzcTQ0In0.S3VTf9vqYTAAF725ukcDjQ',
-          key: 'Position Assist Overlay',
-        },
-      },
-    ]
+    },
+  ];
 
-    tileLayers.forEach(({ url, options }) => {
-      L.tileLayer(url, options).addTo(_map)
-    })
+  tileLayers.forEach(({ url, options }) => {
+    L.tileLayer(url, options)
+      .addTo(_map);
+  });
 
-    const line = [
-      {
-        "lat": 30.681279447415847,
-        "lng": 103.99118542671205
-      },
-      {
-        "lat": 30.681057999083503,
-        "lng": 103.99105668067934
-      },
-      {
-        "lat": 30.680836550243363,
-        "lng": 103.99090647697449
-      },
-      {
-        "lat": 30.680776574428446,
-        "lng": 103.99087429046632
-      },
-      {
-        "lat": 30.680730439160826,
-        "lng": 103.99082601070405
-      },
-      {
-        "lat": 30.68068891740115,
-        "lng": 103.99077773094179
-      },
-      {
-        "lat": 30.68062894149453,
-        "lng": 103.99075090885162
-      },
-      {
-        "lat": 30.680578192621383,
-        "lng": 103.99070262908937
-      },
-      {
-        "lat": 30.680541284333245,
-        "lng": 103.99064898490907
-      },
-      {
-        "lat": 30.67866355656097,
-        "lng": 103.98949563503267
-      },
-      {
-        "lat": 30.678349829442542,
-        "lng": 103.9892488718033
-      },
-      {
-        "lat": 30.678040714961476,
-        "lng": 103.98892700672151
-      },
-      {
-        "lat": 30.677685462768856,
-        "lng": 103.98853540420532
-      },
-      {
-        "lat": 30.677316368197648,
-        "lng": 103.98801505565645
-      },
-      {
-        "lat": 30.676974954463514,
-        "lng": 103.9873391389847
-      },
-      {
-        "lat": 30.676711972791423,
-        "lng": 103.9865827560425
-      },
-      {
-        "lat": 30.676555106189934,
-        "lng": 103.98583710193635
-      },
-      {
-        "lat": 30.676430535471958,
-        "lng": 103.98524701595308
-      },
-      {
-        "lat": 30.67644899040328,
-        "lng": 103.98273646831512
-      },
-      {
-        "lat": 30.67640746680288,
-        "lng": 103.97493660449983
-      },
-      {
-        "lat": 30.67653665127889,
-        "lng": 103.97384762763977
-      },
-      {
-        "lat": 30.67673965510641,
-        "lng": 103.97313416004182
-      },
-      {
-        "lat": 30.677071842267463,
-        "lng": 103.9718896150589
-      },
-      {
-        "lat": 30.677925373483745,
-        "lng": 103.96899819374086
-      },
-      {
-        "lat": 30.67826678385825,
-        "lng": 103.968842625618
-      },
-      {
-        "lat": 30.67848823859099,
-        "lng": 103.96883189678194
-      },
-      {
-        "lat": 30.678981896271775,
-        "lng": 103.96894454956055
-      },
-      {
-        "lat": 30.680098383775377,
-        "lng": 103.96942734718324
-      },
-      {
-        "lat": 30.68019065489243,
-        "lng": 103.96956682205202
-      },
-      {
-        "lat": 30.679798502036043,
-        "lng": 103.97076845169069
-      },
-      {
-        "lat": 30.679816956323823,
-        "lng": 103.97295713424684
-      },
-      {
-        "lat": 30.67982618346638,
-        "lng": 103.97324144840242
-      },
-      {
-        "lat": 30.677025705230083,
-        "lng": 103.97332191467287
-      },
-      {
-        "lat": 30.676038367347864,
-        "lng": 103.9734184741974
-      },
-      {
-        "lat": 30.671848989682342,
-        "lng": 103.9739227294922
-      },
-      {
-        "lat": 30.670824686885084,
-        "lng": 103.97399246692657
-      },
-      {
-        "lat": 30.6685084306051,
-        "lng": 103.97441089153291
-      },
-      {
-        "lat": 30.66852227293903,
-        "lng": 103.97757053375246
-      },
-      {
-        "lat": 30.668526887049907,
-        "lng": 103.9779567718506
-      },
-      {
-        "lat": 30.671332225664603,
-        "lng": 103.97763490676881
-      },
-      {
-        "lat": 30.673283918129453,
-        "lng": 103.9773613214493
-      },
-      {
-        "lat": 30.674142096661196,
-        "lng": 103.97698581218721
-      },
-      {
-        "lat": 30.67435894701899,
-        "lng": 103.97686779499055
-      },
-      {
-        "lat": 30.673837582570986,
-        "lng": 103.97459328174592
-      },
-      {
-        "lat": 30.67372684993655,
-        "lng": 103.97396564483644
-      },
-      {
-        "lat": 30.673680711301408,
-        "lng": 103.97362232208253
-      },
-      {
-        "lat": 30.676255213448602,
-        "lng": 103.97328972816469
-      },
-      {
-        "lat": 30.679729298425514,
-        "lng": 103.97314488887788
-      },
-      {
-        "lat": 30.679743139151583,
-        "lng": 103.97081673145296
-      },
-      {
-        "lat": 30.68022756331456,
-        "lng": 103.96936297416688
-      },
-      {
-        "lat": 30.678580511246437,
-        "lng": 103.96869242191316
-      },
-      {
-        "lat": 30.677962282771624,
-        "lng": 103.96864414215088
-      },
-      {
-        "lat": 30.67724254911415,
-        "lng": 103.97097766399385
-      },
-      {
-        "lat": 30.676947272215955,
-        "lng": 103.9720129966736
-      },
-      {
-        "lat": 30.676651994415067,
-        "lng": 103.97301614284517
-      }
-    ]
-    const radius = 4
+  fetch('./src/kml/一层-2d.kml')
+    .then(res => res.text())
+    .then(kmltext => {
+      const parser = new DOMParser();
+      const kml = parser.parseFromString(kmltext, 'text/xml');
+      const track = new L.KML(kml);
+      track.addTo(_map);
+      // Adjust map to show the kml
+      const bounds = track.getBounds();
+      const from = turf.point([104.0633, 30.6600])
+      const to = turf.point([-0.00562647211545873, 0.04684924156823525])
+      const options = {units: 'kilometers'};
+      const distance = turf.distance(from, to, options);
+      const d = bearing([-0.00562647211545873, 0.04684924156823525], [104.0633, 30.6600])
+      console.log(d);
+      const translatedPoly = turf.transformTranslate(track.toGeoJSON(), distance,d );
+      const layer = L.GeoJSON.geometryToLayer(translatedPoly)
+      layer.addTo(_map)
+      _map.fitBounds(bounds);
+    });
 
-    const time = [
-      1695805591945,
-      1695805593945,
-      1695805595945,
-      1695805597945,
-      1695805599945,
-      1695805601945,
-      1695805603945,
-      1695805605945,
-      1695805607945,
-      1695805609945,
-      1695805611945,
-      1695805613945,
-      1695805615945,
-      1695805617945,
-      1695805619945,
-      1695805621945,
-      1695805623945,
-      1695805625945,
-      1695805627945,
-      1695805629945,
-      1695805631945,
-      1695805633945,
-      1695805635945,
-      1695805637945,
-      1695805639945,
-      1695805641945,
-      1695805643946,
-      1695805645946,
-      1695805647946,
-      1695805649946,
-      1695805651946,
-      1695805653946,
-      1695805655946,
-      1695805657946,
-      1695805659946,
-      1695805661946,
-      1695805663946,
-      1695805665946,
-      1695805667946,
-      1695805669946,
-      1695805671946,
-      1695805673946,
-      1695805675946,
-      1695805677946,
-      1695805679946,
-      1695805681946,
-      1695805683946,
-      1695805685946,
-      1695805687946,
-      1695805689946,
-      1695805691946,
-      1695805693946,
-      1695805695946,
-      1695805697946,
-      1695805699946
-    ]
+  function bearing(latLng1, latLng2) {
+    const pi = Math.PI;
+    const p1 = latLng1[0] * (pi / 180);
+    const p2 = latLng1[1] * (pi / 180);
+    const da = latLng2[0] * (pi / 180) - latLng2[1] * (pi / 180);
 
-    // for (let i = 0; i < line.length; i++) {
-    //   time.push(new Date().getTime() + (i * 2000))
-    // }
-    // console.log(time);
+    let y = Math.sin(da) * Math.cos(p1);
+    let x = Math.cos(p2) *Math.sin(p1) - Math.sin(p2) * Math.cos(p1) * Math.cos(da)
+    return ((Math.atan2(y, x) * 180 / pi) + 360 + 180) % 360
+  }
 
-    // const circleMarkers = line.map((latLng) => {
-    //   return L.circleMarker(latLng, { radius })
-    // })
+  const line = [
+    {
+      'lat': 30.681279447415847,
+      'lng': 103.99118542671205,
+    },
+    {
+      'lat': 30.681057999083503,
+      'lng': 103.99105668067934,
+    },
+    {
+      'lat': 30.680836550243363,
+      'lng': 103.99090647697449,
+    },
+    {
+      'lat': 30.680776574428446,
+      'lng': 103.99087429046632,
+    },
+    {
+      'lat': 30.680730439160826,
+      'lng': 103.99082601070405,
+    },
+    {
+      'lat': 30.68068891740115,
+      'lng': 103.99077773094179,
+    },
+    {
+      'lat': 30.68062894149453,
+      'lng': 103.99075090885162,
+    },
+    {
+      'lat': 30.680578192621383,
+      'lng': 103.99070262908937,
+    },
+    {
+      'lat': 30.680541284333245,
+      'lng': 103.99064898490907,
+    },
+    {
+      'lat': 30.67866355656097,
+      'lng': 103.98949563503267,
+    },
+    {
+      'lat': 30.678349829442542,
+      'lng': 103.9892488718033,
+    },
+    {
+      'lat': 30.678040714961476,
+      'lng': 103.98892700672151,
+    },
+    {
+      'lat': 30.677685462768856,
+      'lng': 103.98853540420532,
+    },
+    {
+      'lat': 30.677316368197648,
+      'lng': 103.98801505565645,
+    },
+    {
+      'lat': 30.676974954463514,
+      'lng': 103.9873391389847,
+    },
+    {
+      'lat': 30.676711972791423,
+      'lng': 103.9865827560425,
+    },
+    {
+      'lat': 30.676555106189934,
+      'lng': 103.98583710193635,
+    },
+    {
+      'lat': 30.676430535471958,
+      'lng': 103.98524701595308,
+    },
+    {
+      'lat': 30.67644899040328,
+      'lng': 103.98273646831512,
+    },
+    {
+      'lat': 30.67640746680288,
+      'lng': 103.97493660449983,
+    },
+    {
+      'lat': 30.67653665127889,
+      'lng': 103.97384762763977,
+    },
+    {
+      'lat': 30.67673965510641,
+      'lng': 103.97313416004182,
+    },
+    {
+      'lat': 30.677071842267463,
+      'lng': 103.9718896150589,
+    },
+    {
+      'lat': 30.677925373483745,
+      'lng': 103.96899819374086,
+    },
+    {
+      'lat': 30.67826678385825,
+      'lng': 103.968842625618,
+    },
+    {
+      'lat': 30.67848823859099,
+      'lng': 103.96883189678194,
+    },
+    {
+      'lat': 30.678981896271775,
+      'lng': 103.96894454956055,
+    },
+    {
+      'lat': 30.680098383775377,
+      'lng': 103.96942734718324,
+    },
+    {
+      'lat': 30.68019065489243,
+      'lng': 103.96956682205202,
+    },
+    {
+      'lat': 30.679798502036043,
+      'lng': 103.97076845169069,
+    },
+    {
+      'lat': 30.679816956323823,
+      'lng': 103.97295713424684,
+    },
+    {
+      'lat': 30.67982618346638,
+      'lng': 103.97324144840242,
+    },
+    {
+      'lat': 30.677025705230083,
+      'lng': 103.97332191467287,
+    },
+    {
+      'lat': 30.676038367347864,
+      'lng': 103.9734184741974,
+    },
+    {
+      'lat': 30.671848989682342,
+      'lng': 103.9739227294922,
+    },
+    {
+      'lat': 30.670824686885084,
+      'lng': 103.97399246692657,
+    },
+    {
+      'lat': 30.6685084306051,
+      'lng': 103.97441089153291,
+    },
+    {
+      'lat': 30.66852227293903,
+      'lng': 103.97757053375246,
+    },
+    {
+      'lat': 30.668526887049907,
+      'lng': 103.9779567718506,
+    },
+    {
+      'lat': 30.671332225664603,
+      'lng': 103.97763490676881,
+    },
+    {
+      'lat': 30.673283918129453,
+      'lng': 103.9773613214493,
+    },
+    {
+      'lat': 30.674142096661196,
+      'lng': 103.97698581218721,
+    },
+    {
+      'lat': 30.67435894701899,
+      'lng': 103.97686779499055,
+    },
+    {
+      'lat': 30.673837582570986,
+      'lng': 103.97459328174592,
+    },
+    {
+      'lat': 30.67372684993655,
+      'lng': 103.97396564483644,
+    },
+    {
+      'lat': 30.673680711301408,
+      'lng': 103.97362232208253,
+    },
+    {
+      'lat': 30.676255213448602,
+      'lng': 103.97328972816469,
+    },
+    {
+      'lat': 30.679729298425514,
+      'lng': 103.97314488887788,
+    },
+    {
+      'lat': 30.679743139151583,
+      'lng': 103.97081673145296,
+    },
+    {
+      'lat': 30.68022756331456,
+      'lng': 103.96936297416688,
+    },
+    {
+      'lat': 30.678580511246437,
+      'lng': 103.96869242191316,
+    },
+    {
+      'lat': 30.677962282771624,
+      'lng': 103.96864414215088,
+    },
+    {
+      'lat': 30.67724254911415,
+      'lng': 103.97097766399385,
+    },
+    {
+      'lat': 30.676947272215955,
+      'lng': 103.9720129966736,
+    },
+    {
+      'lat': 30.676651994415067,
+      'lng': 103.97301614284517,
+    },
+  ];
 
-    // const featureGroup = L.featureGroup(circleMarkers)
-    const lineLayer = L.polyline(line)
-    const geoJSON = lineLayer.toGeoJSON()
-    geoJSON.geometry.type = 'MultiPoint'
-    geoJSON.properties.time = time
+  const time = [
+    1695805591945,
+    1695805593945,
+    1695805595945,
+    1695805597945,
+    1695805599945,
+    1695805601945,
+    1695805603945,
+    1695805605945,
+    1695805607945,
+    1695805609945,
+    1695805611945,
+    1695805613945,
+    1695805615945,
+    1695805617945,
+    1695805619945,
+    1695805621945,
+    1695805623945,
+    1695805625945,
+    1695805627945,
+    1695805629945,
+    1695805631945,
+    1695805633945,
+    1695805635945,
+    1695805637945,
+    1695805639945,
+    1695805641945,
+    1695805643946,
+    1695805645946,
+    1695805647946,
+    1695805649946,
+    1695805651946,
+    1695805653946,
+    1695805655946,
+    1695805657946,
+    1695805659946,
+    1695805661946,
+    1695805663946,
+    1695805665946,
+    1695805667946,
+    1695805669946,
+    1695805671946,
+    1695805673946,
+    1695805675946,
+    1695805677946,
+    1695805679946,
+    1695805681946,
+    1695805683946,
+    1695805685946,
+    1695805687946,
+    1695805689946,
+    1695805691946,
+    1695805693946,
+    1695805695946,
+    1695805697946,
+    1695805699946,
+  ];
 
-    _map.fitBounds(lineLayer.getBounds())
+  // for (let i = 0; i < line.length; i++) {
+  //   time.push(new Date().getTime() + (i * 2000))
+  // }
+  // console.log(time);
 
-    // Playback options
-    const playbackOptions = {
-      // layer and marker options
-      layer: {
-        pointToLayer: function (featureData, latlng) {
-          const result = {};
+  // const featureGroup = L.featureGroup(circleMarkers)
+  const lineLayer = L.polyline(line);
+  const geoJSON = lineLayer.toGeoJSON();
+  geoJSON.properties.time = time;
 
-          if (featureData && featureData.properties && featureData.properties.path_options) {
-            result = featureData.properties.path_options;
-          }
+  _map.fitBounds(lineLayer.getBounds());
 
-          if (!result.radius) {
-            result.radius = 2;
-          }
+  // Playback options
+  const playbackOptions = {
+    // layer and marker options
+    layer: {
+      pointToLayer: function(featureData, latlng) {
+        let result = {};
 
-          return new L.CircleMarker(latlng, result);
+        if (featureData && featureData.properties && featureData.properties.path_options) {
+          result = featureData.properties.path_options;
         }
+
+        if (!result.radius) {
+          result.radius = 2;
+        }
+
+        return new L.CircleMarker(latlng, result);
       },
-      marker: function () {
-        return {
-          icon: L.divIcon({ className: 'my-div-icon' })
-        };
-      }
-    };
+    },
+    marker: function() {
+      return {
+        icon: L.divIcon({ className: 'my-div-icon' }),
+      };
+    },
+  };
 
-    const onPlaybackTimeChange = function (timestamp, latLngs) {
-      console.log(moment(timestamp).format('YYYY-MM-DD HH:mm:ss'));
-      console.log(latLngs);
-    }
+  const onPlaybackTimeChange = function(timestamp, latLngs) {
+    console.log(moment(timestamp)
+      .format('YYYY-MM-DD HH:mm:ss'));
+  };
 
-    const playback = new L.Playback(_map, null, onPlaybackTimeChange, playbackOptions)
-    playback.setData(geoJSON)
+  const playback = new L.Playback(_map, null, onPlaybackTimeChange, playbackOptions);
+  playback.setData(geoJSON);
 
-    L.Playback = L.Playback || {};
-    L.Playback.Control = L.Control.extend({
-      _html: '<div class="control-container">' +
-        '<div class="control-inner">' +
-        '<div class="control-btn">' +
-        '<button id="startPause">开始</button>' +
-        '<button id="speedUp">加速</button>' +
-        '<button id="speedCut">减速</button>' +
-        '<div id="time"></div>' +
-        '</div>' +
-        '</div>' +
-        '</div>',
+  L.Playback = L.Playback || {};
+  L.Playback.Control = L.Control.extend({
+    _html: '<div class="control-container">' +
+      '<div class="control-inner">' +
+      '<div class="control-btn">' +
+      '<button id="startPause">开始</button>' +
+      '<input  id="sliderTime" type="range" />' +
+      '倍数: ' +
+      '<input  id="sliderInput" type="number" min="1" max="20" value="1" />' +
+      '<input  id="slider" type="range" min="1" max="20" value="1" />' +
+      '<button id="close">关闭</button>' +
+      '</div>' +
+      '<div id="time"></div>' +
+      '</div>' +
+      '</div>',
 
-      initialize: function (playback) {
-        this.playback = playback
-        playback.addCallback(this._clockCallback)
-      },
+    initialize: function(playback) {
+      this.playback = playback;
+      playback.addCallback(this._clockCallback);
+    },
 
-      onAdd: function (map) {
-        const html = this._html
-        document.querySelector('#map').after(htmlToElements(html))
-        this._setup()
-        return L.DomUtil.create('div')
-      },
+    onAdd: function(map) {
+      const html = this._html;
+      document.querySelector('#map')
+        .after(htmlToElements(html));
+      this._setup();
+      return L.DomUtil.create('div');
+    },
 
-      _setup: function () {
-        const self = this
-        const _speedUp = document.querySelector('#speedUp')
-        const _speedCut = document.querySelector('#speedCut')
-        const _startPause = document.querySelector('#startPause')
-        let isStartPause = true
-        _startPause.addEventListener('click', function () {
-          isStartPause = !isStartPause
-          this.textContent = isStartPause ? '开始' : '暂停'
-          if (isStartPause) {
-            self.playback.stop()
-          }
-          else {
-            self.playback.start()
-          }
-        })
-        _speedUp.addEventListener('click', function () {
-          let speed = parseFloat(self.playback.getSpeed() + 1)
-          self.playback.setSpeed(speed)
-        })
-        _speedCut.addEventListener('click', function () {
-          let speed = parseFloat(self.playback.getSpeed() - 1)
-          if (speed > 1) {
-            self.playback.setSpeed(speed)
-          }
-        })
-      },
+    _setup: function() {
+      const self = this;
+      const _startPause = document.querySelector('#startPause');
+      const _sliderTime = document.querySelector('#sliderTime');
+      const _close = document.querySelector('#close');
+      const _slider = document.querySelector('#slider');
+      const _sliderInput = document.querySelector('#sliderInput');
+      let isStartPause = true;
+      _startPause.addEventListener('click', function() {
+        isStartPause = !isStartPause;
+        this.textContent = isStartPause ? '开始' : '暂停';
+        if (isStartPause) {
+          self.playback.stop();
+        }
+        else {
+          self.playback.start();
+        }
+      });
+      _close.addEventListener('click', function() {
+        self.playback.clearData();
+      });
+      _slider.addEventListener('input', function(e) {
+        const value = e.target.value;
+        _sliderInput.value = value;
+        self.playback.setSpeed(value);
+      });
+      _sliderInput.addEventListener('input', function(e) {
+        let value = e.target.value;
+        if (value > 20) {
+          value = 20;
+        }
+        _slider.value = !value ? 1 : value;
+        _sliderInput.value = value;
+        self.playback.setSpeed(!value ? 1 : value);
+      });
+      _sliderTime.min = self.playback.getStartTime();
+      _sliderTime.max = self.playback.getEndTime();
+      _sliderTime.addEventListener('input', function(e) {
+        const time = e.target.value;
+        document.querySelector('#time').textContent = moment(time)
+          .format('YYYY年MM月DD日 HH:mm:ss');
+        self.playback.setCursor(time);
+      });
+    },
 
-      _clockCallback: function (ms) {
-        document.querySelector('#time').textContent = moment(ms).format('YYYY年MM月DD日 HH:mm:ss')
-      }
-    })
+    _clockCallback: function(ms) {
+      document.querySelector('#time').textContent = moment(ms)
+        .format('YYYY年MM月DD日 HH:mm:ss');
+      document.querySelector('#sliderTime').value = ms;
+    },
+  });
 
-    function htmlToElements(html) {
-      var template = document.createElement('template');
-      template.innerHTML = html;
-      return template.content;
-    }
+  function htmlToElements(html) {
+    var template = document.createElement('template');
+    template.innerHTML = html;
+    return template.content;
+  }
 
-    var control = new L.Playback.Control(playback);
-    control.addTo(_map);
+  var control = new L.Playback.Control(playback);
+  control.addTo(_map);
 
 
-    // playback.start()
+  // playback.start()
 
-    // const featureGroup = L.featureGroup().addTo(_map)
-    // dataLineString.forEach(({ id, latLngs }) => {
-    //   featureGroup.addLayer(L.polyline(latLngs, { color: 'red' }))
-    // })
-    // _map.fitBounds(featureGroup.getBounds())
+  // const featureGroup = L.featureGroup().addTo(_map)
+  // dataLineString.forEach(({ id, latLngs }) => {
+  //   featureGroup.addLayer(L.polyline(latLngs, { color: 'red' }))
+  // })
+  // _map.fitBounds(featureGroup.getBounds())
 
-    // const targetArray = ['ID', 'MineName', 'HorizontalID', 'DistrictID', 'WorkFaceID', 'TunnelName', 'TunnelStyle', 'EnableMid', 'EnableTraverse', 'OneTunnel', 'HideLeft', 'HideRight', 'TunnelSection', 'Supports', 'Length', 'CreateDate', 'SystemID', 'OutOffUse', 'Coalbed', 'BulkDensity', 'Width', 'Height', 'BasalArea', 'Feature', 'Heading', 'ConstructionTeam', 'State', 'PlanStarttime', 'PlanEndtime', 'ActualStarttime', 'ActualEndtime', 'TunnelType', 'UpperMouthHeight', 'LowerMouthHeight', 'UpperMouthSection', 'LowerMouthSection', 'UpperTunnelID', 'LowerTunnelID', 'AuxiliaryHaulageLane', 'IsWalk', 'AreaTypeID', 'create_by', 'create_time', 'update_by', 'update_time', 'sys_org_code', 'VersionDate', 'ComputerEnviron', 'Version', 'venttype', 'ventdirec', 'ventbridge', 'obstacle', 'ventspeed', 'vertical_tunnel_z', 'escape_exit', 'slope']
-    // const sourceArray = ['ID', 'MineName', 'HorizontalID', 'DistrictID', 'WorkFaceID', 'TunnelName', 'TunnelStyle', 'EnableMid', 'EnableTraverse', 'OneTunnel', 'HideLeft', 'HideRight', 'TunnelSection', 'Supports', 'Length', 'CreateDate', 'SystemID', 'OutOffUse', 'Coalbed', 'BulkDensity', 'Width', 'Height', 'BasalArea', 'Feature', 'Heading', 'ConstructionTeam', 'State', 'PlanStarttime', 'PlanEndtime', 'ActualStarttime', 'ActualEndtime', 'TunnelType', 'UpperMouthHeight', 'LowerMouthHeight', 'UpperMouthSection', 'LowerMouthSection', 'UpperTunnelID', 'LowerTunnelID', 'AuxiliaryHaulageLane', 'IsWalk', 'AreaTypeID', 'create_by', 'create_time', 'update_by', 'update_time', 'sys_org_code', 'venttype']
-    // const filterArray = targetArray.filter(e => {
-    //   return !sourceArray.includes(e)
-    // })
+  // const targetArray = ['ID', 'MineName', 'HorizontalID', 'DistrictID', 'WorkFaceID', 'TunnelName', 'TunnelStyle', 'EnableMid', 'EnableTraverse', 'OneTunnel', 'HideLeft', 'HideRight', 'TunnelSection', 'Supports', 'Length', 'CreateDate', 'SystemID', 'OutOffUse', 'Coalbed', 'BulkDensity', 'Width', 'Height', 'BasalArea', 'Feature', 'Heading', 'ConstructionTeam', 'State', 'PlanStarttime', 'PlanEndtime', 'ActualStarttime', 'ActualEndtime', 'TunnelType', 'UpperMouthHeight', 'LowerMouthHeight', 'UpperMouthSection', 'LowerMouthSection', 'UpperTunnelID', 'LowerTunnelID', 'AuxiliaryHaulageLane', 'IsWalk', 'AreaTypeID', 'create_by', 'create_time', 'update_by', 'update_time', 'sys_org_code', 'VersionDate', 'ComputerEnviron', 'Version', 'venttype', 'ventdirec', 'ventbridge', 'obstacle', 'ventspeed', 'vertical_tunnel_z', 'escape_exit', 'slope']
+  // const sourceArray = ['ID', 'MineName', 'HorizontalID', 'DistrictID', 'WorkFaceID', 'TunnelName', 'TunnelStyle', 'EnableMid', 'EnableTraverse', 'OneTunnel', 'HideLeft', 'HideRight', 'TunnelSection', 'Supports', 'Length', 'CreateDate', 'SystemID', 'OutOffUse', 'Coalbed', 'BulkDensity', 'Width', 'Height', 'BasalArea', 'Feature', 'Heading', 'ConstructionTeam', 'State', 'PlanStarttime', 'PlanEndtime', 'ActualStarttime', 'ActualEndtime', 'TunnelType', 'UpperMouthHeight', 'LowerMouthHeight', 'UpperMouthSection', 'LowerMouthSection', 'UpperTunnelID', 'LowerTunnelID', 'AuxiliaryHaulageLane', 'IsWalk', 'AreaTypeID', 'create_by', 'create_time', 'update_by', 'update_time', 'sys_org_code', 'venttype']
+  // const filterArray = targetArray.filter(e => {
+  //   return !sourceArray.includes(e)
+  // })
 
-    // 'VersionDate', 'ComputerEnviron', 'Version', 'ventdirec', 'ventbridge', 'obstacle', 'ventspeed', 'vertical_tunnel_z', 'escape_exit', 'slope'
+  // 'VersionDate', 'ComputerEnviron', 'Version', 'ventdirec', 'ventbridge', 'obstacle', 'ventspeed', 'vertical_tunnel_z', 'escape_exit', 'slope'
 
-    // console.log(filterArray);
+  // console.log(filterArray);
 
-    // const dataArr = []
-    // const idsMap = new Map()
-    // const jsonData = []
-    // for (const geoJson of lineString.result) {
-    //   const { geometry, properties, id } = geoJson
-    //   const { coordinates, type, dimension } = geometry
-    //   if (type !== 'LineString' || !Array.isArray(coordinates)) break
-    //   idsMap.set(id, [])
-    //   let xyzArr = []
-    //   for (let i = 0; i < coordinates.length; i++) {
-    //     xyzArr.push(coordinates[i])
-    //     if ((i + 1) % 3 === 0) {
-    //       dataArr.push({
-    //         id,
-    //         xyzArr,
-    //       })
-    //       xyzArr = []
-    //     }
-    //   }
-    // }
-    // dataArr.forEach(({ id, xyzArr }) => {
-    //   idsMap.get(id).push({
-    //     x: xyzArr[0],
-    //     y: xyzArr[1],
-    //     z: xyzArr[2],
-    //   })
-    // })
-    // idsMap.forEach((value, key) => {
-    //   console.log(value, key);
-    //   jsonData.push({
-    //     id: key,
-    //     xyzArr: value
-    //   })
-    // })
-    // // 1130#9
-    // console.log(jsonData);
-  </script>
+  // const dataArr = []
+  // const idsMap = new Map()
+  // const jsonData = []
+  // for (const geoJson of lineString.result) {
+  //   const { geometry, properties, id } = geoJson
+  //   const { coordinates, type, dimension } = geometry
+  //   if (type !== 'LineString' || !Array.isArray(coordinates)) break
+  //   idsMap.set(id, [])
+  //   let xyzArr = []
+  //   for (let i = 0; i < coordinates.length; i++) {
+  //     xyzArr.push(coordinates[i])
+  //     if ((i + 1) % 3 === 0) {
+  //       dataArr.push({
+  //         id,
+  //         xyzArr,
+  //       })
+  //       xyzArr = []
+  //     }
+  //   }
+  // }
+  // dataArr.forEach(({ id, xyzArr }) => {
+  //   idsMap.get(id).push({
+  //     x: xyzArr[0],
+  //     y: xyzArr[1],
+  //     z: xyzArr[2],
+  //   })
+  // })
+  // idsMap.forEach((value, key) => {
+  //   console.log(value, key);
+  //   jsonData.push({
+  //     id: key,
+  //     xyzArr: value
+  //   })
+  // })
+  // // 1130#9
+  // console.log(jsonData);
+</script>
 </body>
 
 </html>

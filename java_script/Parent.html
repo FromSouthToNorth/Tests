@@ -56,15 +56,11 @@
       }];
     function getParentId(list, id) {
       list.forEach(el => {
-        console.log(el);
-        if (el.id == id) {
+        if (el.id === id) {
           console.log(el);
         }
         if (el.children && el.children.length) {
           getParentId(el.children, id)
-        }
-        else {
-          return
         }
       })
     }
