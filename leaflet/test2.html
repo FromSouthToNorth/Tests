@@ -12,6 +12,7 @@
   <script src="./src/moment.js"></script>
   <script src="./src/L.KML.js"></script>
   <script src="src/turf.js"></script>
+  <script src="src/data/data.js"></script>
   <style>
     #map {
       position: fixed;
@@ -87,7 +88,7 @@
 <script>
   const _map = L.map('map', {
     zoom: 10,
-    maxZoom: 25,
+    maxZoom: 35,
     center: [0, 0],
   });
   const tileLayers = [
@@ -103,31 +104,75 @@
     },
   ];
 
+
   tileLayers.forEach(({ url, options }) => {
     L.tileLayer(url, options)
       .addTo(_map);
   });
 
-  fetch('./src/kml/一层-2d.kml')
+  fetch('./src/kml/一层-2d.text')
     .then(res => res.text())
     .then(kmltext => {
       const parser = new DOMParser();
       const kml = parser.parseFromString(kmltext, 'text/xml');
       const track = new L.KML(kml);
-      track.addTo(_map);
-      // Adjust map to show the kml
-      const bounds = track.getBounds();
-      const from = turf.point([104.0633, 30.6600])
-      const to = turf.point([-0.00562647211545873, 0.04684924156823525])
-      const options = {units: 'kilometers'};
-      const distance = turf.distance(from, to, options);
-      const d = bearing([-0.00562647211545873, 0.04684924156823525], [104.0633, 30.6600])
-      console.log(d);
-      const translatedPoly = turf.transformTranslate(track.toGeoJSON(), distance,d );
-      const layer = L.GeoJSON.geometryToLayer(translatedPoly)
-      layer.addTo(_map)
-      _map.fitBounds(bounds);
+      const featureGroup = L.featureGroup()
+        .addTo(_map);
+      // _map.addLayer(track)
+      // _map.fitBounds(track.getBounds());
+      // track.eachLayer(layer => {
+      //   layer.eachLayer(cLayer => {
+      //     const latLngs = []
+      //     cLayer.getLatLngs().forEach(({ lat, lng }) => {
+      //       lat = lat + 45.443712;
+      //       lng = lng + 119.600134;
+      //       if (lat && lng) {
+      //         try {
+      //           latLngs.push(L.latLng(lat, lng))
+      //         }
+      //         catch (e) {
+      //           console.error(e, latLngs);
+      //         }
+      //       }
+      //     })
+      //     if (latLngs.length) {
+      //       cLayer.setLatLngs(latLngs)
+      //       featureGroup.addLayer(cLayer)
+      //     }
+      //   })
+      // });
+      //
+      // track.latLngs.forEach(({ lat, lng }) => {
+      //   lat = lat + 30.6600;
+      //   lng = lng + 104.0633;
+      //   const circleMarker = L.circleMarker({ lat, lng })
+      //   featureGroup.addLayer(circleMarker);
+      // });
+      //
+      // // const layer = L.polyline(_latlngs)
+      // //   .addTo(_map);
+      // // track.addTo(_map);
+      // // // Adjust map to show the kml
+      // // const bounds = track.getBounds();
+      // // const from = turf.point([104.0633, 30.6600]);
+      // // const to = turf.point([-0.00562647211545873, 0.04684924156823525]);
+      // // const options = { units: 'kilometers' };
+      // // const distance = turf.distance(from, to, options);
+      // // const d = bearing([-0.00562647211545873, 0.04684924156823525], [104.0633, 30.6600]);
+      // // console.log(d);
+      // // const translatedPoly = turf.transformTranslate(track.toGeoJSON(), distance, d);
+      // // const layer = L.GeoJSON.geometryToLayer(translatedPoly);
+      // // layer.addTo(_map);
     });
+  // [[45.446700,119.601679], [45.446585, 119.601900]]
+  const bounds = [[45.446691, 119.601666], [45.446585, 119.601939]];
+
+  // 创建一个橙色的矩形
+  const rectangle = L.rectangle(bounds, { color: '#ff7800', weight: 1 })
+    .addTo(_map);
+  console.log(rectangle.getBounds()
+    .toBBoxString());
+  _map.fitBounds(bounds);
 
   function bearing(latLng1, latLng2) {
     const pi = Math.PI;
@@ -136,8 +181,8 @@
     const da = latLng2[0] * (pi / 180) - latLng2[1] * (pi / 180);
 
     let y = Math.sin(da) * Math.cos(p1);
-    let x = Math.cos(p2) *Math.sin(p1) - Math.sin(p2) * Math.cos(p1) * Math.cos(da)
-    return ((Math.atan2(y, x) * 180 / pi) + 360 + 180) % 360
+    let x = Math.cos(p2) * Math.sin(p1) - Math.sin(p2) * Math.cos(p1) * Math.cos(da);
+    return ((Math.atan2(y, x) * 180 / pi) + 360 + 180) % 360;
   }
 
   const line = [
@@ -427,11 +472,11 @@
   // console.log(time);
 
   // const featureGroup = L.featureGroup(circleMarkers)
-  const lineLayer = L.polyline(line);
-  const geoJSON = lineLayer.toGeoJSON();
-  geoJSON.properties.time = time;
+  // const lineLayer = L.polyline(line);
+  // const geoJSON = lineLayer.toGeoJSON();
+  // geoJSON.properties.time = time;
 
-  _map.fitBounds(lineLayer.getBounds());
+  // _map.fitBounds(lineLayer.getBounds());
 
   // Playback options
   const playbackOptions = {
@@ -462,9 +507,120 @@
     console.log(moment(timestamp)
       .format('YYYY-MM-DD HH:mm:ss'));
   };
+  const geoJSON2 = {
+    'type': 'Feature',
+    'properties': {
+      'time': [
+        1697070713550,
+        1697070714610,
+        1697070718473,
+        1697070737413,
+        1697070738397,
+        1697070739357,
+        1697070758073,
+        1697070759080,
+        1697070760153,
+        1697070767097,
+        1697070788573,
+        1697070789557,
+        1697070794777,
+        1697070810983,
+        1697070811953,
+      ],
+      'userName': '278541 - 朱宏昌',
+      'markerIcon': 'staff_02.svg',
+    },
+    'geometry': {
+      'type': 'LineString',
+      'coordinates': [
+        [
+          119.594224,
+          45.481262,
+        ],
+        [
+          119.594224,
+          45.481262,
+        ],
+        [
+          119.594224,
+          45.481262,
+        ],
+        [
+          119.594224,
+          45.481262,
+        ],
+        [
+          119.594222,
+          45.481263,
+        ],
+        [
+          119.594219,
+          45.481263,
+        ],
+        [
+          119.594212,
+          45.481265,
+        ],
+        [
+          119.5942,
+          45.481267,
+        ],
+        [
+          119.594182,
+          45.48127,
+        ],
+        [
+          119.594157,
+          45.481275,
+        ],
+        [
+          119.594116,
+          45.481282,
+        ],
+        [
+          119.594066,
+          45.481292,
+        ],
+        [
+          119.594004,
+          45.481303,
+        ],
+        [
+          119.593931,
+          45.481317,
+        ],
+        [
+          119.593847,
+          45.481333,
+        ],
+      ],
+    },
+  };
 
+  const c = turf.getCoords(geoJSON2);
+  const offsetLatlngs = [];
+  const zoom = _map.getZoom();
+  c.forEach(e => {
+    const point = _map.options.crs.latLngToPoint(L.latLng(e[1], e[0]), zoom);
+    const latlng = _map.options.crs.pointToLatLng(point, zoom);
+    offsetLatlngs.push([latlng.lng, latlng.lat]);
+  });
+  geoJSON2.geometry.coordinates = offsetLatlngs;
+  const geojson = L.geoJSON();
+  const items = []
+  const latlngs = jsonDate.data.map(({l, b, enterTime}) => {
+    items.push(new Date(enterTime).getTime())
+    return [l, b]
+  })
+  const geoJSON3 = Object.assign({}, geoJSON2);
+  geoJSON3.geometry.coordinates = latlngs
+  geoJSON3.properties.time = items
+  geojson.addData(geoJSON2);
+  geojson.addData(geoJSON3);
   const playback = new L.Playback(_map, null, onPlaybackTimeChange, playbackOptions);
-  playback.setData(geoJSON);
+  playback.addData(geoJSON2);
+  geojson.addTo(_map);
+  // _map.fitBounds(geojson.getBounds());
 
   L.Playback = L.Playback || {};
   L.Playback.Control = L.Control.extend({
@@ -556,7 +712,11 @@
   var control = new L.Playback.Control(playback);
   control.addTo(_map);
 
-
+  // const imageUrl = `http://192.163.4.88/EHCommon/resources/map/Scene_1/Building_12/Floor_2d_26_1691904380.png`,
+  //   imageBounds = [[45.446670, 119.601737], [45.446756, 119.601862]];
+  // L.imageOverlay(imageUrl, imageBounds).addTo(_map);
+  // //
+  // _map.fitBounds(imageBounds);
   // playback.start()
 
   // const featureGroup = L.featureGroup().addTo(_map)
