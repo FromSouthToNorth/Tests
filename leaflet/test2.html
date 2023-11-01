@@ -144,7 +144,7 @@
       //   }
       // });
       const bounds = kml.getBounds();
-      console.log(bounds.toBBoxString());
+      // console.log(bounds.toBBoxString());
       // _map.fitBounds(bounds);
     })
     .addTo(_map);
@@ -158,7 +158,7 @@
     .addTo(_map);
   console.log(rectangle.getBounds()
     .toBBoxString());
-  _map.fitBounds(bounds);
+  // _map.fitBounds(bounds);
 
   // Playback options
   const playbackOptions = {
@@ -300,6 +300,12 @@
 
   const control = new L.Playback.Control(playback);
   control.addTo(_map);
+
+  var imageUrl = './src/Floor_2d_11_1689319994.png',
+    imageBounds = [[45.4808476, 119.5945715], [45.4805279, 119.5951509]];
+  L.imageOverlay(imageUrl, imageBounds)
+    .addTo(_map);
+  _map.fitBounds(imageBounds);
 </script>
 </body>
 
