@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../css/reset.css" />
+  <link rel="stylesheet" href="src/css/leaflet.css" />
+  <script src="./src/leaflet/leaflet.js"></script>
+  <script src="./src/leaflet/tutf.js"></script>
+  <title>Document</title>
+  <style>
+    #map-info {
+      z-index: 9999;
+      position: fixed;
+      bottom: 0;
+      padding: 6px;
+      border: 6px;
+      background: #fff;
+      cursor: auto;
+      pointer-events: auto;
+    }
+
+    #map-info .zoom {
+      width: 36px;
+      pointer-events: auto;
+    }
+
+    #map-info .latlng {
+      width: 180px;
+      pointer-events: auto;
+    }
+
+    #map-info .input-error {
+      color: #f5222d;
+      font-weight: 600;
+      width: 126px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="map-container">
+    <!-- <div id="map-info">
+      <span>zoom: </span>
+      <input class="zoom" />
+      <span>latlng: </span>
+      <input class="latlng" />
+    </div> -->
+  </div>
+  <script>
+    const map = L.map('map-container', {
+      zoom: 14,
+      minZoom: 3,
+      maxZoom: 18,
+      center: [0, 0],
+    });
+    const access_token = 'pk.eyJ1IjoiaHlzZSIsImEiOiJjbGVwcWg0bDkwZXNlM3pvNXNleWUzcTQ0In0.S3VTf9vqYTAAF725ukcDjQ'
+    const positronLabels = L.tileLayer(`https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}@2x.jpg?access_token={access_token}`, {
+      access_token,
+    }).addTo(map);
+    const positionAssistOverlay = L.tileLayer(`https://api.mapbox.com/styles/v1/openstreetmap/ckasmteyi1tda1ipfis6wqhuq/tiles/256/{z}/{x}/{y}?access_token={access_token}`, {
+      access_token,
+    }).addTo(map);
+
+    // map.on('moveend', function (e) {
+    //   const { sourceTarget } = e;
+    //   const mapInfoZoomDOM = document.querySelector('#map-info .zoom')
+    //   const mapInfoZoomLatLng = document.querySelector('#map-info .latlng')
+    //   mapInfoZoomDOM.value = sourceTarget.getZoom()
+    //   const options = { precision: 8, coordinates: 2 };
+    //   const center = sourceTarget.getCenter()
+    //   const point = turf.point([
+    //     center.lng, center.lat
+    //   ])
+    //   const coord = turf.getCoord(turf.truncate(point, options));
+    //   mapInfoZoomLatLng.value = `${coord[1]},${coord[0]}`
+    // })
+    const featureGroup = L.featureGroup().addTo(map)
+    const rectangleOptions = {
+      color: '#1677ff',
+      weight: 1,
+    }
+    const layers = [
+      {
+        key: 7,
+        latlng: [[45.4652989, 119.6027567], [45.4655005, 119.6029871]],
+      },
+      {
+        key: 40,
+        latlng: [[45.4916044, 119.5928335], [45.4918350, 119.5931418]],
+      },
+      {
+        key: 41,
+        latlng: [[45.4916068, 119.5928035], [45.4917306, 119.5929905]],
+      },
+      {
+        key: 42,
+        latlng: [[45.4916184, 119.5928059], [45.4917626, 119.5930119]],
+      },
+      {
+        key: 34,
+        latlng: [[45.4424842, 119.5994945], [45.4423197, 119.5997326]],
+      },
+      {
+        key: 29,
+        latlng: [[45.4423238, 119.5995080], [45.4424883, 119.5996451]],
+      },
+      {
+        key: 30,
+        latlng: [[45.4423361, 119.5995243], [45.4424840, 119.5996367]],
+      },
+      {
+        key: 31,
+        latlng: [[45.4423078, 119.5994956], [45.4424684, 119.5997529]],
+      },
+      {
+        key: 37,
+        latlng: [[45.4435208, 119.5995688], [45.4437197, 119.5998915]],
+      },
+      {
+        key: 38,
+        latlng: [[45.4444877, 119.6004512], [45.4451634, 119.6020462]],
+      },
+      {
+        key: 43,
+        latlng: [[45.4445863, 119.6007753], [45.4449356, 119.6022689]],
+      },
+      {
+        key: 36,
+        latlng: [[45.4441567, 119.5996904], [45.4442991, 119.5999168]],
+      },
+      {
+        key: 26,
+        latlng: [[45.4465775, 119.6017162], [45.4466921, 119.6018827]],
+      },
+      {
+        key: 27,
+        latlng: [[45.4466050, 119.6015922], [45.4466870, 119.6016757]],
+      },
+      {
+        key: 44,
+        latlng: [[45.4455918, 119.6019492], [45.4456962, 119.6020522]],
+      },
+      {
+        key: 23,
+        latlng: [[45.4538544, 119.6016217], [45.4539885, 119.6017708]],
+      },
+      {
+        key: 24,
+        latlng: [[45.4538648, 119.6016346], [45.4539829, 119.6017555]],
+      },
+      {
+        key: 25,
+        latlng: [[45.4538531, 119.6015748], [45.4539830, 119.6017815]],
+      },
+      {
+        key: 20,
+        latlng: [[45.4543374, 119.5998856], [45.4544964, 119.6001287]],
+      },
+      {
+        key: 21,
+        latlng: [[45.4543508, 119.5998969], [45.4544416, 119.6000767]],
+      },
+      {
+        key: 22,
+        latlng: [[45.4543237, 119.5998822], [45.4545048, 119.6001331]],
+      },
+      {
+        key: 19,
+        latlng: [[45.4542698, 119.6001301], [45.4543526, 119.6002417]],
+      },
+    ]
+    console.log('layers.length: ', layers.length);
+    layers.forEach(({ latlng, key, imageUrl }, index) => {
+      rectangleOptions.key = key
+      const rectangle = L.rectangle(latlng, rectangleOptions).bindPopup(`<p>${key}</p>`)
+      featureGroup.addLayer(rectangle)
+      if (imageUrl) {
+        featureGroup.addLayer(L.imageOverlay(imageUrl, latlng, { key: `imageOverlay-{key}` }))
+      }
+    })
+    map.fitBounds(featureGroup.getBounds())
+
+    function truncate(latlng, options) {
+      options = options ? options : { precision: 8, coordinates: 2 }
+      const point = turf.point([
+        latlng.lng, latlng.lat
+      ])
+      return turf.getCoord(turf.truncate(point, options))
+    }
+
+    L.Control.mapInfo = L.Control.extend({
+      _html: `<div id="map-info">
+                <span>zoom: </span>
+                <input class="zoom" type="number" />
+                <span>latlng: </span>
+                <input class="latlng" />
+              </div>`,
+
+      initialize: function (_map) {
+        this.map = _map
+      },
+
+      onAdd: function (map) {
+        const html = this._html
+        const template = document.createElement('template')
+        template.innerHTML = html
+        document.querySelector('#map-container').after(template.content)
+        this._moveend()
+        const self = this
+        this.map.on('moveend', (e) => {
+          self._moveend()
+        })
+        this._zoomChange()
+        this._latlngChange()
+        return L.DomUtil.create('div')
+      },
+
+      _moveend: function () {
+        // zoom
+        this.mapInfoZoomDOM = document.querySelector('#map-info .zoom')
+        const zoom = this.map.getZoom()
+        this.mapInfoZoomDOM.value = zoom
+
+        // latlng
+        this.mapInfoLatLngDOM = document.querySelector('#map-info .latlng')
+        const options = { precision: 8, coordinates: 2 };
+        const center = this.map.getCenter()
+        const coord = truncate(center);
+        this.mapInfoLatLngDOM.value = `${coord[1]},${coord[0]}`
+      },
+
+      _zoomChange: function () {
+        const self = this
+        this.mapInfoZoomDOM.addEventListener('input', function (e) {
+          const zoom = self.map.getZoom()
+          const value = e.target.value
+          if (value === '') {
+            e.target.value = 3
+            self.map.setZoom(3)
+          }
+          if (!isNaN(value)) {
+            if (e.target.value === zoom) {
+              return
+            }
+            self.map.setZoom(Number(value))
+          }
+
+        })
+      },
+
+      // 45.47298985,119.59738275
+      _latlngChange: function () {
+        const self = this
+        this.mapInfoLatLngDOM.addEventListener('input', function (e) {
+          const value = e.target.value.replace(/\s*/g, "")
+          const latlng = value.split(',')
+          if (latlng.length === 2 && !isNaN(latlng[0]) && !isNaN(latlng[1])) {
+            const zoom = self.map.getZoom()
+            const marker = L.marker(latlng, { key: 'center_marker' }).on('click', e => {
+              if (featureGroup.hasLayer(e.sourceTarget)) {
+                featureGroup.removeLayer(e.sourceTarget)
+              }
+            })
+            featureGroup.addLayer(marker)
+            self.map.setView(latlng, zoom)
+          }
+          else {
+            e.target.value = '请输入合法的经纬度'
+            self.mapInfoLatLngDOM.classList.add('input-error')
+            const center = truncate(self.map.getCenter())
+            setTimeout(function () {
+              self.mapInfoLatLngDOM.classList.remove('input-error')
+              e.target.value = `${center[1]},${center[0]}`
+            }, 1800)
+          }
+        })
+      },
+    })
+
+    const mapInfo = new L.Control.mapInfo(map)
+    mapInfo.addTo(map)
+    // mapInfoControl.addTo(map)
+
+  </script>
+</body>
+
+</html>
