@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="src/css/leaflet.css" />
   <script src="./src/leaflet/leaflet.js"></script>
   <script src="./src/leaflet/tutf.js"></script>
+  <script src="./src/hlhimg.js"></script>
   <title>Document</title>
   <style>
     #map-info {
@@ -36,6 +37,33 @@
       font-weight: 600;
       width: 126px;
     }
+
+    #map-info .file {
+      margin: 2px;
+    }
+
+    #map-info .bounds {
+      margin: 2px;
+      display: none;
+      border: 1px solid #000;
+      border-radius: 6px;
+      padding: 6px;
+      color: #f5222d;
+    }
+
+    .bounds input {
+      width: 126px;
+    }
+
+    .imgLayerList {
+      margin: 6px;
+    }
+
+    .imgLayerList li {
+      cursor: pointer;
+      padding: 6px;
+      margin-right: 4px;
+    }
   </style>
 </head>
 
@@ -52,7 +80,7 @@
     const map = L.map('map-container', {
       zoom: 14,
       minZoom: 3,
-      maxZoom: 18,
+      maxZoom: 25,
       center: [0, 0],
     });
     const access_token = 'pk.eyJ1IjoiaHlzZSIsImEiOiJjbGVwcWg0bDkwZXNlM3pvNXNleWUzcTQ0In0.S3VTf9vqYTAAF725ukcDjQ'
@@ -62,119 +90,15 @@
     const positionAssistOverlay = L.tileLayer(`https://api.mapbox.com/styles/v1/openstreetmap/ckasmteyi1tda1ipfis6wqhuq/tiles/256/{z}/{x}/{y}?access_token={access_token}`, {
       access_token,
     }).addTo(map);
-
-    // map.on('moveend', function (e) {
-    //   const { sourceTarget } = e;
-    //   const mapInfoZoomDOM = document.querySelector('#map-info .zoom')
-    //   const mapInfoZoomLatLng = document.querySelector('#map-info .latlng')
-    //   mapInfoZoomDOM.value = sourceTarget.getZoom()
-    //   const options = { precision: 8, coordinates: 2 };
-    //   const center = sourceTarget.getCenter()
-    //   const point = turf.point([
-    //     center.lng, center.lat
-    //   ])
-    //   const coord = turf.getCoord(turf.truncate(point, options));
-    //   mapInfoZoomLatLng.value = `${coord[1]},${coord[0]}`
-    // })
     const featureGroup = L.featureGroup().addTo(map)
     const rectangleOptions = {
       color: '#1677ff',
       weight: 1,
     }
-    const layers = [
-      {
-        key: 7,
-        latlng: [[45.4652989, 119.6027567], [45.4655005, 119.6029871]],
-      },
-      {
-        key: 40,
-        latlng: [[45.4916044, 119.5928335], [45.4918350, 119.5931418]],
-      },
-      {
-        key: 41,
-        latlng: [[45.4916068, 119.5928035], [45.4917306, 119.5929905]],
-      },
-      {
-        key: 42,
-        latlng: [[45.4916184, 119.5928059], [45.4917626, 119.5930119]],
-      },
-      {
-        key: 34,
-        latlng: [[45.4424842, 119.5994945], [45.4423197, 119.5997326]],
-      },
-      {
-        key: 29,
-        latlng: [[45.4423238, 119.5995080], [45.4424883, 119.5996451]],
-      },
-      {
-        key: 30,
-        latlng: [[45.4423361, 119.5995243], [45.4424840, 119.5996367]],
-      },
-      {
-        key: 31,
-        latlng: [[45.4423078, 119.5994956], [45.4424684, 119.5997529]],
-      },
-      {
-        key: 37,
-        latlng: [[45.4435208, 119.5995688], [45.4437197, 119.5998915]],
-      },
-      {
-        key: 38,
-        latlng: [[45.4444877, 119.6004512], [45.4451634, 119.6020462]],
-      },
-      {
-        key: 43,
-        latlng: [[45.4445863, 119.6007753], [45.4449356, 119.6022689]],
-      },
-      {
-        key: 36,
-        latlng: [[45.4441567, 119.5996904], [45.4442991, 119.5999168]],
-      },
-      {
-        key: 26,
-        latlng: [[45.4465775, 119.6017162], [45.4466921, 119.6018827]],
-      },
-      {
-        key: 27,
-        latlng: [[45.4466050, 119.6015922], [45.4466870, 119.6016757]],
-      },
-      {
-        key: 44,
-        latlng: [[45.4455918, 119.6019492], [45.4456962, 119.6020522]],
-      },
-      {
-        key: 23,
-        latlng: [[45.4538544, 119.6016217], [45.4539885, 119.6017708]],
-      },
-      {
-        key: 24,
-        latlng: [[45.4538648, 119.6016346], [45.4539829, 119.6017555]],
-      },
-      {
-        key: 25,
-        latlng: [[45.4538531, 119.6015748], [45.4539830, 119.6017815]],
-      },
-      {
-        key: 20,
-        latlng: [[45.4543374, 119.5998856], [45.4544964, 119.6001287]],
-      },
-      {
-        key: 21,
-        latlng: [[45.4543508, 119.5998969], [45.4544416, 119.6000767]],
-      },
-      {
-        key: 22,
-        latlng: [[45.4543237, 119.5998822], [45.4545048, 119.6001331]],
-      },
-      {
-        key: 19,
-        latlng: [[45.4542698, 119.6001301], [45.4543526, 119.6002417]],
-      },
-    ]
-    console.log('layers.length: ', layers.length);
-    layers.forEach(({ latlng, key, imageUrl }, index) => {
+    // hlhimg.js
+    layerData.forEach(({ latlng, key, imageUrl, name }, index) => {
       rectangleOptions.key = key
-      const rectangle = L.rectangle(latlng, rectangleOptions).bindPopup(`<p>${key}</p>`)
+      const rectangle = L.rectangle(latlng, rectangleOptions).bindPopup(`<p>${key}</p> <p>${name}</p>`)
       featureGroup.addLayer(rectangle)
       if (imageUrl) {
         featureGroup.addLayer(L.imageOverlay(imageUrl, latlng, { key: `imageOverlay-{key}` }))
@@ -192,11 +116,26 @@
 
     L.Control.mapInfo = L.Control.extend({
       _html: `<div id="map-info">
+                <div class="file">
+                  up file:
+                  <input class="upload-file" type="file" />
+                  <div class="bounds">
+                    <h3>请输入图片范围</h3>
+                    西北: <input class="orthWest" />
+                    东南: <input class="southEast" />
+                    <button class="renderImg">确定</button>
+                    <button class="clear">取消</button>
+                  </div>
+                  <div class="imgLayerList">
+                  </div>
+                </div>
                 <span>zoom: </span>
                 <input class="zoom" type="number" />
                 <span>latlng: </span>
                 <input class="latlng" />
               </div>`,
+
+      imgLayers: new Map(),
 
       initialize: function (_map) {
         this.map = _map
@@ -214,6 +153,7 @@
         })
         this._zoomChange()
         this._latlngChange()
+        this._upload()
         return L.DomUtil.create('div')
       },
 
@@ -274,6 +214,111 @@
               self.mapInfoLatLngDOM.classList.remove('input-error')
               e.target.value = `${center[1]},${center[0]}`
             }, 1800)
+          }
+        })
+      },
+
+      _upload: function () {
+        const self = this
+        const input = document.querySelector('#map-info .upload-file')
+        const bounds = document.querySelector('#map-info .bounds')
+        input.addEventListener('change', function (e) {
+          const file = input.files[0]
+          if (input.files.length && file.type.includes('image')) {
+            const reader = new FileReader()
+            reader.readAsDataURL(file)
+            reader.onload = function (e) {
+              const imageUrl = e.target.result
+              bounds.setAttribute('style', 'display: block')
+              const orthWestDMO = document.querySelector('.orthWest')
+              const southEastDMO = document.querySelector('.southEast')
+              const renderImgDMO = document.querySelector('.renderImg')
+              const clearDMO = document.querySelector('.clear')
+              let orthWest, southEast
+              orthWestDMO.addEventListener('input', onInput)
+              southEastDMO.addEventListener('input', onInput)
+              renderImgDMO.addEventListener('click', renderImgOnClick)
+              clearDMO.addEventListener('click', clear)
+
+              function renderImgOnClick() {
+                if (imageUrl && orthWest.length && southEast.length) {
+                  const key = file.name.split('.')[0]
+                  if (self.imgLayers.has(key)) {
+                    return
+                  }
+                  const el = document.createElement('li')
+                  el.setAttribute('data-key', key)
+                  el.addEventListener('click', onLiClickLayer)
+                  el.innerText = key
+
+                  const but = document.createElement('button')
+                  but.addEventListener('click', onButClickLayer)
+                  but.setAttribute('data-key', key)
+                  const btuText = document.createTextNode('X')
+                  but.appendChild(btuText)
+
+                  el.appendChild(but)
+
+                  self.imgLayers.set(key, el)
+                  document.querySelector('.imgLayerList').appendChild(el)
+                  const imageOverlay = L.imageOverlay(imageUrl, [orthWest, southEast], { key: `imageOverlay-${key}` })
+                  featureGroup.addLayer(imageOverlay)
+                  map.fitBounds([orthWest, southEast])
+                }
+              }
+
+              function onButClickLayer(e) {
+                e.stopPropagation()
+                const key = e.target.getAttribute('data-key')
+                // [[45.4905089, 119.5917752], [45.4906783, 119.5920082]]
+                const layers = featureGroup.getLayers()
+                for (const layer of layers) {
+                  const { key } = layer.options
+                  if (typeof key === 'string' && key.includes(key)) {
+                    featureGroup.removeLayer(layer)
+                    break
+                  }
+                }
+                const el = self.imgLayers.get(key)
+                document.querySelector('.imgLayerList').removeChild(el)
+                self.imgLayers.delete(key)
+              }
+
+              function onLiClickLayer(e) {
+                const key = e.target.getAttribute('data-key')
+                const layers = featureGroup.getLayers()
+                for (const layer of layers) {
+                  const { key } = layer.options
+                  if (typeof key === 'string' && key.includes(key)) {
+                    map.fitBounds(layer.getBounds())
+                    break
+                  }
+                }
+              }
+
+              function clear() {
+                input.value = ''
+                orthWestDMO.value = ''
+                orthWestDMO.removeEventListener('input', onInput)
+                southEastDMO.value = ''
+                southEastDMO.removeEventListener('input', onInput)
+                renderImgDMO.removeEventListener('click', renderImgOnClick)
+                clearDMO.removeEventListener('click', clear)
+                bounds.setAttribute('style', 'display: none')
+              }
+
+              function onInput(e) {
+                if (e.target.className === 'orthWest') {
+                  orthWest = e.target.value.replace(/\s*/g, "").split(',')
+                }
+                else if (e.target.className === 'southEast') {
+                  southEast = e.target.value.replace(/\s*/g, "").split(',')
+                }
+              }
+            }
+          }
+          else {
+            console.error('请上传图片!');
           }
         })
       },
