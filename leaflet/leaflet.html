@@ -96,7 +96,19 @@
       weight: 1,
     }
     // hlhimg.js
-    layerData.forEach(({ latlng, key, imageUrl, name }, index) => {
+    const data = []
+    layerData.forEach(({ latlng, extend, key, imageUrl, name, options }, index) => {
+      data.push({
+        key,
+        south_east_point: {
+          x: extend[0],
+          y: extend[1],
+        },
+        north_west_point: {
+          x: extend[2],
+          y: extend[3],
+        }
+      })
       rectangleOptions.key = key
       const rectangle = L.rectangle(latlng, rectangleOptions).bindPopup(`<p>${key}</p> <p>${name}</p>`)
       featureGroup.addLayer(rectangle)
@@ -104,6 +116,7 @@
         featureGroup.addLayer(L.imageOverlay(imageUrl, latlng, { key: `imageOverlay-{key}` }))
       }
     })
+    console.log(data);
     map.fitBounds(featureGroup.getBounds())
 
     function truncate(latlng, options) {
