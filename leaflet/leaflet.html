@@ -9,6 +9,7 @@
   <script src="./src/leaflet/leaflet.js"></script>
   <script src="./src/leaflet/tutf.js"></script>
   <script src="./src/hlhimg.js"></script>
+  <script src="./src/yhxmc.js"></script>
   <title>Document</title>
   <style>
     #map-info {
@@ -96,9 +97,9 @@
       weight: 1,
     }
     // hlhimg.js
-    const data = []
+    const hlhimgData = []
     layerData.forEach(({ latlng, extend, key, imageUrl, name, options }, index) => {
-      data.push({
+      hlhimgData.push({
         key,
         south_east_point: {
           x: extend[0],
@@ -116,7 +117,7 @@
         featureGroup.addLayer(L.imageOverlay(imageUrl, latlng, { key: `imageOverlay-{key}` }))
       }
     })
-    console.log(data);
+    console.log('霍林河: ', hlhimgData);
     map.fitBounds(featureGroup.getBounds())
 
     function truncate(latlng, options) {
@@ -337,7 +338,7 @@
       },
     })
 
-    const mapInfo = new L.Control.mapInfo(map)
+    const mapInfo = new L.Control.mapInfo(map, { options: { position: 'bottomleft' } })
     mapInfo.addTo(map)
 
     // const baseBounds = [[45.4401072, 119.5651562], [45.4910540, 119.6150616]]
@@ -350,6 +351,32 @@
     // featureGroup.addLayer(baseMarker)
     // mapInfoControl.addTo(map)
 
+    console.log('运河选煤厂: ', yhxmcData);
+    const _newyhxmcData = yhxmcData.map(_data => {
+      let { id, name, extend } = _data
+      const northWestPoint = {
+        x: extend[0],
+        y: extend[1],
+      }
+      const southEastPoint = {
+        x: extend[2],
+        y: extend[3],
+      }
+      return {
+        id,
+        name,
+        northWestPoint,
+        southEastPoint,
+      }
+    })
+    console.log(_newyhxmcData);
+    L.imageOverlay(
+      './src/floorimg/Floor_2d_1_1698977796.png',
+      [[35.4874019, 116.5123031], [35.4878262, 116.5125915]]).addTo(map)
+    L.imageOverlay(
+      './src/floorimg/Floor_2d_1_1698977796.png',
+      [[35.4874019, 116.5123031], [35.4878262, 116.5125915]]).addTo(map)
+    map.fitBounds([[35.4874019, 116.5123031], [35.4878262, 116.5125915]])
   </script>
 </body>
 
