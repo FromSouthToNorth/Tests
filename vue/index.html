@@ -1,36 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>Vue</title>
   <script src="src/vue.js"></script>
 </head>
-<body>
-<div id="app">
-  <button @click="count++">{{ count }}</button>
-</div>
-<script>
-  const name = 'bind,cloak,else-if,else,for,html,if,model,on,once,pre,show,slot,text,memo';
-  const obj = Object.create(null);
-  const list = name.split(',');
-  for (let i = 0; i < list.length; i++) {
-    obj[list[i]] = true;
-  }
-  const app = Vue.createApp({
-    data() {
-      return {
-        count: 0,
-      };
-    },
-  });
-  app.mount('#app');
 
-  const count = Vue.ref(0)
-  console.log(count);
-  console.log(count.value);
-  count.value++
-  console.log(count.value);
-  console.log();
-</script>
+<body>
+  <div id="app">
+    <button @click="count++">{{ count }}</button>
+  </div>
+  <script>
+    const name = 'bind,cloak,else-if,else,for,html,if,model,on,once,pre,show,slot,text,memo';
+    const obj = Object.create(null);
+    const list = name.split(',');
+    for (let i = 0; i < list.length; i++) {
+      obj[list[i]] = true;
+    }
+    const app = Vue.createApp({
+      data() {
+        return {
+          count: 0,
+        };
+      },
+    });
+    app.mount('#app');
+
+    const count = Vue.ref(0)
+    console.log(count);
+    console.log(count.value);
+    count.value++
+    console.log(count.value);
+    console.log('----');
+    const fun = function (a, b) {
+      return a + b;
+    }
+    const buffer = new ArrayBuffer(32)
+    buffer[0] = 12
+    buffer[1] = '12'
+    buffer[2] = fun
+    buffer[3] = Infinity
+    // 二进制以 0b 开头
+    buffer[4] = 0b0
+    buffer[5] = 0b1
+    // 八进制以 0o 开头
+    buffer[6] = 0o10
+    buffer[7] = 0o11
+    // 十六进制以 0x 开头
+    buffer[8] = 0x1
+    buffer[9] = 0xA
+    buffer[10] = 0xB
+    buffer[11] = 0xC
+    for (let i = 0; i < buffer.byteLength; i++) {
+      if (buffer[i] != undefined) {
+        console.log('buffer[%s]: %s', i, buffer[i]);
+      }
+    }
+    const set = new Set();
+    const str = 'qwertyuiopasdfghjklzxcvbnm01234567899876543210'
+    console.time()
+    for (let index = 0; index < 10000; index++) {
+      for (let i = 0; i < str.length; i++) {
+        set.add(str[i])
+      }
+      const setArray = [...set]
+      for (let i = 0; i < setArray.length; i++) {
+        if (str[i] != setArray[i]) {
+          console.error('str[%s]: %s != setArray[%s]: %s', i, str[i], i, setArray[i]);
+        }
+      }
+    }
+    console.timeEnd()
+
+    const tests = [1, 2, 3]
+    console.log(tests.shift());
+  </script>
 </body>
+
 </html>

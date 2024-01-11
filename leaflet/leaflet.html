@@ -85,8 +85,11 @@
       center: [0, 0],
     });
     const access_token = 'pk.eyJ1IjoiaHlzZSIsImEiOiJjbGVwcWg0bDkwZXNlM3pvNXNleWUzcTQ0In0.S3VTf9vqYTAAF725ukcDjQ'
-    const positronLabels = L.tileLayer(`https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}@2x.jpg?access_token={access_token}`, {
-      access_token,
+    // const positronLabels = L.tileLayer(`https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}@2x.jpg?access_token={access_token}`, {
+    //   access_token,
+    // }).addTo(map);
+    const positronLabels = L.tileLayer(`https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}?blankTile=false`, {
+      // tmp: true
     }).addTo(map);
     const positionAssistOverlay = L.tileLayer(`https://api.mapbox.com/styles/v1/openstreetmap/ckasmteyi1tda1ipfis6wqhuq/tiles/256/{z}/{x}/{y}?access_token={access_token}`, {
       access_token,
@@ -98,7 +101,7 @@
     }
     // hlhimg.js
     const hlhimgData = []
-    layerData.forEach(({ latlng, extend, key, imageUrl, name, options }, index) => {
+    const hlhLayers = layerData.map(({ latlng, extend, key, imageUrl, name, options }, index) => {
       hlhimgData.push({
         key,
         south_east_point: {
@@ -116,9 +119,9 @@
       if (imageUrl) {
         featureGroup.addLayer(L.imageOverlay(imageUrl, latlng, { key: `imageOverlay-{key}` }))
       }
+      return rectangle
     })
     console.log('霍林河: ', hlhimgData);
-    map.fitBounds(featureGroup.getBounds())
 
     function truncate(latlng, options) {
       options = options ? options : { precision: 8, coordinates: 2 }
@@ -351,32 +354,40 @@
     // featureGroup.addLayer(baseMarker)
     // mapInfoControl.addTo(map)
 
-    console.log('运河选煤厂: ', yhxmcData);
-    const _newyhxmcData = yhxmcData.map(_data => {
-      let { id, name, extend } = _data
-      const northWestPoint = {
-        x: extend[0],
-        y: extend[1],
+    console.log('运河选煤厂: ', _yhxmcData);
+    const yhxmcLayers = _yhxmcData.map(({ key, latlng, name, south_east_point, north_west_point, imageUrl }) => {
+      rectangleOptions.key = key
+      const rectangle = L.rectangle(latlng, rectangleOptions).bindPopup(`<p>${key}</p> <p>${name}</p>`)
+      featureGroup.addLayer(rectangle)
+      if (imageUrl) {
+        featureGroup.addLayer(L.imageOverlay(imageUrl, latlng, { key: `imageOverlay-{key}` }))
       }
-      const southEastPoint = {
-        x: extend[2],
-        y: extend[3],
-      }
+      return rectangle
+    })
+    console.log(L.featureGroup(yhxmcLayers).getBounds());
+    map.fitBounds(L.featureGroup(yhxmcLayers).getBounds())
+    const _newData = _yhxmcData.map(({ key, latlng, name, south_east_point, north_west_point, imageUrl }) => {
       return {
-        id,
+        key,
         name,
-        northWestPoint,
-        southEastPoint,
+        latlng,
+        extend: [north_west_point.x, north_west_point.y, south_east_point.x, south_east_point.y],
+        options: {
+          url: imageUrl || ''
+        }
       }
     })
-    console.log(_newyhxmcData);
-    L.imageOverlay(
-      './src/floorimg/Floor_2d_1_1698977796.png',
-      [[35.4874019, 116.5123031], [35.4878262, 116.5125915]]).addTo(map)
-    L.imageOverlay(
-      './src/floorimg/Floor_2d_1_1698977796.png',
-      [[35.4874019, 116.5123031], [35.4878262, 116.5125915]]).addTo(map)
-    map.fitBounds([[35.4874019, 116.5123031], [35.4878262, 116.5125915]])
+    console.log(_newData);
+
+    console.log(112 - 75);
+    console.log(75 * 1.5);
+
+    const objs = [{ id: '1' }, { id: '2' }]
+    const ids = objs.map(e => {
+      return e.id
+    })
+    console.log(ids.join(','));
+
   </script>
 </body>
 
