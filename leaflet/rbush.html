@@ -6,10 +6,55 @@
   <title>Title</title>
   <link rel="stylesheet" href="../css/reset.css">
   <script src="./src/rbush.js"></script>
+  <script src="./src/rbushKnn.js"></script>
 </head>
 
 <body>
   <script>
+    const tree = new RBush();
+    const latLngs = []
+    console.time();
+    for (let i = 1; i <= 1800000; i++) {
+      latLngs.push([i, (i << 5) - i])
+    }
+    const points = latLngs.map((e, i) => {
+      return {
+        minX: e[0],
+        minY: e[1],
+        maxX: e[0],
+        maxY: e[1],
+        id: `${(i << 5) - i}`
+      }
+    })
+    console.timeEnd();
+    const bbox = {
+      minX: 0,
+      minY: 0,
+      maxX: 19200,
+      maxY: 9800
+    }
+    const item = {
+      minX: 20,
+      minY: 40,
+      maxX: 30,
+      maxY: 50,
+      id: 'bar'
+    };
+    console.log(points);
+    tree.load(points)
+    tree.insert(item)
+    console.log(tree)
+    console.log(tree.all())
+    const result = tree.search(bbox)
+    console.log(result)
+    result.forEach((e) => {
+      if (tree.collides(e)) {
+        tree.remove(e)
+      }
+    });
+    console.log(tree.all())
+    const p = knn(tree, 1900, 980, 5)
+    console.log(p);
   </script>
 </body>
 

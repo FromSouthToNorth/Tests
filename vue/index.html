@@ -72,8 +72,14 @@
       }
     }
     console.timeEnd()
-
-    const tests = [1, 2, 3]
+    const newArray = []
+    const tests = [1, 2, 3, 3, 4, 5, 6, 6, 7, 8]
+    for (let i = 1; i <= tests.length; i++) {
+      if (tests[i - 1] !== tests[i]) {
+        newArray.push(tests[i - 1])
+      }
+    }
+    console.log(newArray);
     console.log(tests.shift());
   </script>
 </body>
