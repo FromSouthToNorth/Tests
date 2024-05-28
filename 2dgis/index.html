@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2D GIS 示例 - 交互、缩放和平移</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://d3js.org/topojson.v1.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .map-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="map-container">
+    <svg id="map"></svg>
+  </div>
+  <script>
+    // 初始化地图
+    const svg = d3.select("#map");
+    const g = svg.append("g");
+
+    let projection = d3.geoMercator();
+    let path = d3.geoPath().projection(projection);
+    const zoom = d3.zoom().scaleExtent([1, 8]).on("zoom", zoomed);
+
+    svg.call(zoom);
+
+    // 加载并绘制地图
+    d3.json("./world-110m2.json").then(data => {
+      g.selectAll("path")
+        .data(topojson.feature(data, data.objects.countries).features)
+        .enter().append("path")
+        .attr("fill", "red")
+        .attr("stroke", "#fff")
+        .attr("stroke-width", 0.5);
+
+      updateMap(); // 初始绘制地图
+    }).catch(error => {
+      console.error(error);
+    });
+
+    // 监听窗口大小变化事件
+    window.addEventListener("resize", updateMap);
+
+    function updateMap() {
+      const width = document.getElementById('map').clientWidth;
+      const height = document.getElementById('map').clientHeight;
+
+      svg.attr("width", width).attr("height", height);
+
+      projection
+        .scale(150 * (width / 960)) // 根据窗口大小调整比例
+        .translate([width / 2, height / 1.5]);
+
+      g.selectAll("path").attr("d", path); // 更新路径
+    }
+
+    function zoomed(event) {
+      g.attr("transform", event.transform); // 通过缩放事件调整组的变换属性
+    }
+  </script>
+</body>
+
+</html>
