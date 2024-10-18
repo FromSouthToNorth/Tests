@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leaflet Smooth Path Animation with Easing</title>
+  <link rel="stylesheet" href="./src//css/leaflet.css" />
+  <script src="./src/leaflet/leaflet.js"></script>
+  <style>
+    #map {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+
+    .point {
+      border: 1px solid #f0f0f0;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #52c41a;
+    }
+
+    .start-point {
+      border: 1px solid #f0f0f0;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #cf1322;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="map"></div>
+  <script>
+    /** 
+     *         y
+     *      -2
+     *      -1
+     *-2 -1  0  1  2
+     *       1       x
+     *       2
+     */
+    let latlng = [30.63274, 104.07667]
+    const map = L.map('map').setView(latlng, 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    const icon = L.divIcon({ className: 'point' })
+    const startMaker = L.marker([30.63274, 104.07667], { draggable: true, icon: L.divIcon({ className: 'start-point', iconSize: [16, 16] }) }).bindTooltip('拖动此标记,其他标记跟随移动', { permanent: true }).addTo(map)
+    const fg = L.featureGroup().addTo(map)
+    function addRandomMarkers(numMarkers) {
+      for (let i = 0; i < numMarkers; i++) {
+        // 随机生成纬度和经度
+        let lat = latlng[0] + Math.random() * (-0.06 - 0.06) + 0.06; // 纬度范围
+        let lng = latlng[1] + Math.random() * (-0.06 - 0.06) + 0.06;  // 经度范围
+
+        // 创建标记并添加到地图
+        fg.addLayer(L.marker([lat, lng], { icon, iconSize: [12, 12] }));
+      }
+    }
+    addRandomMarkers(50)
+
+    startMaker.on('dragend', (event) => {
+      const { lat, lng } = event.target.getLatLng()
+      console.log(lat, lng);
+      const diffLat = latlng[0] - lat
+      const diffLng = latlng[1] - lng
+      fg.getLayers().forEach(element => {
+        const latLng = element.getLatLng()
+        element.setLatLng([latLng.lat - diffLat, latLng.lng - diffLng])
+      });
+      latlng = [lat, lng]
+    })
+  </script>
+</body>
+
+</html>

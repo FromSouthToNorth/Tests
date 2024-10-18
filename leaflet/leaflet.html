@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="../css/reset.css" />
   <link rel="stylesheet" href="src/css/leaflet.css" />
   <script src="./src/leaflet/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
   <script src="./src/leaflet/tutf.js"></script>
   <script src="./src/hlhimg.js"></script>
   <script src="./src/yhxmc.js"></script>
@@ -387,6 +388,27 @@
       return e.id
     })
     console.log(ids.join(','));
+
+
+    // 数据点，包括权重值
+    var points = [
+      [51.505, -0.09, 0.2],   // 权重为 0.2 -> 显示蓝色
+      [51.515, -0.10, 0.5],   // 权重为 0.5 -> 显示黄色
+      [51.525, -0.11, 1.0]    // 权重为 1.0 -> 显示红色
+    ];
+
+    // 创建热力图
+    var heat = L.heatLayer(points, {
+      radius: 50,               // 设置合适的半径
+      blur: 30,                 // 模糊半径
+      gradient: {               // 颜色渐变
+        0.0: 'blue',          // 权重为 0 显示蓝色
+        0.5: 'yellow',        // 权重为 0.5 显示黄色
+        1.0: 'red'            // 权重为 1 显示红色
+      }
+    }).addTo(map);
+
+    map.setView([51.525, -0.11], 19)
 
   </script>
 </body>
