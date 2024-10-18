@@ -63,14 +63,42 @@
     }
     addRandomMarkers(50)
 
+    function moveMarkerWithAnimation(marker, targetLatLng) {
+      // 获取当前坐标
+      const currentLatLng = marker.getLatLng();
+
+      // 定义动画持续时间
+      let duration = 800; // .8秒
+      let startTime = null;
+
+      function animateMarker(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = (timestamp - startTime) / duration;
+
+        // 计算当前插值
+        let lat = currentLatLng.lat + (targetLatLng.lat - currentLatLng.lat) * progress;
+        let lng = currentLatLng.lng + (targetLatLng.lng - currentLatLng.lng) * progress;
+
+        marker.setLatLng([lat, lng]);
+
+        // 继续动画，直到完成
+        if (progress < 1) {
+          requestAnimationFrame(animateMarker);
+        } else {
+          marker.setLatLng(targetLatLng); // 确保最终位置准确
+        }
+      }
+
+      requestAnimationFrame(animateMarker);
+    }
+
     startMaker.on('dragend', (event) => {
       const { lat, lng } = event.target.getLatLng()
-      console.log(lat, lng);
       const diffLat = latlng[0] - lat
       const diffLng = latlng[1] - lng
       fg.getLayers().forEach(element => {
         const latLng = element.getLatLng()
-        element.setLatLng([latLng.lat - diffLat, latLng.lng - diffLng])
+        moveMarkerWithAnimation(element, L.latLng(latLng.lat - diffLat, latLng.lng - diffLng))
       });
       latlng = [lat, lng]
     })
