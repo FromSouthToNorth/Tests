@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../../css/reset.css">
+  <link rel="stylesheet" href="../src/css/leaflet.css" />
+  <script src="../src/leaflet/leaflet.js"></script>
+  <script src="../src/turf.js"></script>
+  <title>Document</title>
+</head>
+
+<body>
+  <div id="map-container">
+  </div>
+  <script>
+    const map = L.map('map-container', {
+      center: [30.6600, 104.0633],
+      zoom: 16,
+      layers: [
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '© OpenStreetMap'
+        })
+      ]
+    });
+    console.log(map.getBounds());
+    console.log('西北: ', map.getBounds().getNorthWest());
+    console.log('西南: ', map.getBounds().getSouthWest());
+    console.log('东南: ', map.getBounds().getSouthEast());
+    console.log('东北: ', map.getBounds().getNorthEast());
+    const nwLatLng = map.getBounds().getNorthWest() // 西北
+    const swLatLng = map.getBounds().getSouthWest() // 西南
+    const seLatLng = map.getBounds().getSouthEast() // 东南
+    const neLatLng = map.getBounds().getNorthEast() // 东北
+    var points = turf.randomPoint(100, { bbox: [nwLatLng.lng, swLatLng.lat, seLatLng.lng, neLatLng.lat] });
+    const className = 'myTooltip';
+    console.log(points);
+    L.geoJSON(points.features, {
+      onEachFeature: function (feature, layer) {
+        layer.bindTooltip(layer.getLatLng().toString(), {
+          permanent: true,
+          className,
+        });
+      }
+    }).addTo(map);
+
+    function overlap(rect1, rect2) {
+      console.log(rect1);
+      console.log(rect2);
+      return (!(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom));
+    }
+
+    function hideOverlappingTooltips() {
+      var rects = [];
+      var tooltips = document.getElementsByClassName(className);
+      for (var i = 0; i < tooltips.length; i++) {
+        tooltips[i].style.visibility = '';
+        rects[i] = tooltips[i].getBoundingClientRect();
+      }
+      for (var i = 0; i < tooltips.length; i++) {
+        if (tooltips[i].style.visibility != 'hidden') {
+          for (var j = i + 1; j < tooltips.length; j++) {
+            if (overlap(rects[i], rects[j])) tooltips[j].style.visibility = 'hidden';
+          }
+        }
+      }
+    }
+
+    map.on('zoomend', function () {
+      hideOverlappingTooltips();
+    });
+
+  </script>
+
+</body>
+
+</html>

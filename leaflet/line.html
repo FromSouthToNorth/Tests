@@ -1,22 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>Line</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/leaflet.js"
-          integrity="sha512-Dqm3h1Y4qiHUjbhxTuBGQsza0Tfppn53SHlu/uj1f+RT+xfShfe7r6czRf5r2NmllO2aKx+tYJgoxboOkn1Scg=="
-          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    integrity="sha512-Dqm3h1Y4qiHUjbhxTuBGQsza0Tfppn53SHlu/uj1f+RT+xfShfe7r6czRf5r2NmllO2aKx+tYJgoxboOkn1Scg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/leaflet.css"
-        integrity="sha512-mD70nAW2ThLsWH0zif8JPbfraZ8hbCtjQ+5RU1m4+ztZq6/MymyZeB55pWsi4YAX+73yvcaJyk61mzfYMvtm9w=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    integrity="sha512-mD70nAW2ThLsWH0zif8JPbfraZ8hbCtjQ+5RU1m4+ztZq6/MymyZeB55pWsi4YAX+73yvcaJyk61mzfYMvtm9w=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reseter.css/2.0.0/reseter.min.css"
-        integrity="sha512-gCJkkUMGTe73+FMwog6gIBCVJIMXRoc21l6/IPCuzxCex/1sxvO8ctb6Zd4/WWs2UMqmtnDrAdhJht5pEY0LXg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    integrity="sha512-gCJkkUMGTe73+FMwog6gIBCVJIMXRoc21l6/IPCuzxCex/1sxvO8ctb6Zd4/WWs2UMqmtnDrAdhJht5pEY0LXg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
   <script src="src/leaflet/tutf.js"></script>
   <script src="../d3/src/d3.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js"></script>
   <script src="src/leaflet/L.Control.Layers.Minimap.js"></script>
   <link rel="stylesheet" href="src/css/control.layers.minimap.css">
+  <script src="./src/turf.js"></script>
 </head>
 <style>
   #map-container .leaflet-zoom-animated g path {
@@ -46,6 +48,7 @@
     from {
       stroke-opacity: 0.3;
     }
+
     100% {
       stroke-opacity: 0.8;
     }
@@ -119,7 +122,8 @@
     border-radius: 8px;
   }
 
-  #map-container .start-lien-icon, #map-container .end-lien-icon {
+  #map-container .start-lien-icon,
+  #map-container .end-lien-icon {
     background-color: #BDBDBD;
     border: 1px solid #616161;
     border-radius: 8px;
@@ -184,350 +188,381 @@
   .shadow:hover {
     fill: #3388ff;
   }
+
+  .div-icon {
+    border: 1px solid #444;
+    background-color: #fff;
+    border-radius: 50%;
+  }
 </style>
+
 <body>
-<div id="map-container"></div>
-<script>
+  <div id="map-container"></div>
+  <script>
 
-  const accessToken = 'pk.eyJ1IjoiaHlzZSIsImEiOiJjbGVwcWg0bDkwZXNlM3pvNXNleWUzcTQ0In0.S3VTf9vqYTAAF725ukcDjQ';
-  const mapboxStreets = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/512/{z}/{x}/{y}@2x?access_token={accessToken}', {
-    maxZoom: 19,
-    attribution: '© mapbox',
-    accessToken,
-  });
-  const mapboxSatellite = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/512/{z}/{x}/{y}@2x?access_token={accessToken}', {
-    maxZoom: 19,
-    attribution: '© mapbox',
-    accessToken,
-  });
-  const mapboxSatelliteStreets = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/tiles/512/{z}/{x}/{y}@2x?access_token={accessToken}', {
-    maxZoom: 19,
-    attribution: '© mapbox',
-    accessToken,
-  });
+    const accessToken = 'pk.eyJ1IjoiaHlzZSIsImEiOiJjbGVwcWg0bDkwZXNlM3pvNXNleWUzcTQ0In0.S3VTf9vqYTAAF725ukcDjQ';
+    const mapboxStreets = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/512/{z}/{x}/{y}@2x?access_token={accessToken}', {
+      maxZoom: 19,
+      attribution: '© mapbox',
+      accessToken,
+    });
+    const mapboxSatellite = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/512/{z}/{x}/{y}@2x?access_token={accessToken}', {
+      maxZoom: 19,
+      attribution: '© mapbox',
+      accessToken,
+    });
+    const mapboxSatelliteStreets = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/tiles/512/{z}/{x}/{y}@2x?access_token={accessToken}', {
+      maxZoom: 19,
+      attribution: '© mapbox',
+      accessToken,
+    });
 
-  const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap',
-  });
+    const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap',
+    });
 
-  const services = L.tileLayer(`https://services.digitalglobe.com/earthservice/tmsaccess/tms/1.0.0/DigitalGlobe:ImageryTileService@EPSG:3857@jpg/{z}/{x}/{y}.jpg?connectId={connectId}`, {
-    maxZoom: 18,
-    tms: true,
-    connectId: 'c2cbd3f2-003a-46ec-9e46-26a3996d6484',
-  });
+    const services = L.tileLayer(`https://services.digitalglobe.com/earthservice/tmsaccess/tms/1.0.0/DigitalGlobe:ImageryTileService@EPSG:3857@jpg/{z}/{x}/{y}.jpg?connectId={connectId}`, {
+      maxZoom: 18,
+      tms: true,
+      connectId: 'c2cbd3f2-003a-46ec-9e46-26a3996d6484',
+    });
 
-  const baseMaps = {
-    'mapboxStreets': mapboxStreets,
-    'mapboxSatellite': mapboxSatellite,
-    'mapboxSatelliteStreets': mapboxSatelliteStreets,
-    'OpenStreetMap': osm,
-    'services': services,
-  };
+    const baseMaps = {
+      'mapboxStreets': mapboxStreets,
+      'mapboxSatellite': mapboxSatellite,
+      'mapboxSatelliteStreets': mapboxSatelliteStreets,
+      'OpenStreetMap': osm,
+      'services': services,
+    };
 
-  const map = L.map('map-container', {
-    zoom: 8,
-    maxZoom: 19,
-    minZoom: 3,
-    zoomSnap: 0.2,
-    center: [34.3227, 108.5525],
-  });
+    const map = L.map('map-container', {
+      zoom: 8,
+      maxZoom: 25,
+      minZoom: 3,
+      zoomSnap: 0.2,
+      center: [34.3227, 108.5525],
+    });
 
-  L.control.layers.minimap(baseMaps, {}, {
-    collapsed: false,
-  }).addTo(map);
-
-  baseMaps['mapboxStreets'].addTo(map);
-
-  // L.control.layers(baseMaps).addTo(map);
-
-  function randomClassName() {
-    const classNames = ['unclassified', 'line-stroke', 'tag-highway', 'tag-highway-motorway'];
-    return classNames[Math.floor(Math.random() * classNames.length)];
-  }
-
-  let activeLayer, lineMarkerFeatureGroup, lineWayGeoJSON, lineShadowGeoJSON, lineCasingGeoJSON, lineStrokeGeoJSON,
-    lineOnewayGeoJSON, areaFillGeoJSON, areaShadowGeoJSON, areaStrokeGeoJSON;
-
-  const highlightLayer = L.polyline([], { className: 'line-shadow' });
-
-  d3.json('./src/data/map.geojson').then(json => {
-
-    /**  area  */
-    areaShadowGeoJSON = L.geoJSON(json, {
-      bubblingMouseEvents: false,
-      filter: function ({ geometry, properties, type }) {
-        return geometry.type === 'Polygon';
-      },
-      style: function (feature) {
-        return { className: 'shadow' };
-      },
+    L.control.layers.minimap(baseMaps, {}, {
+      collapsed: false,
     }).addTo(map);
 
-    areaFillGeoJSON = L.geoJSON(json, {
-      bubblingMouseEvents: false,
-      filter: function ({ geometry, properties, type }) {
-        return geometry.type === 'Polygon';
-      },
-      style: function (feature) {
-        return { className: 'area-fill' };
-      },
-    }).bindPopup(function (layer) {
-      return bindPopup(layer);
-    }).on('mouseover', e => {
-      const { sourceTarget } = e;
-      layerMouseover({ sourceTarget, layers: areaShadowGeoJSON });
-    }).on('mouseout', e => {
+    baseMaps['mapboxStreets'].addTo(map);
+
+    // L.control.layers(baseMaps).addTo(map);
+
+    function randomClassName() {
+      const classNames = ['unclassified', 'line-stroke', 'tag-highway', 'tag-highway-motorway'];
+      return classNames[Math.floor(Math.random() * classNames.length)];
+    }
+
+    let activeLayer, lineMarkerFeatureGroup, lineWayGeoJSON, lineShadowGeoJSON, lineCasingGeoJSON, lineStrokeGeoJSON,
+      lineOnewayGeoJSON, areaFillGeoJSON, areaShadowGeoJSON, areaStrokeGeoJSON;
+
+    const highlightLayer = L.polyline([], { className: 'line-shadow' });
+
+    // d3.json('./src/data/map.geojson').then(json => {
+
+    //   /**  area  */
+    //   areaShadowGeoJSON = L.geoJSON(json, {
+    //     bubblingMouseEvents: false,
+    //     filter: function ({ geometry, properties, type }) {
+    //       return geometry.type === 'Polygon';
+    //     },
+    //     style: function (feature) {
+    //       return { className: 'shadow' };
+    //     },
+    //   }).addTo(map);
+
+    //   areaFillGeoJSON = L.geoJSON(json, {
+    //     bubblingMouseEvents: false,
+    //     filter: function ({ geometry, properties, type }) {
+    //       return geometry.type === 'Polygon';
+    //     },
+    //     style: function (feature) {
+    //       return { className: 'area-fill' };
+    //     },
+    //   }).bindPopup(function (layer) {
+    //     return bindPopup(layer);
+    //   }).on('mouseover', e => {
+    //     const { sourceTarget } = e;
+    //     layerMouseover({ sourceTarget, layers: areaShadowGeoJSON });
+    //   }).on('mouseout', e => {
+    //     clearActiveLine();
+    //   }).on('click', e => {
+    //     layerHighlightClick(e);
+    //   }).addTo(map);
+
+    //   areaStrokeGeoJSON = L.geoJSON(json, {
+    //     bubblingMouseEvents: false,
+    //     filter: function ({ geometry, properties, type }) {
+    //       return geometry.type === 'Polygon';
+    //     },
+    //     style: function (feature) {
+    //       return { className: 'area-stoke' };
+    //     },
+    //   }).addTo(map);
+
+
+    //   const iconMap = new Map();
+    //   iconMap.set('baseStation', 'iconoir:antenna');
+    //   iconMap.set('safetyMonitoring', 'iconoir:high-priority');
+
+    //   /**  point  */
+    //   const pointGeoJSON = L.geoJSON(json, {
+    //     bubblingMouseEvents: false,
+    //     pointToLayer: function (geoJsonPoint, latlng) {
+    //       const divIcon = L.divIcon({
+    //         className: 'my-div-icon',
+    //         iconSize: [16, 16],
+    //         html: `<iconify-icon icon="${iconMap.get(geoJsonPoint.properties.modalType)}"></iconify-icon>`,
+    //       });
+    //       return L.marker(latlng, { icon: divIcon });
+    //     },
+    //     filter: function ({ geometry, properties, type }) {
+    //       return geometry.type === 'Point';
+    //     },
+    //   }).bindPopup(function (layer) {
+    //     return bindPopup(layer);
+    //   }).addTo(map);
+
+    //   pointGeoJSON.on('click', ({ sourceTarget }) => {
+    //     const pos = map.latLngToLayerPoint(sourceTarget.getLatLng());
+    //     const fx = new L.PosAnimation();
+    //     pos.y -= 2;
+    //     // map.scrollWheelZoom.disable();
+    //     // map.dragging.disable();
+    //     // map.doubleClickZoom.disable();
+    //     // map.scrollWheelZoom.enabled();
+    //     // map.dragging.enabled();
+    //     // map.doubleClickZoom.enabled();
+    //     fx.once('end', function () {
+    //       pos.y += 2;
+    //       fx.run(sourceTarget._icon, pos, 0.8);
+    //     });
+    //     fx.run(sourceTarget._icon, pos, 0.3);
+    //   });
+
+
+    //   /**  line  */
+    //   lineShadowGeoJSON = L.geoJSON(json, {
+    //     bubblingMouseEvents: false,
+    //     filter: function ({ geometry, properties, type }) {
+    //       return geometry.type === 'LineString';
+    //     },
+    //     style: function (feature) {
+    //       return { className: 'line-shadow' };
+    //     },
+    //   }).addTo(map);
+
+    //   lineCasingGeoJSON = L.geoJSON(json, {
+    //     bubblingMouseEvents: false,
+    //     filter: function ({ geometry, properties, type }) {
+    //       return geometry.type === 'LineString';
+    //     },
+    //     style: function (feature) {
+    //       return { className: 'line-casing' };
+    //     },
+    //   }).addTo(map);
+
+    //   lineStrokeGeoJSON = L.geoJSON(json, {
+    //     bubblingMouseEvents: false,
+    //     filter: function ({ geometry, properties, type }) {
+    //       return geometry.type === 'LineString';
+    //     },
+    //     style: function (feature) {
+    //       return { className: randomClassName() };
+    //     },
+    //   }).addTo(map);
+
+    //   lineOnewayGeoJSON = L.geoJSON(json, {
+    //     bubblingMouseEvents: false,
+    //     filter: function ({ geometry, properties, type }) {
+    //       return geometry.type === 'LineString';
+    //     },
+    //     style: function (feature) {
+    //       return { className: 'oneway' };
+    //     },
+    //   }).addTo(map);
+
+    //   lineWayGeoJSON = L.geoJSON(json, {
+    //     bubblingMouseEvents: false,
+    //     filter: function ({ geometry, properties, type }) {
+    //       return geometry.type === 'LineString';
+    //     },
+    //     style: function (feature) {
+    //       return { className: 'way' };
+    //     },
+    //   }).bindPopup(function (layer) {
+    //     return bindPopup(layer);
+    //   }).on('mouseover', e => {
+    //     const { sourceTarget } = e;
+    //     layerMouseover({ sourceTarget, layers: lineShadowGeoJSON });
+    //   }).on('mouseout', e => {
+    //     clearActiveLine();
+    //   }).on('click', e => {
+    //     layerHighlightClick(e);
+    //   }).addTo(map);
+
+    //   map.fitBounds(lineShadowGeoJSON.getBounds(), { padding: [10, 10] });
+    // });
+
+    map.on('click', e => {
+      console.log('[map click]: ', e);
+      clearLineMakers();
+      if (map.hasLayer(highlightLayer)) {
+        map.removeLayer(highlightLayer);
+      }
+    });
+
+    function bindPopup(layer) {
+      let html = `<p>{</p>`;
+      for (const property of Object.keys(layer.feature.properties)) {
+        html += `<p><span>'${property}'</span>: ${layer.feature.properties[property]}</p>`;
+      }
+      html += `<p>}</p>`;
+      return `<div>${html}</div>`;
+    }
+
+    function clearActiveLine() {
+      if (activeLayer) {
+        // activeLayer._path.setAttribute('class', activeLayer._path.getAttribute('class').replace('hover', ''));
+        d3.select(activeLayer._path).classed('hover', false);
+      }
+    }
+
+    function clearLineMakers() {
+      if (lineMarkerFeatureGroup) {
+        lineMarkerFeatureGroup.clearLayers();
+        lineMarkerFeatureGroup.remove();
+      }
+    }
+
+    function layerMouseover({ sourceTarget, layers }) {
       clearActiveLine();
-    }).on('click', e => {
-      layerHighlightClick(e);
-    }).addTo(map);
-
-    areaStrokeGeoJSON = L.geoJSON(json, {
-      bubblingMouseEvents: false,
-      filter: function ({ geometry, properties, type }) {
-        return geometry.type === 'Polygon';
-      },
-      style: function (feature) {
-        return { className: 'area-stoke' };
-      },
-    }).addTo(map);
-
-
-    const iconMap = new Map();
-    iconMap.set('baseStation', 'iconoir:antenna');
-    iconMap.set('safetyMonitoring', 'iconoir:high-priority');
-
-    /**  point  */
-    const pointGeoJSON = L.geoJSON(json, {
-      bubblingMouseEvents: false,
-      pointToLayer: function (geoJsonPoint, latlng) {
-        const divIcon = L.divIcon({
-          className: 'my-div-icon',
-          iconSize: [16, 16],
-          html: `<iconify-icon icon="${iconMap.get(geoJsonPoint.properties.modalType)}"></iconify-icon>`,
-        });
-        return L.marker(latlng, { icon: divIcon });
-      },
-      filter: function ({ geometry, properties, type }) {
-        return geometry.type === 'Point';
-      },
-    }).bindPopup(function (layer) {
-      return bindPopup(layer);
-    }).addTo(map);
-
-    pointGeoJSON.on('click', ({ sourceTarget }) => {
-      const pos = map.latLngToLayerPoint(sourceTarget.getLatLng());
-      const fx = new L.PosAnimation();
-      pos.y -= 2;
-      // map.scrollWheelZoom.disable();
-      // map.dragging.disable();
-      // map.doubleClickZoom.disable();
-      // map.scrollWheelZoom.enabled();
-      // map.dragging.enabled();
-      // map.doubleClickZoom.enabled();
-      fx.once('end', function () {
-        pos.y += 2;
-        fx.run(sourceTarget._icon, pos, 0.8);
+      activeLayer = layers.getLayers().find(e => {
+        return e.feature.properties.id === sourceTarget.feature.properties.id;
       });
-      fx.run(sourceTarget._icon, pos, 0.3);
-    });
-
-
-    /**  line  */
-    lineShadowGeoJSON = L.geoJSON(json, {
-      bubblingMouseEvents: false,
-      filter: function ({ geometry, properties, type }) {
-        return geometry.type === 'LineString';
-      },
-      style: function (feature) {
-        return { className: 'line-shadow' };
-      },
-    }).addTo(map);
-
-    lineCasingGeoJSON = L.geoJSON(json, {
-      bubblingMouseEvents: false,
-      filter: function ({ geometry, properties, type }) {
-        return geometry.type === 'LineString';
-      },
-      style: function (feature) {
-        return { className: 'line-casing' };
-      },
-    }).addTo(map);
-
-    lineStrokeGeoJSON = L.geoJSON(json, {
-      bubblingMouseEvents: false,
-      filter: function ({ geometry, properties, type }) {
-        return geometry.type === 'LineString';
-      },
-      style: function (feature) {
-        return { className: randomClassName() };
-      },
-    }).addTo(map);
-
-    lineOnewayGeoJSON = L.geoJSON(json, {
-      bubblingMouseEvents: false,
-      filter: function ({ geometry, properties, type }) {
-        return geometry.type === 'LineString';
-      },
-      style: function (feature) {
-        return { className: 'oneway' };
-      },
-    }).addTo(map);
-
-    lineWayGeoJSON = L.geoJSON(json, {
-      bubblingMouseEvents: false,
-      filter: function ({ geometry, properties, type }) {
-        return geometry.type === 'LineString';
-      },
-      style: function (feature) {
-        return { className: 'way' };
-      },
-    }).bindPopup(function (layer) {
-      return bindPopup(layer);
-    }).on('mouseover', e => {
-      const { sourceTarget } = e;
-      layerMouseover({ sourceTarget, layers: lineShadowGeoJSON });
-    }).on('mouseout', e => {
-      clearActiveLine();
-    }).on('click', e => {
-      layerHighlightClick(e);
-    }).addTo(map);
-
-    map.fitBounds(lineShadowGeoJSON.getBounds(), { padding: [10, 10] });
-  });
-
-  map.on('click', e => {
-    console.log('[map click]: ', e);
-    clearLineMakers();
-    if (map.hasLayer(highlightLayer)) {
-      map.removeLayer(highlightLayer);
+      // activeLayer._path.setAttribute('class', activeLayer._path.getAttribute('class') + ' hover');
+      d3.select(activeLayer._path).classed('hover', true);
     }
-  });
 
-  function bindPopup(layer) {
-    let html = `<p>{</p>`;
-    for (const property of Object.keys(layer.feature.properties)) {
-      html += `<p><span>'${property}'</span>: ${layer.feature.properties[property]}</p>`;
-    }
-    html += `<p>}</p>`;
-    return `<div>${html}</div>`;
-  }
-
-  function clearActiveLine() {
-    if (activeLayer) {
-      // activeLayer._path.setAttribute('class', activeLayer._path.getAttribute('class').replace('hover', ''));
-      d3.select(activeLayer._path).classed('hover', false);
-    }
-  }
-
-  function clearLineMakers() {
-    if (lineMarkerFeatureGroup) {
-      lineMarkerFeatureGroup.clearLayers();
-      lineMarkerFeatureGroup.remove();
-    }
-  }
-
-  function layerMouseover({ sourceTarget, layers }) {
-    clearActiveLine();
-    activeLayer = layers.getLayers().find(e => {
-      return e.feature.properties.id === sourceTarget.feature.properties.id;
-    });
-    // activeLayer._path.setAttribute('class', activeLayer._path.getAttribute('class') + ' hover');
-    d3.select(activeLayer._path).classed('hover', true);
-  }
-
-  function layerHighlightClick({ sourceTarget }) {
-    clearLineMakers();
-    const latLngs = sourceTarget.getLatLngs();
-    const lineMarkers = [];
-    for (let i = 0; i < latLngs.length; i++) {
-      if (Array.isArray(latLngs[i])) {
-        for (let j = 0; j < latLngs[i].length; j++) {
-          const className = i === 0 && j === 0 ? 'start-lien-icon' : i === latLngs.length - 1 && j === latLngs[i].length - 1 ? 'end-lien-icon' : 'lien-icon';
-          const iconSize = i === 0 && j === 0 || i === latLngs.length - 1 && j === latLngs[i].length - 1 ? [10, 10] : [8, 8];
+    function layerHighlightClick({ sourceTarget }) {
+      clearLineMakers();
+      const latLngs = sourceTarget.getLatLngs();
+      const lineMarkers = [];
+      for (let i = 0; i < latLngs.length; i++) {
+        if (Array.isArray(latLngs[i])) {
+          for (let j = 0; j < latLngs[i].length; j++) {
+            const className = i === 0 && j === 0 ? 'start-lien-icon' : i === latLngs.length - 1 && j === latLngs[i].length - 1 ? 'end-lien-icon' : 'lien-icon';
+            const iconSize = i === 0 && j === 0 || i === latLngs.length - 1 && j === latLngs[i].length - 1 ? [10, 10] : [8, 8];
+            const divIcon = L.divIcon({ className, iconSize });
+            const lineMarker = L.marker(latLngs[i][j], { icon: divIcon });
+            lineMarkers.push(lineMarker);
+          }
+        }
+        else if (typeof latLngs === 'object') {
+          const className = i === 0 ? 'start-lien-icon' : i === latLngs.length - 1 ? 'end-lien-icon' : 'lien-icon';
+          const iconSize = i === 0 || i === latLngs.length - 1 ? [10, 10] : [8, 8];
           const divIcon = L.divIcon({ className, iconSize });
-          const lineMarker = L.marker(latLngs[i][j], { icon: divIcon });
+          const lineMarker = L.marker(latLngs[i], { icon: divIcon });
           lineMarkers.push(lineMarker);
         }
       }
-      else if (typeof latLngs === 'object') {
-        const className = i === 0 ? 'start-lien-icon' : i === latLngs.length - 1 ? 'end-lien-icon' : 'lien-icon';
-        const iconSize = i === 0 || i === latLngs.length - 1 ? [10, 10] : [8, 8];
-        const divIcon = L.divIcon({ className, iconSize });
-        const lineMarker = L.marker(latLngs[i], { icon: divIcon });
-        lineMarkers.push(lineMarker);
+      if (sourceTarget.feature.geometry.type === 'Polygon') {
+        latLngs[0].push(latLngs[0][0]);
       }
-    }
-    if (sourceTarget.feature.geometry.type === 'Polygon') {
-      latLngs[0].push(latLngs[0][0]);
-    }
-    lineMarkerFeatureGroup = L.featureGroup(lineMarkers).addTo(map);
-    highlightLayer.setLatLngs(latLngs).addTo(map);
-    highlightLayer._path.setAttribute('class', highlightLayer._path.getAttribute('class') + ' active');
-  }
-
-  map.on('moveend', () => {
-    updateHashIfNeeded();
-  });
-
-  function updateHashIfNeeded() {
-    window.history.replaceState(null, '', computedHash());
-  }
-
-  function computedHash() {
-    return '#' + utilQsString(computedHashParameters(), true);
-  }
-
-  function utilQsString(obj, noencode) {
-    // encode everything except special characters used in certain hash parameters:
-    // "/" in map states, ":", ",", {" and "}" in background
-    function softEncode(s) {
-      return encodeURIComponent(s).replace(/(%2F|%3A|%2C|%7B|%7D)/g, decodeURIComponent);
+      lineMarkerFeatureGroup = L.featureGroup(lineMarkers).addTo(map);
+      highlightLayer.setLatLngs(latLngs).addTo(map);
+      highlightLayer._path.setAttribute('class', highlightLayer._path.getAttribute('class') + ' active');
     }
 
-    return Object.keys(obj).sort().map(function (key) {
-      return encodeURIComponent(key) + '=' + (
-        noencode ? softEncode(obj[key]) : encodeURIComponent(obj[key]));
-    }).join('&');
-  }
+    map.on('moveend', () => {
+      updateHashIfNeeded();
+    });
 
-  function computedHashParameters() {
-    const center = map.getCenter();
-    const zoom = map.getZoom();
-    const precision = Math.max(0, Math.ceil(Math.log(zoom) / Math.LN2));
-    const oldParams = utilObjectOmit(utilStringQs(window.location.hash), ['comment', 'source', 'hashtags', 'walkthrough']);
-    const newParams = {};
-    newParams.map = zoom.toFixed(2) +
-      '/' + center.lat.toFixed(precision) +
-      '/' + center.lng.toFixed(precision);
+    function updateHashIfNeeded() {
+      window.history.replaceState(null, '', computedHash());
+    }
 
-    return Object.assign(oldParams, newParams);
-  }
+    function computedHash() {
+      return '#' + utilQsString(computedHashParameters(), true);
+    }
 
-
-  function utilStringQs(str) {
-    var i = 0;  // advance past any leading '?' or '#' characters
-    while (i < str.length && (str[i] === '?' || str[i] === '#')) i++;
-    str = str.slice(i);
-
-    return str.split('&').reduce(function (obj, pair) {
-      var parts = pair.split('=');
-      if (parts.length === 2) {
-        obj[parts[0]] = (null === parts[1]) ? '' : decodeURIComponent(parts[1]);
+    function utilQsString(obj, noencode) {
+      // encode everything except special characters used in certain hash parameters:
+      // "/" in map states, ":", ",", {" and "}" in background
+      function softEncode(s) {
+        return encodeURIComponent(s).replace(/(%2F|%3A|%2C|%7B|%7D)/g, decodeURIComponent);
       }
-      return obj;
-    }, {});
-  }
 
-  function utilObjectOmit(obj, omitKeys) {
-    return Object.keys(obj).reduce(function (result, key) {
-      if (omitKeys.indexOf(key) === -1) {
-        result[key] = obj[key];  // keep
-      }
-      return result;
-    }, {});
-  }
-</script>
+      return Object.keys(obj).sort().map(function (key) {
+        return encodeURIComponent(key) + '=' + (
+          noencode ? softEncode(obj[key]) : encodeURIComponent(obj[key]));
+      }).join('&');
+    }
+
+    function computedHashParameters() {
+      const center = map.getCenter();
+      const zoom = map.getZoom();
+      const precision = Math.max(0, Math.ceil(Math.log(zoom) / Math.LN2));
+      const oldParams = utilObjectOmit(utilStringQs(window.location.hash), ['comment', 'source', 'hashtags', 'walkthrough']);
+      const newParams = {};
+      newParams.map = zoom.toFixed(2) +
+        '/' + center.lat.toFixed(precision) +
+        '/' + center.lng.toFixed(precision);
+
+      return Object.assign(oldParams, newParams);
+    }
+
+
+    function utilStringQs(str) {
+      var i = 0;  // advance past any leading '?' or '#' characters
+      while (i < str.length && (str[i] === '?' || str[i] === '#')) i++;
+      str = str.slice(i);
+
+      return str.split('&').reduce(function (obj, pair) {
+        var parts = pair.split('=');
+        if (parts.length === 2) {
+          obj[parts[0]] = (null === parts[1]) ? '' : decodeURIComponent(parts[1]);
+        }
+        return obj;
+      }, {});
+    }
+
+    function utilObjectOmit(obj, omitKeys) {
+      return Object.keys(obj).reduce(function (result, key) {
+        if (omitKeys.indexOf(key) === -1) {
+          result[key] = obj[key];  // keep
+        }
+        return result;
+      }, {});
+    }
+
+    const lineGroup = L.featureGroup();
+    lineGroup.addTo(map);
+
+    lineMakers([{ "lat": 37.8794067, "lng": 113.3354567 }, { "lat": 37.8794067, "lng": 113.3354566 }, { "lat": 37.8793714, "lng": 113.3355004 }, { "lat": 37.8790011, "lng": 113.3359597 }, { "lat": 37.8789657, "lng": 113.3360036 }, { "lat": 37.8789657, "lng": 113.3360036 }], '#f5222d');
+    lineMakers([{ "lat": 37.8793947, "lng": 113.3354397 }, { "lat": 37.8794617, "lng": 113.3353644 }, { "lat": 37.8794833, "lng": 113.3353935 }, { "lat": 37.8793841, "lng": 113.3355166 }, { "lat": 37.8790137, "lng": 113.3359759 }, { "lat": 37.8789671, "lng": 113.3360337 }, { "lat": 37.8789546, "lng": 113.3360216 }], '#fa541c');
+    lineMakers([{ "lat": 37.8794067, "lng": 113.3354566 }, { "lat": 37.8793714, "lng": 113.3355004 }, { "lat": 37.8790011, "lng": 113.3359597 }, { "lat": 37.8789657, "lng": 113.3360036 }], '#f5222d');
+    lineMakers([{ "lat": 37.8789530, "lng": 113.3359874 }, { "lat": 37.8789885, "lng": 113.3359435 }, { "lat": 37.8793588, "lng": 113.3354841 }, { "lat": 37.8793941, "lng": 113.3354404 }], '#f5222d');
+    function lineMakers(data, color) {
+      const line = L.polyline(data, { weight: 1, color })
+      lineGroup.addLayer(line);
+      data.forEach((item, index) => {
+        const divIcon = L.divIcon({
+          className: 'div-icon',
+          iconSize: [8, 8],
+          html: `<span>${index}</span>`
+        });
+        const marker = L.marker(item, { icon: divIcon });
+        lineGroup.addLayer(marker);
+      })
+    }
+    map.fitBounds(lineGroup.getBounds());
+
+  </script>
 </body>
+
 </html>

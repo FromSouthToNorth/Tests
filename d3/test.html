@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pure D3.js GIS Map with Fixed Zoom</title>
+  <script src="./src/d3.js"></script>
+</head>
+
+<body>
+  <script>
+    console.log(d3);
+    var hashtagRegex = /(#[^\u2000-\u206F\u2E00-\u2E7F\s\\'!"#$%()*,.\/:;<=>?@\[\]^`{|}~]+)/g;
+    var str = "Hello #world! This is a test string with #hashtags. #map=21.00/35.75684/116.33259";
+    var matches = str.match(hashtagRegex);
+    console.log(matches);
+    console.log(str.replace(hashtagRegex, ''));
+  </script>
+</body>
+
+</html>
