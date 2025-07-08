@@ -60,14 +60,26 @@
       fillOpacity: 0.1
     }).addTo(featureLayers);
 
-    const layerNumber = 160
+    const layerNumber = 260
+
+    const layerTree = new RBush();
 
     const points = turf.randomPoint(layerNumber, { bbox: [104.04269456863405, 30.651591616757496, 104.0838932991028, 30.6684069200956] });
     const className = 'myTooltip';
     turf.featureEach(points, function (feature, index) {
-      const id = `${feature.geometry.type}_${index + 1}`
-      feature.properties.name = `${id}`;
-      feature.properties.id = id;
+      const { geometry, properties } = feature
+      const { coordinates } = geometry;
+      const id = `${geometry.type}_${index + 1}`
+      properties.name = id;
+      properties.id = id;
+      layerTree.insert({
+        minX: coordinates[0],
+        minY: coordinates[1],
+        maxX: coordinates[0],
+        maxY: coordinates[1],
+        id,
+        feature
+      });
     });
     const pointGeoJSON = L.geoJSON(points.features, {
       onEachFeature: function (feature, layer) {
@@ -77,55 +89,94 @@
         })
       }
     }).addTo(map);
-    const tree = new RBush();
-
-    pointGeoJSON.eachLayer(function (layer, index) {
-      tree.insert({
-        minX: layer.getLatLng().lng,
-        minY: layer.getLatLng().lat,
-        maxX: layer.getLatLng().lng,
-        maxY: layer.getLatLng().lat,
-        id: layer.getLatLng().toString()
-      });
-    });
 
     let bboxPolygon
 
-    const polygons = turf.randomPolygon(layerNumber, { bbox: [104.1218948364258, 30.47915411678567, 104.7810745239258, 30.748327232448467], max_radial_length: 0.01 });
+    const polygons = turf.randomPolygon(3000, { bbox: [104.1218948364258, 30.47915411678567, 104.7810745239258, 30.748327232448467], num_vertices: 4, max_radial_length: 0.006 });
     turf.featureEach(polygons, function (feature, index) {
       const id = `${feature.geometry.type}_${index + 1}`
       feature.properties.name = `${id} ${turf.area(feature)} m2`;
       feature.properties.id = index + 1;
       const bbox = turf.bbox(feature)
-      tree.insert({
+      layerTree.insert({
         minX: bbox[0],
         minY: bbox[1],
         maxX: bbox[2],
         maxY: bbox[3],
-        id
+        id,
+        feature
       });
     });
     const polygonGeoJSON = L.geoJSON(polygons.features, {
-      onEachFeature: function (feature, layer) {
-        layer.bindTooltip(feature.properties.name, {
-          permanent: true,
-          className,
-        })
-      }
+      // onEachFeature: function (feature, layer) {
+      //   layer.bindTooltip(feature.properties.name, {
+      //     permanent: true,
+      //     className,
+      //   })
+      // }
     }).on('mouseover', ({ sourceTarget }) => {
-      console.log('mouseover');
-      console.log(sourceTarget.feature);
       const bbox = turf.bbox(sourceTarget.feature)
       bboxPolygon = L.GeoJSON.geometryToLayer(turf.bboxPolygon(bbox))
+      bboxPolygon.setStyle({
+        color: '#f5222d',
+        weight: 1,
+        fillOpacity: 0.01
+      });
       bboxPolygon.addTo(map);
       bboxPolygon.bringToBack();
     }).on('mouseout', ({ sourceTarget }) => {
-      console.log('mouseout');
       if (bboxPolygon && map.hasLayer(bboxPolygon)) {
         map.removeLayer(bboxPolygon);
       }
     }).addTo(map);
 
+    const { features } = polygons
+
+    const intersectsLayers = []
+
+    const intersectsTree = new RBush();
+
+    for (const layer of features) {
+      const _bbox = turf.bbox(layer)
+      const bbox = {
+        minX: _bbox[0],
+        minY: _bbox[1],
+        maxX: _bbox[2],
+        maxY: _bbox[3],
+        id: layer.properties.id
+      }
+      const seaRes = layerTree.search(bbox);
+      if (seaRes.length) {
+        for (const item of seaRes) {
+          if (item.id === bbox.id) continue;
+          const intersects = turf.intersect(layer, item.feature);
+          if (intersects) {
+            const _bbox = turf.bbox(intersects);
+            const intersectBbox = {
+              minX: _bbox[0],
+              minY: _bbox[1],
+              maxX: _bbox[2],
+              maxY: _bbox[3],
+              id: `${layer.properties.id}_${item.feature.properties.id}`
+            }
+            if (!intersectsTree.collides(intersectBbox)) {
+              intersectsTree.insert(intersectBbox);
+              intersectsLayers.push(intersects);
+            }
+          }
+        }
+      }
+    }
+
+    console.log('intersectsLayers: ', intersectsLayers);
+
+    const intersectsGeoJSON = L.geoJSON(intersectsLayers, {
+      style: {
+        color: '#f5222d',
+        weight: 5,
+      }
+    }).addTo(map)
+    intersectsGeoJSON.bringToBack()
     treeSearch()
 
     function treeSearch() {
@@ -136,7 +187,7 @@
       const seLatLng = bounds.getSouthEast()
       const neLatLng = bounds.getNorthEast()
       console.log(`${nwLatLng.lng},${swLatLng.lat},${seLatLng.lng},${neLatLng.lat}`);
-      const res = tree.search({
+      const res = layerTree.search({
         minX: nwLatLng.lng,
         minY: swLatLng.lat,
         maxX: seLatLng.lng,
