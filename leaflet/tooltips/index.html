@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="../src/css/leaflet.css" />
   <script src="../src/leaflet/leaflet.js"></script>
   <script src="../src/turf.js"></script>
+  <script src="../src/rbush.js"></script>
   <title>Document</title>
 </head>
 
@@ -17,15 +18,14 @@
   <script>
     const map = L.map('map-container', {
       center: [30.6600, 104.0633],
-      zoom: 16,
+      zoom: 14,
       layers: [
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
+          maxZoom: 18,
           attribution: '© OpenStreetMap'
         })
       ]
     });
-    console.log(map.getBounds());
     console.log('西北: ', map.getBounds().getNorthWest());
     console.log('西南: ', map.getBounds().getSouthWest());
     console.log('东南: ', map.getBounds().getSouthEast());
@@ -34,23 +34,118 @@
     const swLatLng = map.getBounds().getSouthWest() // 西南
     const seLatLng = map.getBounds().getSouthEast() // 东南
     const neLatLng = map.getBounds().getNorthEast() // 东北
-    var points = turf.randomPoint(100, { bbox: [nwLatLng.lng, swLatLng.lat, seLatLng.lng, neLatLng.lat] });
+
+    const latlngs = [
+      {
+        "lat": 30.6684069200956,
+        "lng": 104.04269456863405
+      },
+      {
+        "lat": 30.651591616757496,
+        "lng": 104.04269456863405
+      },
+      {
+        "lat": 30.651591616757496,
+        "lng": 104.0838932991028
+      },
+      {
+        "lat": 30.6684069200956,
+        "lng": 104.0838932991028
+      }
+    ]
+    const featureLayers = L.featureGroup().addTo(map);
+    L.polygon(latlngs, {
+      color: 'red',
+      weight: 1,
+      fillOpacity: 0.1
+    }).addTo(featureLayers);
+
+    const layerNumber = 160
+
+    const points = turf.randomPoint(layerNumber, { bbox: [104.04269456863405, 30.651591616757496, 104.0838932991028, 30.6684069200956] });
     const className = 'myTooltip';
-    console.log(points);
-    L.geoJSON(points.features, {
+    turf.featureEach(points, function (feature, index) {
+      const id = `${feature.geometry.type}_${index + 1}`
+      feature.properties.name = `${id}`;
+      feature.properties.id = id;
+    });
+    const pointGeoJSON = L.geoJSON(points.features, {
       onEachFeature: function (feature, layer) {
-        layer.bindTooltip(layer.getLatLng().toString(), {
+        layer.bindTooltip(feature.properties.name, {
           permanent: true,
           className,
-        });
+        })
+      }
+    }).addTo(map);
+    const tree = new RBush();
+
+    pointGeoJSON.eachLayer(function (layer, index) {
+      tree.insert({
+        minX: layer.getLatLng().lng,
+        minY: layer.getLatLng().lat,
+        maxX: layer.getLatLng().lng,
+        maxY: layer.getLatLng().lat,
+        id: layer.getLatLng().toString()
+      });
+    });
+
+    let bboxPolygon
+
+    const polygons = turf.randomPolygon(layerNumber, { bbox: [104.1218948364258, 30.47915411678567, 104.7810745239258, 30.748327232448467], max_radial_length: 0.01 });
+    turf.featureEach(polygons, function (feature, index) {
+      const id = `${feature.geometry.type}_${index + 1}`
+      feature.properties.name = `${id} ${turf.area(feature)} m2`;
+      feature.properties.id = index + 1;
+      const bbox = turf.bbox(feature)
+      tree.insert({
+        minX: bbox[0],
+        minY: bbox[1],
+        maxX: bbox[2],
+        maxY: bbox[3],
+        id
+      });
+    });
+    const polygonGeoJSON = L.geoJSON(polygons.features, {
+      onEachFeature: function (feature, layer) {
+        layer.bindTooltip(feature.properties.name, {
+          permanent: true,
+          className,
+        })
+      }
+    }).on('mouseover', ({ sourceTarget }) => {
+      console.log('mouseover');
+      console.log(sourceTarget.feature);
+      const bbox = turf.bbox(sourceTarget.feature)
+      bboxPolygon = L.GeoJSON.geometryToLayer(turf.bboxPolygon(bbox))
+      bboxPolygon.addTo(map);
+      bboxPolygon.bringToBack();
+    }).on('mouseout', ({ sourceTarget }) => {
+      console.log('mouseout');
+      if (bboxPolygon && map.hasLayer(bboxPolygon)) {
+        map.removeLayer(bboxPolygon);
       }
     }).addTo(map);
 
-    function overlap(rect1, rect2) {
-      console.log(rect1);
-      console.log(rect2);
-      return (!(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom));
+    treeSearch()
+
+    function treeSearch() {
+      const bounds = map.getBounds();
+      console.log('bounds:', bounds);
+      const nwLatLng = bounds.getNorthWest()
+      const swLatLng = bounds.getSouthWest()
+      const seLatLng = bounds.getSouthEast()
+      const neLatLng = bounds.getNorthEast()
+      console.log(`${nwLatLng.lng},${swLatLng.lat},${seLatLng.lng},${neLatLng.lat}`);
+      const res = tree.search({
+        minX: nwLatLng.lng,
+        minY: swLatLng.lat,
+        maxX: seLatLng.lng,
+        maxY: neLatLng.lat
+      })
+      console.log('res: ', res);
     }
+
+    map.on('moveend', () => treeSearch())
 
     function hideOverlappingTooltips() {
       var rects = [];
@@ -66,11 +161,14 @@
           }
         }
       }
-    }
+      function overlap(rect1, rect2) {
+        return (!(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom));
+      }
 
-    map.on('zoomend', function () {
-      hideOverlappingTooltips();
-    });
+    }
+    hideOverlappingTooltips()
+
+    map.on('zoomend', () => { hideOverlappingTooltips() });
 
   </script>
 
