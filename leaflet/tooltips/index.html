@@ -10,6 +10,16 @@
   <script src="../src/turf.js"></script>
   <script src="../src/rbush.js"></script>
   <style>
+    .map-info {
+      padding: 6px;
+      position: absolute;
+      left: 10px;
+      bottom: 10px;
+      background-color: #fff;
+      color: #000;
+      z-index: 9999;
+    }
+
     .polygon-flash {
       animation: flash 1.5s infinite;
     }
@@ -50,17 +60,47 @@
 <body>
   <div id="map-container">
   </div>
+  <div class="map-info">
+  </div>
   <script>
     const map = L.map('map-container', {
       center: [30.6600, 104.0633],
       zoom: 14,
       layers: [
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 18,
+          maxZoom: 26,
           attribution: '© OpenStreetMap'
         })
       ]
     });
+    function getCoord(point) {
+      return turf.getCoord(point);
+    }
+    function truncate(latLng, precision = 7, coordinates = 3) {
+      const point = turf.truncate(turf.point([latLng.lng, latLng.lat]), { precision, coordinates })
+      return point
+    }
+    function truncateLatlng(latlng, precision = 7, coordinates = 3) {
+      const point = truncate(latlng, precision, coordinates)
+      const coord = getCoord(point)
+      return {
+        lat: coord[1],
+        lng: coord[0],
+      }
+    }
+    function getMapInfo() {
+      const bounds = map.getBounds();
+      const nwLatLng = truncateLatlng(bounds.getNorthWest())
+      const swLatLng = truncateLatlng(bounds.getSouthWest())
+      const seLatLng = truncateLatlng(bounds.getSouthEast())
+      const neLatLng = truncateLatlng(bounds.getNorthEast())
+      const bbox = `${nwLatLng.lng},${swLatLng.lat},${seLatLng.lng},${neLatLng.lat}`
+      const mapInfo = document.getElementsByClassName('map-info')
+      mapInfo[0].innerHTML = `<p>获取的经纬度范围: ${bbox}</p><p>层级: ${map.getZoom()}</p><p>中心：${map.getCenter().toString()}</p>`
+    }
+    getMapInfo()
+
+    map.on('moveend', () => getMapInfo())
     console.log('西北: ', map.getBounds().getNorthWest());
     console.log('西南: ', map.getBounds().getSouthWest());
     console.log('东南: ', map.getBounds().getSouthEast());
@@ -95,11 +135,11 @@
       fillOpacity: 0.1
     }).addTo(featureLayers);
 
-    const layerNumber = 260
+    const layerNumber = 365
 
     const layerTree = new RBush();
 
-    const points = turf.randomPoint(layerNumber, { bbox: [104.04269456863405, 30.651591616757496, 104.0838932991028, 30.6684069200956] });
+    const points = turf.randomPoint(layerNumber, { bbox: [104.0608252, 30.6598847, 104.065975, 30.6619866] });
     const className = 'myTooltip';
     turf.featureEach(points, function (feature, index) {
       const { geometry, properties } = feature
@@ -241,23 +281,71 @@
 
     const tooltipTree = new RBush()
 
+    // 如何优化这段代码将时间复杂度从N2次方降为NlogN
     function hideOverlappingTooltips() {
-      const rects = [];
       const tooltips = [...document.getElementsByClassName(className)];
-      for (var i = 0; i < tooltips.length; i++) {
-        tooltips[i].style.visibility = '';
-        rects[i] = tooltips[i].getBoundingClientRect();
-      }
-      for (var i = 0; i < tooltips.length; i++) {
-        if (tooltips[i].style.visibility != 'hidden') {
-          for (var j = i + 1; j < tooltips.length; j++) {
-            if (overlap(rects[i], rects[j])) tooltips[j].style.visibility = 'hidden';
+      if (tooltips.length === 0) return;
+
+      // Initialize R-tree
+      const tree = new RBush();
+
+      // Collect rectangles and sort by y-coordinate (rect.top) for priority
+      const rects = tooltips
+        .map((tooltip, index) => {
+          tooltip.style.visibility = '';
+          const rect = tooltip.getBoundingClientRect();
+          return {
+            rect,
+            index,
+            visible: true,
+            // RBush expects minX, minY, maxX, maxY
+            box: {
+              minX: rect.left,
+              minY: rect.top,
+              maxX: rect.right,
+              maxY: rect.bottom,
+              index // Store index for reference
+            }
+          };
+        })
+        .sort((a, b) => a.rect.top - b.rect.top); // Sort by y-coordinate
+
+      // Insert rectangles into R-tree
+      tree.load(rects.map(({ box }) => box));
+
+      // Check for overlaps, prioritizing tooltips with smaller y-coordinates
+      rects.forEach((current, sortedIndex) => {
+        if (!current.visible) return;
+
+        // Query R-tree for potential overlaps
+        const overlaps = tree
+          .search({
+            minX: current.rect.left,
+            minY: current.rect.top,
+            maxX: current.rect.right,
+            maxY: current.rect.bottom
+          })
+          .filter(box => box.index !== current.index); // Exclude self
+
+        // Hide overlapping tooltips with lower priority (higher sortedIndex)
+        overlaps.forEach(overlap => {
+          const overlapIndex = rects.findIndex(r => r.index === overlap.index);
+          if (overlapIndex > sortedIndex) {
+            // Current tooltip has higher priority (smaller y-coordinate)
+            rects[overlapIndex].visible = false;
+            // Remove from R-tree to prevent further checks
+            tree.remove(overlap);
+          } else if (overlapIndex < sortedIndex && current.visible) {
+            // Current tooltip has lower priority, hide it
+            current.visible = false;
           }
-        }
-      }
-      function overlap(rect1, rect2) {
-        return (!(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom));
-      }
+        });
+      });
+
+      // Apply visibility to DOM
+      rects.forEach(({ index, visible }) => {
+        tooltips[index].style.visibility = visible ? '' : 'hidden';
+      });
     }
     hideOverlappingTooltips()
 
