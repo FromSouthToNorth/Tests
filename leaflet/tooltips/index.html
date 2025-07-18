@@ -209,6 +209,8 @@
       if (bboxPolygon && map.hasLayer(bboxPolygon)) {
         map.removeLayer(bboxPolygon);
       }
+    }).on('click', ({ sourceTarget }) => {
+      console.log('click sourceTarget: ', sourceTarget);
     }).addTo(map);
 
     const { features } = polygons
