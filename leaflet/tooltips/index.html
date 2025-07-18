@@ -163,6 +163,8 @@
           className,
         })
       }
+    }).on('click', ({ sourceTarget }) => {
+      console.log('click sourceTarget: ', sourceTarget);
     }).addTo(map);
 
     let bboxPolygon
