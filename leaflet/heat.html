@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="/css/reset.css">
+  <link rel="stylesheet" href="src/css/leaflet.css" />
+  <script src="./src/leaflet/leaflet.js"></script>
+  <script src="./src/leaflet-heat.js"></script>
+  <script src="./src/turf.js"></script>
+  <script src="./src/data/heat.js"></script>
+</head>
+
+<body>
+  <div id="map-container"></div>
+</body>
+<script>
+  const center = [39.0156614, 112.38361];
+
+  // 初始化地图
+  var map = L.map('map-container').setView(center, 11, { maxZoom: 25 });
+  L.marker(center).addTo(map)
+    .bindPopup('中心点')
+    .openPopup();
+
+  // 添加底图
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 25,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  map.on('zoomend', function () {
+    // 获取当前缩放级别
+    var zoom = map.getZoom();
+    const latlng = map.getCenter()
+    // 更新热力图层的半径
+    console.log(zoom);
+    console.log(latlng);
+  });
+
+  const points = heat.map(e => {
+    L.marker([e.lat, e.lng])
+      .bindPopup(`${e.value}, ${e.lat}/${e.lng}`).addTo(map)
+    return [e.lng, e.lat]
+  })
+  // 转换数据格式：[纬度, 经度, 权重]
+  var heatData = heat.map(d => [d.lat, d.lng, d.value]);
+
+  // 创建热力图
+  var heatLayer = L.heatLayer(heatData, {
+    radius: 30,
+    blur: 15,
+    maxZoom: 18,
+    gradient: { 0.1: 'blue', 0.3: 'cyan', 0.5: 'lime', 0.7: 'yellow', 1.0: 'red' }
+  }).addTo(map);
+</script>
+
+</html>

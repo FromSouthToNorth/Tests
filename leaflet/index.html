@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>leaflet</title>
   <link rel="stylesheet" href="/css/reset.css">
   <script src="./src/leaflet/tutf.js"></script>
-  <link rel="stylesheet" href="src/css/leaflet.css"/>
+  <link rel="stylesheet" href="src/css/leaflet.css" />
   <script src="./src/leaflet/leaflet.js"></script>
   <script src="./src/leaflet/leaflet-geosearch.js"></script>
   <link rel="stylesheet" href="src/css/leaflet-geosearch.css">
@@ -15,7 +16,7 @@
   <script src="src/leaflet/leaflet.markercluster.js"></script>
   <link rel="stylesheet" href="./src/css/MarkerCluster.Default.css">
 
-  <link rel="stylesheet" href="src/css/leaflet-geoman.css"/>
+  <link rel="stylesheet" href="src/css/leaflet-geoman.css" />
   <script src="./src/leaflet/leaflet-geoman.js"></script>
 
   <script src="./src/uuid/uuid.js"></script>
@@ -77,7 +78,7 @@
       height: 14px;
     }
 
-    .arrow-icon > div {
+    .arrow-icon>div {
       margin-left: -1px;
       margin-top: -3px;
       transform-origin: center center;
@@ -132,1107 +133,1112 @@
     }
   </style>
 </head>
+
 <body>
-<div id="map"></div>
-<pre id="info"></pre>
-<script src="src/data/geoJSONStyle.js"></script>
-<script>
-  const map = L.map('map', {
-    zoom: 12,
-    minZoom: 3,
-    maxZoom: 18,
-    center: [30.6600, 104.0633],
-  });
-  const positronLabels = L.tileLayer(`https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}`)
-    .addTo(map);
-
-  const positionAssistOverlay = L.tileLayer(`https://api.mapbox.com/styles/v1/openstreetmap/ckasmteyi1tda1ipfis6wqhuq/tiles/256/{z}/{x}/{y}?access_token={access_token}`, {
-    access_token: 'pk.eyJ1Ijoib3BlbnN0cmVldG1hcCIsImEiOiJjbGRlaXd3cHUwYXN3M29waWp0bGNnYWdyIn0.RRlhUnKlUFNhKsKjhaZ2zA',
-  })
-    .addTo(map);
-
-  const colorMapOfChina = L.tileLayer(`https://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineCommunity/MapServer/tile/{z}/{y}/{x}?blankTile=false`);
-  const miniMap = new L.Control.MiniMap(colorMapOfChina).addTo(map);
-
-  L.control.scale()
-    .addTo(map);
-
-  map.on('click', (e) => {
-    L.DomEvent.stopPropagation(e);
-    const { containerPoint, latlng } = e;
-    const point = turf.point([latlng.lng, latlng.lat]);
-    const options = { precision: 7, coordinates: 2 };
-    const truncated = turf.truncate(point, options);
-    drawLayers.forEach(e => {
-      if (e.pm.enabled()) {
-        e.pm.disable();
-      }
+  <div id="map"></div>
+  <pre id="info"></pre>
+  <script src="src/data/geoJSONStyle.js"></script>
+  <script>
+    const map = L.map('map', {
+      zoom: 12,
+      minZoom: 3,
+      maxZoom: 18,
+      center: [30.6600, 104.0633],
     });
-    editMenu()
-      .close();
-    document.getElementById('info').innerHTML =
-      `<span>x: ${containerPoint.x} y: ${containerPoint.y}</span> <br/> <br/><span>${truncated.geometry.coordinates[1]}, ${truncated.geometry.coordinates[0]}</span>`;
-  });
+    const positronLabels = L.tileLayer(`https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}`)
+      .addTo(map);
 
-  bindContextMenu('Map', map);
-
-  const line = [
-    {
-      'lat': 30.40752476993954,
-      'lng': 106.75895690917969,
-    },
-    {
-      'lat': 30.405155959211367,
-      'lng': 106.77144527435304,
-    },
-    {
-      'lat': 30.405155959211367,
-      'lng': 106.773419380188,
-    },
-    {
-      'lat': 30.405526089676105,
-      'lng': 106.77638053894044,
-    },
-    {
-      'lat': 30.40637738442015,
-      'lng': 106.78088665008546,
-    },
-    {
-      'lat': 30.408524094727614,
-      'lng': 106.79333209991456,
-    },
-    {
-      'lat': 30.408487082880868,
-      'lng': 106.794490814209,
-    },
-    {
-      'lat': 30.40830202343651,
-      'lng': 106.79577827453615,
-    },
-    {
-      'lat': 30.407672818701744,
-      'lng': 106.79697990417482,
-    },
-    {
-      'lat': 30.40719165940367,
-      'lng': 106.79783821105958,
-    },
-    {
-      'lat': 30.40648842231779,
-      'lng': 106.7984390258789,
-    },
-    {
-      'lat': 30.405378037658565,
-      'lng': 106.79873943328857,
-    },
-    {
-      'lat': 30.403823477920625,
-      'lng': 106.79916858673097,
-    },
-    {
-      'lat': 30.402453964312194,
-      'lng': 106.79869651794435,
-    },
-    {
-      'lat': 30.3987894956116,
-      'lng': 106.7976236343384,
-    },
-    {
-      'lat': 30.396901685345366,
-      'lng': 106.79792404174806,
-    },
-    {
-      'lat': 30.395532074666125,
-      'lng': 106.79878234863281,
-    },
-    {
-      'lat': 30.39490278764466,
-      'lng': 106.79976940155031,
-    },
-    {
-      'lat': 30.39460665117291,
-      'lng': 106.80114269256593,
-    },
-    {
-      'lat': 30.394495599764554,
-      'lng': 106.80285930633546,
-    },
-    {
-      'lat': 30.394791736572984,
-      'lng': 106.80431842803955,
-    },
-    {
-      'lat': 30.395532074666125,
-      'lng': 106.80616378784181,
-    },
-    {
-      'lat': 30.404230626910916,
-      'lng': 106.81397438049318,
-    },
-    {
-      'lat': 30.408598118379068,
-      'lng': 106.81942462921144,
-    },
-    {
-      'lat': 30.41129994324368,
-      'lng': 106.82178497314453,
-    },
-    {
-      'lat': 30.411966135142258,
-      'lng': 106.82268619537355,
-    },
-    {
-      'lat': 30.412280724180572,
-      'lng': 106.82459592819214,
-    },
-    {
-      'lat': 30.41233623978796,
-      'lng': 106.82682752609254,
-    },
-    {
-      'lat': 30.412225208541603,
-      'lng': 106.82882308959962,
-    },
-    {
-      'lat': 30.412114177168935,
-      'lng': 106.83077573776247,
-    },
-    {
-      'lat': 30.411855103474892,
-      'lng': 106.83219194412233,
-    },
-    {
-      'lat': 30.411077878267125,
-      'lng': 106.83356523513795,
-    },
-    {
-      'lat': 30.41031915245226,
-      'lng': 106.83431625366212,
-    },
-    {
-      'lat': 30.409005247458758,
-      'lng': 106.83547496795656,
-    },
-    {
-      'lat': 30.40641439706674,
-      'lng': 106.83809280395509,
-    },
-    {
-      'lat': 30.404785827343524,
-      'lng': 106.84032440185547,
-    },
-    {
-      'lat': 30.402565006671665,
-      'lng': 106.8453884124756,
-    },
-    {
-      'lat': 30.401306519203583,
-      'lng': 106.84727668762207,
-    },
-    {
-      'lat': 30.399381742293105,
-      'lng': 106.85036659240724,
-    },
-    {
-      'lat': 30.396346440087445,
-      'lng': 106.85319900512695,
-    },
-    {
-      'lat': 30.3936812189121,
-      'lng': 106.85482978820802,
-    },
-    {
-      'lat': 30.393014902255455,
-      'lng': 106.85697555541994,
-    },
-    {
-      'lat': 30.367099063229883,
-      'lng': 106.89491271972658,
-    },
-    {
-      'lat': 30.363174065727815,
-      'lng': 106.90117835998537,
-    },
-    {
-      'lat': 30.361396656551236,
-      'lng': 106.90255165100099,
-    },
-    {
-      'lat': 30.35761955480618,
-      'lng': 106.90366744995119,
-    },
-  ];
-
-  // console.log(L.LineUtil.clipSegment());
-
-  const polygons = [
-    [
-      {
-        'lat': 30.345375373249162,
-        'lng': 106.91008865833284,
-      },
-      {
-        'lat': 30.344250405623296,
-        'lng': 106.91928327083589,
-      },
-      {
-        'lat': 30.34447262247546,
-        'lng': 106.92638576030733,
-      },
-      {
-        'lat': 30.34460687824579,
-        'lng': 106.93676054477692,
-      },
-      {
-        'lat': 30.344111519834506,
-        'lng': 106.93684101104738,
-      },
-      {
-        'lat': 30.343074499715534,
-        'lng': 106.93685173988344,
-      },
-      {
-        'lat': 30.34232913471857,
-        'lng': 106.93702340126039,
-      },
-      {
-        'lat': 30.34114394638991,
-        'lng': 106.93757593631746,
-      },
-      {
-        'lat': 30.339065202517432,
-        'lng': 106.93855762481691,
-      },
-      {
-        'lat': 30.33402325506929,
-        'lng': 106.9385415315628,
-      },
-      {
-        'lat': 30.33311113950593,
-        'lng': 106.93839132785799,
-      },
-      {
-        'lat': 30.328666190814516,
-        'lng': 106.93599343299867,
-      },
-      {
-        'lat': 30.32691593690837,
-        'lng': 106.93515658378602,
-      },
-      {
-        'lat': 30.325045260589025,
-        'lng': 106.93425536155702,
-      },
-      {
-        'lat': 30.324341432526214,
-        'lng': 106.93335413932802,
-      },
-      {
-        'lat': 30.32407286522183,
-        'lng': 106.93268895149232,
-      },
-      {
-        'lat': 30.32270223440741,
-        'lng': 106.92625164985658,
-      },
-      {
-        'lat': 30.322683712238067,
-        'lng': 106.92547917366029,
-      },
-      {
-        'lat': 30.32420251849519,
-        'lng': 106.9208335876465,
-      },
-      {
-        'lat': 30.324572955473467,
-        'lng': 106.92106962203981,
-      },
-      {
-        'lat': 30.325730562001297,
-        'lng': 106.92148804664613,
-      },
-      {
-        'lat': 30.3281568608939,
-        'lng': 106.92171335220338,
-      },
-      {
-        'lat': 30.33071274433576,
-        'lng': 106.92199230194093,
-      },
-      {
-        'lat': 30.332990758137,
-        'lng': 106.92392349243165,
-      },
-      {
-        'lat': 30.334879802557836,
-        'lng': 106.92323684692384,
-      },
-      {
-        'lat': 30.335398357396045,
-        'lng': 106.92199230194093,
-      },
-      {
-        'lat': 30.33828739836192,
-        'lng': 106.90800189971924,
-      },
-    ],
-  ];
-
-  map.on('move', (e) => {
-
-    editMenu()
-      .close();
-  });
-
-  const markers = [
-    {
-      lat: 30.30743414822258,
-      lng: 106.91764175891878,
-    },
-    {
-      lat: 30.384130245890272,
-      lng: 106.77492141723634,
-    },
-    {
-      lat: 30.47678704581951,
-      lng: 106.66179656982423,
-    },
-  ];
-  const geoJSON = L.geoJSON()
-    .on('click', e => {
-      L.DomEvent.stopPropagation(e);
-      console.log(e);
+    const positionAssistOverlay = L.tileLayer(`https://api.mapbox.com/styles/v1/openstreetmap/ckasmteyi1tda1ipfis6wqhuq/tiles/256/{z}/{x}/{y}?access_token={access_token}`, {
+      access_token: 'pk.eyJ1Ijoib3BlbnN0cmVldG1hcCIsImEiOiJjbGRlaXd3cHUwYXN3M29waWp0bGNnYWdyIn0.RRlhUnKlUFNhKsKjhaZ2zA',
     })
-    .on('contextmenu', e => {
+      .addTo(map);
+
+    const colorMapOfChina = L.tileLayer(`https://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineCommunity/MapServer/tile/{z}/{y}/{x}?blankTile=false`);
+    const miniMap = new L.Control.MiniMap(colorMapOfChina).addTo(map);
+
+    L.control.scale()
+      .addTo(map);
+
+    console.log(turf.point([-29.9965 - 9.5167]));
+
+
+    map.on('click', (e) => {
       L.DomEvent.stopPropagation(e);
-      const { sourceTarget } = e;
-      const context = {
-        event: e,
-        operations: getOperations(sourceTarget.feature.geometry.type.toLowerCase()),
-      };
-      const menu = editMenu(context);
-      menu.close();
-      menu();
-    })
-    .addTo(map);
-  map.on('moveend', event => {
-    geoJSON.clearLayers();
+      const { containerPoint, latlng } = e;
+      const point = turf.point([latlng.lng, latlng.lat]);
+      const options = { precision: 7, coordinates: 2 };
+      const truncated = turf.truncate(point, options);
+      drawLayers.forEach(e => {
+        if (e.pm.enabled()) {
+          e.pm.disable();
+        }
+      });
+      editMenu()
+        .close();
+      document.getElementById('info').innerHTML =
+        `<span>x: ${containerPoint.x} y: ${containerPoint.y}</span> <br/> <br/><span>${truncated.geometry.coordinates[1]}, ${truncated.geometry.coordinates[0]}</span>`;
+    });
+
+    bindContextMenu('Map', map);
+
+    const line = [
+      {
+        'lat': 30.40752476993954,
+        'lng': 106.75895690917969,
+      },
+      {
+        'lat': 30.405155959211367,
+        'lng': 106.77144527435304,
+      },
+      {
+        'lat': 30.405155959211367,
+        'lng': 106.773419380188,
+      },
+      {
+        'lat': 30.405526089676105,
+        'lng': 106.77638053894044,
+      },
+      {
+        'lat': 30.40637738442015,
+        'lng': 106.78088665008546,
+      },
+      {
+        'lat': 30.408524094727614,
+        'lng': 106.79333209991456,
+      },
+      {
+        'lat': 30.408487082880868,
+        'lng': 106.794490814209,
+      },
+      {
+        'lat': 30.40830202343651,
+        'lng': 106.79577827453615,
+      },
+      {
+        'lat': 30.407672818701744,
+        'lng': 106.79697990417482,
+      },
+      {
+        'lat': 30.40719165940367,
+        'lng': 106.79783821105958,
+      },
+      {
+        'lat': 30.40648842231779,
+        'lng': 106.7984390258789,
+      },
+      {
+        'lat': 30.405378037658565,
+        'lng': 106.79873943328857,
+      },
+      {
+        'lat': 30.403823477920625,
+        'lng': 106.79916858673097,
+      },
+      {
+        'lat': 30.402453964312194,
+        'lng': 106.79869651794435,
+      },
+      {
+        'lat': 30.3987894956116,
+        'lng': 106.7976236343384,
+      },
+      {
+        'lat': 30.396901685345366,
+        'lng': 106.79792404174806,
+      },
+      {
+        'lat': 30.395532074666125,
+        'lng': 106.79878234863281,
+      },
+      {
+        'lat': 30.39490278764466,
+        'lng': 106.79976940155031,
+      },
+      {
+        'lat': 30.39460665117291,
+        'lng': 106.80114269256593,
+      },
+      {
+        'lat': 30.394495599764554,
+        'lng': 106.80285930633546,
+      },
+      {
+        'lat': 30.394791736572984,
+        'lng': 106.80431842803955,
+      },
+      {
+        'lat': 30.395532074666125,
+        'lng': 106.80616378784181,
+      },
+      {
+        'lat': 30.404230626910916,
+        'lng': 106.81397438049318,
+      },
+      {
+        'lat': 30.408598118379068,
+        'lng': 106.81942462921144,
+      },
+      {
+        'lat': 30.41129994324368,
+        'lng': 106.82178497314453,
+      },
+      {
+        'lat': 30.411966135142258,
+        'lng': 106.82268619537355,
+      },
+      {
+        'lat': 30.412280724180572,
+        'lng': 106.82459592819214,
+      },
+      {
+        'lat': 30.41233623978796,
+        'lng': 106.82682752609254,
+      },
+      {
+        'lat': 30.412225208541603,
+        'lng': 106.82882308959962,
+      },
+      {
+        'lat': 30.412114177168935,
+        'lng': 106.83077573776247,
+      },
+      {
+        'lat': 30.411855103474892,
+        'lng': 106.83219194412233,
+      },
+      {
+        'lat': 30.411077878267125,
+        'lng': 106.83356523513795,
+      },
+      {
+        'lat': 30.41031915245226,
+        'lng': 106.83431625366212,
+      },
+      {
+        'lat': 30.409005247458758,
+        'lng': 106.83547496795656,
+      },
+      {
+        'lat': 30.40641439706674,
+        'lng': 106.83809280395509,
+      },
+      {
+        'lat': 30.404785827343524,
+        'lng': 106.84032440185547,
+      },
+      {
+        'lat': 30.402565006671665,
+        'lng': 106.8453884124756,
+      },
+      {
+        'lat': 30.401306519203583,
+        'lng': 106.84727668762207,
+      },
+      {
+        'lat': 30.399381742293105,
+        'lng': 106.85036659240724,
+      },
+      {
+        'lat': 30.396346440087445,
+        'lng': 106.85319900512695,
+      },
+      {
+        'lat': 30.3936812189121,
+        'lng': 106.85482978820802,
+      },
+      {
+        'lat': 30.393014902255455,
+        'lng': 106.85697555541994,
+      },
+      {
+        'lat': 30.367099063229883,
+        'lng': 106.89491271972658,
+      },
+      {
+        'lat': 30.363174065727815,
+        'lng': 106.90117835998537,
+      },
+      {
+        'lat': 30.361396656551236,
+        'lng': 106.90255165100099,
+      },
+      {
+        'lat': 30.35761955480618,
+        'lng': 106.90366744995119,
+      },
+    ];
+
+    // console.log(L.LineUtil.clipSegment());
+
+    const polygons = [
+      [
+        {
+          'lat': 30.345375373249162,
+          'lng': 106.91008865833284,
+        },
+        {
+          'lat': 30.344250405623296,
+          'lng': 106.91928327083589,
+        },
+        {
+          'lat': 30.34447262247546,
+          'lng': 106.92638576030733,
+        },
+        {
+          'lat': 30.34460687824579,
+          'lng': 106.93676054477692,
+        },
+        {
+          'lat': 30.344111519834506,
+          'lng': 106.93684101104738,
+        },
+        {
+          'lat': 30.343074499715534,
+          'lng': 106.93685173988344,
+        },
+        {
+          'lat': 30.34232913471857,
+          'lng': 106.93702340126039,
+        },
+        {
+          'lat': 30.34114394638991,
+          'lng': 106.93757593631746,
+        },
+        {
+          'lat': 30.339065202517432,
+          'lng': 106.93855762481691,
+        },
+        {
+          'lat': 30.33402325506929,
+          'lng': 106.9385415315628,
+        },
+        {
+          'lat': 30.33311113950593,
+          'lng': 106.93839132785799,
+        },
+        {
+          'lat': 30.328666190814516,
+          'lng': 106.93599343299867,
+        },
+        {
+          'lat': 30.32691593690837,
+          'lng': 106.93515658378602,
+        },
+        {
+          'lat': 30.325045260589025,
+          'lng': 106.93425536155702,
+        },
+        {
+          'lat': 30.324341432526214,
+          'lng': 106.93335413932802,
+        },
+        {
+          'lat': 30.32407286522183,
+          'lng': 106.93268895149232,
+        },
+        {
+          'lat': 30.32270223440741,
+          'lng': 106.92625164985658,
+        },
+        {
+          'lat': 30.322683712238067,
+          'lng': 106.92547917366029,
+        },
+        {
+          'lat': 30.32420251849519,
+          'lng': 106.9208335876465,
+        },
+        {
+          'lat': 30.324572955473467,
+          'lng': 106.92106962203981,
+        },
+        {
+          'lat': 30.325730562001297,
+          'lng': 106.92148804664613,
+        },
+        {
+          'lat': 30.3281568608939,
+          'lng': 106.92171335220338,
+        },
+        {
+          'lat': 30.33071274433576,
+          'lng': 106.92199230194093,
+        },
+        {
+          'lat': 30.332990758137,
+          'lng': 106.92392349243165,
+        },
+        {
+          'lat': 30.334879802557836,
+          'lng': 106.92323684692384,
+        },
+        {
+          'lat': 30.335398357396045,
+          'lng': 106.92199230194093,
+        },
+        {
+          'lat': 30.33828739836192,
+          'lng': 106.90800189971924,
+        },
+      ],
+    ];
+
+    map.on('move', (e) => {
+
+      editMenu()
+        .close();
+    });
+
+    const markers = [
+      {
+        lat: 30.30743414822258,
+        lng: 106.91764175891878,
+      },
+      {
+        lat: 30.384130245890272,
+        lng: 106.77492141723634,
+      },
+      {
+        lat: 30.47678704581951,
+        lng: 106.66179656982423,
+      },
+    ];
+    const geoJSON = L.geoJSON()
+      .on('click', e => {
+        L.DomEvent.stopPropagation(e);
+        console.log(e);
+      })
+      .on('contextmenu', e => {
+        L.DomEvent.stopPropagation(e);
+        const { sourceTarget } = e;
+        const context = {
+          event: e,
+          operations: getOperations(sourceTarget.feature.geometry.type.toLowerCase()),
+        };
+        const menu = editMenu(context);
+        menu.close();
+        menu();
+      })
+      .addTo(map);
+    map.on('moveend', event => {
+      geoJSON.clearLayers();
+      clipLayer();
+    });
     clipLayer();
-  });
-  clipLayer();
 
-  function clipLayer() {
-    if (map.getZoom() >= 16) {
-      d3.json('cd.geojson')
-        .then(json => {
-          const arr = [];
-          json.features.forEach(geoJson => {
-            const res = clip(geoJson);
-            if (res) {
-              arr.push(res);
-            }
+    function clipLayer() {
+      if (map.getZoom() >= 16) {
+        d3.json('cd.geojson')
+          .then(json => {
+            const arr = [];
+            json.features.forEach(geoJson => {
+              const res = clip(geoJson);
+              if (res) {
+                arr.push(res);
+              }
+            });
+            geoJSON.addData(arr);
           });
-          geoJSON.addData(arr);
-        });
+      }
     }
-  }
 
-  function clip(geoJson) {
-    /**
-     * getBounds()
-     * _northEast 边界的东北点。
-     * _southWest 边界的西南点。
-     */
-    const { _northEast, _southWest } = map.getBounds();
-    const northEastPoint = map.latLngToLayerPoint(_northEast);
-    const southWestPoint = map.latLngToLayerPoint(_southWest);
-    const bounds = L.bounds(northEastPoint, southWestPoint);
-    const polygonPoints = [];
-    const layer = L.GeoJSON.geometryToLayer(geoJson);
-    switch (geoJson.geometry.type) {
-      case 'Point':
-        // 过滤 Point
-        const bound = map.getBounds()
-          .contains(layer.getLatLng());
-        if (bound) {
+    function clip(geoJson) {
+      /**
+       * getBounds()
+       * _northEast 边界的东北点。
+       * _southWest 边界的西南点。
+       */
+      const { _northEast, _southWest } = map.getBounds();
+      const northEastPoint = map.latLngToLayerPoint(_northEast);
+      const southWestPoint = map.latLngToLayerPoint(_southWest);
+      const bounds = L.bounds(northEastPoint, southWestPoint);
+      const polygonPoints = [];
+      const layer = L.GeoJSON.geometryToLayer(geoJson);
+      switch (geoJson.geometry.type) {
+        case 'Point':
+          // 过滤 Point
+          const bound = map.getBounds()
+            .contains(layer.getLatLng());
+          if (bound) {
+            return geoJson;
+          }
+          break;
+        case 'LineString':
+          return lineString();
+        case 'Polygon':
+          return polygon();
+      }
+
+      function polygon() {
+        const latLng = layer.getLatLngs();
+        latLng.forEach(e => {
+          e.forEach(e => {
+            const point = map.latLngToLayerPoint(e);
+            polygonPoints.push(point);
+          });
+        });
+        const clipPolygon = L.PolyUtil.clipPolygon(polygonPoints, bounds);
+        if (clipPolygon.length) {
           return geoJson;
         }
-        break;
-      case 'LineString':
-        return lineString();
-      case 'Polygon':
-        return polygon();
-    }
-
-    function polygon() {
-      const latLng = layer.getLatLngs();
-      latLng.forEach(e => {
-        e.forEach(e => {
-          const point = map.latLngToLayerPoint(e);
-          polygonPoints.push(point);
-        });
-      });
-      const clipPolygon = L.PolyUtil.clipPolygon(polygonPoints, bounds);
-      if (clipPolygon.length) {
-        return geoJson;
-      }
-    }
-
-    function lineString() {
-      const latLng = layer.getLatLngs();
-      for (let i = 0, j = i + 1; j < latLng.length;) {
-        const start = map.latLngToLayerPoint(latLng[i++]);
-        const end = map.latLngToLayerPoint(latLng[j++]);
-        const boundsPoints = L.LineUtil.clipSegment(start, end, bounds);
-        if (boundsPoints.length) {
-          return geoJson
-        }
-      }
-    }
-  }
-
-  const linShuiMarker = L.marker([30.3339, 106.9303])
-    .on('click', e => {
-      L.DomEvent.stopPropagation(e);
-      selectLayer = e.sourceTarget;
-    })
-    .bindPopup(`<p>邻水</p>`)
-    .addTo(map);
-  linShuiMarker.shape = 'marker';
-  bindContextMenu('marker', linShuiMarker);
-  linShuiMarker.uuid = uuid.v4();
-
-  const layerGroup = L.layerGroup()
-    .addTo(map);
-
-  /*****  Leaflet-Geoman  *****/
-
-  map.pm.setLang('zh');
-  const drawLayers = [];
-  const drawShadowLayers = [];
-  // add Leaflet-Geoman controls with some options to the map
-  map.pm.addControls({
-    position: 'topleft',
-    drawCircle: false,
-  });
-
-  map.pm.setGlobalOptions({
-    limitMarkersToCount: 20,
-  });
-
-  let _menu = d3.select(null);
-
-  function editMenu(context) {
-    const selection = d3.select('#map');
-
-    const editMenu = function() {
-      const { operations, event } = context;
-      if (!operations.length) return;
-
-      const { containerPoint, sourceTarget } = event;
-
-      let _menuHeight;
-      let _menuWidth = 44;
-      const buttonHeight = 24;
-      // 稍微偏离目标位置的菜单
-      const _menuSideMargin = 26;
-      const _vpBottomMargin = 12; // viewport bottom margin
-      const _verticalPadding = 4;
-
-      _menuHeight = _verticalPadding * 2 + operations.length * buttonHeight;
-
-      _menu = selection.append('dev')
-        .attr('class', 'edit-menu')
-        .style('padding', _verticalPadding + 'px 0');
-
-      const buttons = _menu.selectAll('.edit-menu-item')
-        .data(operations);
-
-      const buttonsEnter = buttons.enter()
-        .append('button')
-        .attr('class', 'edit-menu-item')
-        .style('height', buttonHeight + 'px')
-        .text(function(d) {
-          return d.title;
-        })
-        .on('click', click);
-
-      buttonsEnter.merge(buttons)
-        .classed('disabled', function(d) {
-          return d.disabled();
-        });
-
-      updatePosition();
-
-      function click(d3_event, e) {
-        d3_event.stopPropagation();
-        if (!e.disabled()) {
-          e.operation({
-            event: d3_event,
-            sourceTarget,
-          });
-        }
-        editMenu.close();
       }
 
-      function updatePosition() {
-        if (!_menu || _menu.empty()) return;
-        const viewport = selection.node()
-          .getBoundingClientRect();
-
-        if (containerPoint.x < 0 ||
-          containerPoint.x > viewport.width ||
-          containerPoint.y < 0 ||
-          containerPoint.y > viewport.height) {
-
-          editMenu.close();
-          return;
-        }
-        const offset = [0, 0];
-
-        const menuLeft = displayOnLeft(viewport);
-        offset[0] = menuLeft ? -1 * (_menuSideMargin + _menuWidth) : _menuSideMargin;
-
-        const menuBottom = displayOnBottom(viewport);
-        offset[1] = menuBottom ? -containerPoint.y - _menuHeight + viewport.height - _vpBottomMargin : 0;
-
-        const origin = [containerPoint.x + offset[0], containerPoint.y + offset[1]];
-
-        _menu.style('left', origin[0] + 'px')
-          .style('top', origin[1] - 16 + 'px')
-          .style('z-index', 999);
-      }
-
-      function displayOnLeft(viewport) {
-        return (containerPoint.x + _menuSideMargin + _menuWidth) > viewport.width;
-      }
-
-      function displayOnBottom(viewport) {
-        return (containerPoint.y + _menuHeight > (viewport.height + _vpBottomMargin));
-      }
-    };
-
-
-    editMenu.close = function() {
-      _menu.remove();
-    };
-
-    return editMenu;
-  }
-
-  function getOperations(key) {
-    const operationMap = new Map();
-    const markerOperations = [
-      {
-        title: '移动',
-        operation: move,
-        disabled: () => {
-          return false;
-        },
-      },
-      {
-        title: '复制',
-        operation: copy,
-        disabled: () => {
-          return false;
-        },
-      },
-      {
-        title: '删除',
-        operation: remove,
-        disabled: () => {
-          return false;
-        },
-      },
-    ];
-    operationMap.set('marker', markerOperations);
-    operationMap.set('circleMarker', markerOperations);
-    const lineOperations = [
-      {
-        title: '移动',
-        operation: move,
-        disabled: () => {
-          return false;
-        },
-      },
-      {
-        title: '编辑',
-        operation: edit,
-        disabled: () => {
-          return false;
-        },
-      },
-      {
-        title: '复制',
-        operation: copy,
-        disabled: () => {
-          return false;
-        },
-      },
-      {
-        title: '截取',
-        operation: segmentation,
-        disabled: () => {
-          return false;
-        },
-      },
-      {
-        title: '删除',
-        operation: remove,
-        disabled: () => {
-          return false;
-        },
-      },
-    ];
-    operationMap.set('polyline', lineOperations);
-    const polygonOperations = [
-      {
-        title: '移动',
-        operation: move,
-        disabled: () => {
-          return false;
-        },
-      },
-      {
-        title: '编辑',
-        operation: edit,
-        disabled: () => {
-          return false;
-        },
-      },
-      {
-        title: '复制',
-        operation: copy,
-        disabled: () => {
-          return false;
-        },
-      },
-      {
-        title: '删除',
-        operation: remove,
-        disabled: () => {
-          return false;
-        },
-      },
-    ];
-    operationMap.set('polygon', polygonOperations);
-    const mapOperations = [
-      {
-        title: '当前位置',
-        operation: location,
-        disabled: () => {
-          return false;
-        },
-      },
-      {
-        title: '粘贴',
-        operation: copyLayer,
-        disabled: () => {
-          return setCopyLayer.size === 0;
-        },
-      },
-    ];
-    operationMap.set('Map', mapOperations);
-
-    function location(d3_event) {
-      console.log(d3_event);
-      const { clientX, clientY } = d3_event.event;
-      console.log(clientX, clientY);
-      const loc = map.layerPointToLatLng(L.point(clientX, clientY));
-      alert(JSON.stringify(loc));
-    }
-
-
-    /** 编辑 */
-    function edit(d3_event) {
-      const { sourceTarget } = d3_event;
-      sourceTarget.pm.enable({
-        allowSelfIntersection: false,
-      });
-    }
-
-    function move(d3_event) {
-      const { sourceTarget } = d3_event;
-      console.log(drawLayers);
-      if (sourceTarget) {
-        sourceTarget.pm.enableLayerDrag();
-        sourceTarget.on('pm:dragstart', e => {
-          console.log('pm:dragstart: ', e);
-        });
-        sourceTarget.on('pm:drag', e => {
-          console.log(e);
-        });
-        sourceTarget.on('pm:dragend', e => {
-          const { sourceTarget } = e;
-          sourceTarget.pm.disableLayerDrag();
-          sourceTarget.off('pm:dragend');
-          sourceTarget.off('pm:drag');
-        });
-      }
-    }
-
-    function copy(d3_event) {
-      selectLayer = d3_event.sourceTarget;
-      setCopyLayer.add(selectLayer);
-      origLatLng = selectLayer.getLatLng ? selectLayer.getLatLng() : selectLayer.getCenter();
-    }
-
-    function remove(d3_event) {
-      const { sourceTarget } = d3_event;
-      if (sourceTarget && map.hasLayer(sourceTarget)) {
-        map.removeLayer(sourceTarget);
-      }
-    }
-
-    /** 裁剪方法 */
-    function segmentation(d3_event) {
-      isSegmentation = true;
-      relatedLayer = d3_event.sourceTarget;
-      map.pm.enableDraw('Marker', {});
-    }
-
-    return operationMap.get(key);
-  }
-
-
-  /** 绑定右键菜单 */
-  function bindContextMenu(shape, layer) {
-    layer.on('contextmenu', e => {
-      L.DomEvent.stopPropagation(e);
-      const context = {
-        event: e,
-        operations: getOperations(shape),
-      };
-      const menu = editMenu(context);
-      menu.close();
-      menu();
-    });
-  }
-
-  let isSegmentation = false;
-
-  let relatedLayer;
-
-  /** 计算距离点最近的线 */
-  function pointToLineDistance(pt) {
-    const minMap = [];
-    drawLayers.forEach(layer => {
-      const geoJSON = layer.toGeoJSON();
-      const distance = turf.pointToLineDistance(pt, geoJSON, { units: 'kilometers' });
-      minMap.push({
-        layer,
-        distance,
-      });
-    });
-    let min = Infinity, res;
-    minMap.forEach(e => {
-      if (e.distance < min) {
-        min = e.distance;
-        res = e.layer;
-      }
-    });
-    return res;
-  }
-
-  /** 计算点是否在线上 */
-  function booleanPointOnLine(pt) {
-    for (const drawLayer of drawLayers) {
-      const geoJSON = drawLayer.toGeoJSON();
-      console.log(turf.booleanPointOnLine(pt, geoJSON));
-    }
-  }
-
-  function segmentationLine(layer) {
-    const pt = layer.toGeoJSON();
-    const geoJSON = relatedLayer.toGeoJSON();
-    if (turf.booleanWithin(pt, geoJSON)) {
-      const split = turf.lineSplit(geoJSON, pt);
-      const { features } = split;
-      for (let i = 0; i < features.length; i++) {
-        const line = L.GeoJSON.geometryToLayer(features[i], {});
-        bindContextMenu('polyline', line);
-        line.uuid = uuid.v4();
-        drawLayers.push(line);
-        line.shape = 'polyline';
-        line
-          .on('mouseover', function(e) {
-            e.sourceTarget.setStyle({
-              weight: 8,
-              opacity: 0.6,
-              color: '#f6634f',
-            });
-          })
-          .on('mouseout', function(e) {
-            e.sourceTarget.setStyle({
-              weight: 3,
-              opacity: 1,
-              color: '#3388ff',
-            });
-          })
-          .addTo(map);
-      }
-      const index = drawLayersFindIndex(relatedLayer.uuid);
-      if (index !== -1) {
-        map.removeLayer(relatedLayer);
-        drawLayers.splice(index, 1);
-      }
-    }
-    else {
-      alert('请将截取点放在线内的点上');
-    }
-    map.removeLayer(layer);
-    map.pm.disableDraw();
-    relatedLayer = undefined;
-    isSegmentation = !isSegmentation;
-  }
-
-  function drawLayersFindIndex(uuid) {
-    let layer;
-    layerGroup.eachLayer(e => {
-      if (e.uuid === uuid) {
-        layer = e;
-      }
-    });
-    if (layer) {
-      layerGroup.removeLayer(layer);
-    }
-    return drawLayers.findIndex(e => {
-      return e.uuid === uuid;
-    });
-  }
-
-  map.on('pm:vertexadded', e => {
-    console.log(e);
-  });
-
-  // 监听绘制开始
-  // map.on('pm:drawstart', e => {
-  //   console.log('pm:drawstart: ', e);
-  //   const { workingLayer } = e;
-  //   // 监听绘制定点
-  //   workingLayer.on('pm:vertexadded', e => {
-  //     drawLayers.forEach(layer => {
-  //       const geoJSON = layer.toGeoJSON(7);
-  //       geoJSON.properties.id = layer.uuid;
-  //       console.log(geoJSON);
-  //     });
-  //     console.log('pm:vertexadded: ', e);
-  //   });
-  // });
-
-  let selectLayer;
-  const setCopyLayer = new Set();
-  map.on('mousemove', mapMousemove);
-
-  const key = {
-    '⌘+C': () => {
-      if (!selectLayer) return;
-      setCopyLayer.add(selectLayer);
-      origLatLng = selectLayer.getLatLng ? selectLayer.getLatLng() : selectLayer.getCenter();
-    },
-    '⌘+V': () => {
-      copyLayer();
-    },
-    '⌘+Z': () => {
-      const popLayer = drawLayers.pop();
-      if (popLayer && map.hasLayer(popLayer)) {
-        map.removeLayer(popLayer);
-      }
-      if (copyMarker && map.hasLayer(copyMarker)) {
-        map.removeLayer(copyMarker);
-      }
-    },
-    'Esc': () => {
-      if (copyMarker && map.hasLayer(copyMarker)) {
-        map.removeLayer(copyMarker);
-      }
-      map.pm.disableDraw();
-    },
-  };
-
-  const keys = {}, keyboards = [];
-  Object.keys(key)
-    .forEach(e => {
-      let keyboard = [uiCmd(e)];
-      keyboards.push(keyboard);
-      Object.assign(keys, { [keyboard]: key[e] });
-    });
-
-  hotkeys(keyboards.join(','), function(event, handler) {
-      keys[handler.key]();
-    },
-  );
-
-  let copyMarker;
-  let origLatLng;
-  let isCopyLayer = true;
-
-  function copyLayer() {
-    isCopyLayer = false;
-    const layers = [...setCopyLayer];
-    if (!layers.length) return;
-    const layer = layers[setCopyLayer.size - 1];
-    const { options, shape } = layer;
-    copyMarker = L[shape](mousemoveLatlng, options)
-      .addTo(map);
-    copyMarker.shape = shape;
-    copyMarker.uuid = uuid.v4();
-    drawLayers.push(copyMarker);
-    d3.select(document)
-      .on('click', copyLayerMapClick);
-
-    function copyLayerMapClick() {
-      bindContextMenu(copyMarker.shape, copyMarker);
-      copyMarker = undefined;
-      isCopyLayer = true;
-      d3.select(document)
-        .on('click', null);
-    }
-  }
-
-  let mousemoveLatlng;
-
-  function mapMousemove(e) {
-    mapMousemoveLatLng(e);
-  }
-
-  function mapMousemoveLatLng(event) {
-    if (!copyMarker && !selectLayer || !origLatLng) return;
-    const { latlng } = event;
-    const { shape } = copyMarker || selectLayer;
-    const currMove = map.latLngToLayerPoint(latlng);
-    const origMove = map.latLngToLayerPoint(origLatLng);
-    const delta = [currMove.x - origMove.x, currMove.y - origMove.y];
-    if (shape === 'marker' || shape === 'circleMarker') {
-      const end = [origMove.x + delta[0], origMove.y + delta[1]];
-      mousemoveLatlng = map.layerPointToLatLng(L.point(end[0], end[1]));
-      if (copyMarker && map.hasLayer(copyMarker)) {
-        copyMarker.setLatLng(mousemoveLatlng);
-      }
-    }
-    else {
-      mousemoveLatlng = [];
-      const latLngs = selectLayer.getLatLngs();
-      for (let i = 0; i < latLngs.length; i++) {
-        if (Array.isArray(latLngs[i])) {
-          mousemoveLatlng.push([]);
-          let lls = [];
-          for (let j = 0; j < latLngs[i].length; j++) {
-            const start = map.latLngToLayerPoint(latLngs[i][j]);
-            const end = [start.x + delta[0], start.y + delta[1]];
-            const endLatLng = map.layerPointToLatLng(L.point(end[0], end[1]));
-            lls.push(endLatLng);
+      function lineString() {
+        const latLng = layer.getLatLngs();
+        for (let i = 0, j = i + 1; j < latLng.length;) {
+          const start = map.latLngToLayerPoint(latLng[i++]);
+          const end = map.latLngToLayerPoint(latLng[j++]);
+          const boundsPoints = L.LineUtil.clipSegment(start, end, bounds);
+          if (boundsPoints.length) {
+            return geoJson
           }
-          mousemoveLatlng[i] = lls;
-        }
-        else {
-          const start = map.latLngToLayerPoint(latLngs[i]);
-          const end = [start.x + delta[0], start.y + delta[1]];
-          const endLatLng = map.layerPointToLatLng(L.point(end[0], end[1]));
-          mousemoveLatlng.push(endLatLng);
         }
       }
-      if (copyMarker && map.hasLayer(copyMarker)) {
-        copyMarker.setLatLngs(mousemoveLatlng);
-      }
-    }
-  }
-
-  const polygon = [
-    'Rectangle', 'Polygon',
-  ];
-
-  const marker = [
-    'Text',
-    'Marker',
-  ];
-
-  const polyline = [
-    'Line',
-  ];
-
-  const circleMarker = [
-    'CircleMarker',
-  ];
-
-  map.on('pm:create', (e) => {
-    map.on('contextmenu', disableDraw);
-
-    function disableDraw() {
-      map.pm.disableDraw();
-      map.off('contextmenu', disableDraw);
     }
 
-    let { layer, shape } = e;
-    if (!isSegmentation) {
-      console.log('create one', shape, e);
-      if (polygon.includes(shape)) {
-        shape = 'polygon';
-        layer.setStyle({
-          color: '#4CAF50',
-        });
-      }
-      if (marker.includes(shape)) {
-        shape = 'marker';
-      }
-      if (polyline.includes(shape)) {
-        shape = 'polyline';
-        layer
-          .on('mouseover', function(e) {
-            e.sourceTarget.setStyle({
-              weight: 8,
-              opacity: 0.6,
-              color: '#f6634f',
-            });
-          })
-          .on('mouseout', function(e) {
-            e.sourceTarget.setStyle({
-              weight: 3,
-              opacity: 1,
-              color: '#3388ff',
-            });
-          });
-      }
-      if (circleMarker.includes(shape)) {
-        shape = 'circleMarker';
-      }
-      layer.shape = shape;
-      layer.isSegmentation = isSegmentation;
-      bindContextMenu(shape, layer);
-      layer.on('click', e => {
+    const linShuiMarker = L.marker([30.3339, 106.9303])
+      .on('click', e => {
         L.DomEvent.stopPropagation(e);
         selectLayer = e.sourceTarget;
-      });
-      layer.uuid = uuid.v4();
-      layer.bindPopup(`<sapn>${popup(layer)}</sapn>`);
-      drawLayers.push(layer);
-    }
-    else {
-      segmentationLine(layer);
-    }
-  });
+      })
+      .bindPopup(`<p>邻水</p>`)
+      .addTo(map);
+    linShuiMarker.shape = 'marker';
+    bindContextMenu('marker', linShuiMarker);
+    linShuiMarker.uuid = uuid.v4();
 
-  function popup(layer) {
-    const res = {};
-    res['编号'] = layer.uuid;
-    if (layer.shape === 'polygon') {
-      res['面积'] = turf.round(turf.area(layer.toGeoJSON()), 2) + '㎡';
+    const layerGroup = L.layerGroup()
+      .addTo(map);
+
+    /*****  Leaflet-Geoman  *****/
+
+    map.pm.setLang('zh');
+    const drawLayers = [];
+    const drawShadowLayers = [];
+    // add Leaflet-Geoman controls with some options to the map
+    map.pm.addControls({
+      position: 'topleft',
+      drawCircle: false,
+    });
+
+    map.pm.setGlobalOptions({
+      limitMarkersToCount: 20,
+    });
+
+    let _menu = d3.select(null);
+
+    function editMenu(context) {
+      const selection = d3.select('#map');
+
+      const editMenu = function () {
+        const { operations, event } = context;
+        if (!operations.length) return;
+
+        const { containerPoint, sourceTarget } = event;
+
+        let _menuHeight;
+        let _menuWidth = 44;
+        const buttonHeight = 24;
+        // 稍微偏离目标位置的菜单
+        const _menuSideMargin = 26;
+        const _vpBottomMargin = 12; // viewport bottom margin
+        const _verticalPadding = 4;
+
+        _menuHeight = _verticalPadding * 2 + operations.length * buttonHeight;
+
+        _menu = selection.append('dev')
+          .attr('class', 'edit-menu')
+          .style('padding', _verticalPadding + 'px 0');
+
+        const buttons = _menu.selectAll('.edit-menu-item')
+          .data(operations);
+
+        const buttonsEnter = buttons.enter()
+          .append('button')
+          .attr('class', 'edit-menu-item')
+          .style('height', buttonHeight + 'px')
+          .text(function (d) {
+            return d.title;
+          })
+          .on('click', click);
+
+        buttonsEnter.merge(buttons)
+          .classed('disabled', function (d) {
+            return d.disabled();
+          });
+
+        updatePosition();
+
+        function click(d3_event, e) {
+          d3_event.stopPropagation();
+          if (!e.disabled()) {
+            e.operation({
+              event: d3_event,
+              sourceTarget,
+            });
+          }
+          editMenu.close();
+        }
+
+        function updatePosition() {
+          if (!_menu || _menu.empty()) return;
+          const viewport = selection.node()
+            .getBoundingClientRect();
+
+          if (containerPoint.x < 0 ||
+            containerPoint.x > viewport.width ||
+            containerPoint.y < 0 ||
+            containerPoint.y > viewport.height) {
+
+            editMenu.close();
+            return;
+          }
+          const offset = [0, 0];
+
+          const menuLeft = displayOnLeft(viewport);
+          offset[0] = menuLeft ? -1 * (_menuSideMargin + _menuWidth) : _menuSideMargin;
+
+          const menuBottom = displayOnBottom(viewport);
+          offset[1] = menuBottom ? -containerPoint.y - _menuHeight + viewport.height - _vpBottomMargin : 0;
+
+          const origin = [containerPoint.x + offset[0], containerPoint.y + offset[1]];
+
+          _menu.style('left', origin[0] + 'px')
+            .style('top', origin[1] - 16 + 'px')
+            .style('z-index', 999);
+        }
+
+        function displayOnLeft(viewport) {
+          return (containerPoint.x + _menuSideMargin + _menuWidth) > viewport.width;
+        }
+
+        function displayOnBottom(viewport) {
+          return (containerPoint.y + _menuHeight > (viewport.height + _vpBottomMargin));
+        }
+      };
+
+
+      editMenu.close = function () {
+        _menu.remove();
+      };
+
+      return editMenu;
     }
-    if (layer.shape === 'polyline') {
-      res['长度'] = turf.round(turf.length(layer.toGeoJSON(), { units: 'kilometers' }), 3) + '㎞';
+
+    function getOperations(key) {
+      const operationMap = new Map();
+      const markerOperations = [
+        {
+          title: '移动',
+          operation: move,
+          disabled: () => {
+            return false;
+          },
+        },
+        {
+          title: '复制',
+          operation: copy,
+          disabled: () => {
+            return false;
+          },
+        },
+        {
+          title: '删除',
+          operation: remove,
+          disabled: () => {
+            return false;
+          },
+        },
+      ];
+      operationMap.set('marker', markerOperations);
+      operationMap.set('circleMarker', markerOperations);
+      const lineOperations = [
+        {
+          title: '移动',
+          operation: move,
+          disabled: () => {
+            return false;
+          },
+        },
+        {
+          title: '编辑',
+          operation: edit,
+          disabled: () => {
+            return false;
+          },
+        },
+        {
+          title: '复制',
+          operation: copy,
+          disabled: () => {
+            return false;
+          },
+        },
+        {
+          title: '截取',
+          operation: segmentation,
+          disabled: () => {
+            return false;
+          },
+        },
+        {
+          title: '删除',
+          operation: remove,
+          disabled: () => {
+            return false;
+          },
+        },
+      ];
+      operationMap.set('polyline', lineOperations);
+      const polygonOperations = [
+        {
+          title: '移动',
+          operation: move,
+          disabled: () => {
+            return false;
+          },
+        },
+        {
+          title: '编辑',
+          operation: edit,
+          disabled: () => {
+            return false;
+          },
+        },
+        {
+          title: '复制',
+          operation: copy,
+          disabled: () => {
+            return false;
+          },
+        },
+        {
+          title: '删除',
+          operation: remove,
+          disabled: () => {
+            return false;
+          },
+        },
+      ];
+      operationMap.set('polygon', polygonOperations);
+      const mapOperations = [
+        {
+          title: '当前位置',
+          operation: location,
+          disabled: () => {
+            return false;
+          },
+        },
+        {
+          title: '粘贴',
+          operation: copyLayer,
+          disabled: () => {
+            return setCopyLayer.size === 0;
+          },
+        },
+      ];
+      operationMap.set('Map', mapOperations);
+
+      function location(d3_event) {
+        console.log(d3_event);
+        const { clientX, clientY } = d3_event.event;
+        console.log(clientX, clientY);
+        const loc = map.layerPointToLatLng(L.point(clientX, clientY));
+        alert(JSON.stringify(loc));
+      }
+
+
+      /** 编辑 */
+      function edit(d3_event) {
+        const { sourceTarget } = d3_event;
+        sourceTarget.pm.enable({
+          allowSelfIntersection: false,
+        });
+      }
+
+      function move(d3_event) {
+        const { sourceTarget } = d3_event;
+        console.log(drawLayers);
+        if (sourceTarget) {
+          sourceTarget.pm.enableLayerDrag();
+          sourceTarget.on('pm:dragstart', e => {
+            console.log('pm:dragstart: ', e);
+          });
+          sourceTarget.on('pm:drag', e => {
+            console.log(e);
+          });
+          sourceTarget.on('pm:dragend', e => {
+            const { sourceTarget } = e;
+            sourceTarget.pm.disableLayerDrag();
+            sourceTarget.off('pm:dragend');
+            sourceTarget.off('pm:drag');
+          });
+        }
+      }
+
+      function copy(d3_event) {
+        selectLayer = d3_event.sourceTarget;
+        setCopyLayer.add(selectLayer);
+        origLatLng = selectLayer.getLatLng ? selectLayer.getLatLng() : selectLayer.getCenter();
+      }
+
+      function remove(d3_event) {
+        const { sourceTarget } = d3_event;
+        if (sourceTarget && map.hasLayer(sourceTarget)) {
+          map.removeLayer(sourceTarget);
+        }
+      }
+
+      /** 裁剪方法 */
+      function segmentation(d3_event) {
+        isSegmentation = true;
+        relatedLayer = d3_event.sourceTarget;
+        map.pm.enableDraw('Marker', {});
+      }
+
+      return operationMap.get(key);
     }
-    if (layer.shape === 'marker' || layer.shape === 'circleMarker') {
-      const latLng = turf.truncate(layer.toGeoJSON());
-      res['经度'] = latLng.geometry.coordinates[0];
-      res['纬度'] = latLng.geometry.coordinates[1];
-    }
-    let html = '';
-    Object.keys(res)
-      .forEach(key => {
-        html += `<p>${key}: ${res[key]}</p>`;
+
+
+    /** 绑定右键菜单 */
+    function bindContextMenu(shape, layer) {
+      layer.on('contextmenu', e => {
+        L.DomEvent.stopPropagation(e);
+        const context = {
+          event: e,
+          operations: getOperations(shape),
+        };
+        const menu = editMenu(context);
+        menu.close();
+        menu();
       });
-    return html;
-  }
-</script>
+    }
+
+    let isSegmentation = false;
+
+    let relatedLayer;
+
+    /** 计算距离点最近的线 */
+    function pointToLineDistance(pt) {
+      const minMap = [];
+      drawLayers.forEach(layer => {
+        const geoJSON = layer.toGeoJSON();
+        const distance = turf.pointToLineDistance(pt, geoJSON, { units: 'kilometers' });
+        minMap.push({
+          layer,
+          distance,
+        });
+      });
+      let min = Infinity, res;
+      minMap.forEach(e => {
+        if (e.distance < min) {
+          min = e.distance;
+          res = e.layer;
+        }
+      });
+      return res;
+    }
+
+    /** 计算点是否在线上 */
+    function booleanPointOnLine(pt) {
+      for (const drawLayer of drawLayers) {
+        const geoJSON = drawLayer.toGeoJSON();
+        console.log(turf.booleanPointOnLine(pt, geoJSON));
+      }
+    }
+
+    function segmentationLine(layer) {
+      const pt = layer.toGeoJSON();
+      const geoJSON = relatedLayer.toGeoJSON();
+      if (turf.booleanWithin(pt, geoJSON)) {
+        const split = turf.lineSplit(geoJSON, pt);
+        const { features } = split;
+        for (let i = 0; i < features.length; i++) {
+          const line = L.GeoJSON.geometryToLayer(features[i], {});
+          bindContextMenu('polyline', line);
+          line.uuid = uuid.v4();
+          drawLayers.push(line);
+          line.shape = 'polyline';
+          line
+            .on('mouseover', function (e) {
+              e.sourceTarget.setStyle({
+                weight: 8,
+                opacity: 0.6,
+                color: '#f6634f',
+              });
+            })
+            .on('mouseout', function (e) {
+              e.sourceTarget.setStyle({
+                weight: 3,
+                opacity: 1,
+                color: '#3388ff',
+              });
+            })
+            .addTo(map);
+        }
+        const index = drawLayersFindIndex(relatedLayer.uuid);
+        if (index !== -1) {
+          map.removeLayer(relatedLayer);
+          drawLayers.splice(index, 1);
+        }
+      }
+      else {
+        alert('请将截取点放在线内的点上');
+      }
+      map.removeLayer(layer);
+      map.pm.disableDraw();
+      relatedLayer = undefined;
+      isSegmentation = !isSegmentation;
+    }
+
+    function drawLayersFindIndex(uuid) {
+      let layer;
+      layerGroup.eachLayer(e => {
+        if (e.uuid === uuid) {
+          layer = e;
+        }
+      });
+      if (layer) {
+        layerGroup.removeLayer(layer);
+      }
+      return drawLayers.findIndex(e => {
+        return e.uuid === uuid;
+      });
+    }
+
+    map.on('pm:vertexadded', e => {
+      console.log(e);
+    });
+
+    // 监听绘制开始
+    // map.on('pm:drawstart', e => {
+    //   console.log('pm:drawstart: ', e);
+    //   const { workingLayer } = e;
+    //   // 监听绘制定点
+    //   workingLayer.on('pm:vertexadded', e => {
+    //     drawLayers.forEach(layer => {
+    //       const geoJSON = layer.toGeoJSON(7);
+    //       geoJSON.properties.id = layer.uuid;
+    //       console.log(geoJSON);
+    //     });
+    //     console.log('pm:vertexadded: ', e);
+    //   });
+    // });
+
+    let selectLayer;
+    const setCopyLayer = new Set();
+    map.on('mousemove', mapMousemove);
+
+    const key = {
+      '⌘+C': () => {
+        if (!selectLayer) return;
+        setCopyLayer.add(selectLayer);
+        origLatLng = selectLayer.getLatLng ? selectLayer.getLatLng() : selectLayer.getCenter();
+      },
+      '⌘+V': () => {
+        copyLayer();
+      },
+      '⌘+Z': () => {
+        const popLayer = drawLayers.pop();
+        if (popLayer && map.hasLayer(popLayer)) {
+          map.removeLayer(popLayer);
+        }
+        if (copyMarker && map.hasLayer(copyMarker)) {
+          map.removeLayer(copyMarker);
+        }
+      },
+      'Esc': () => {
+        if (copyMarker && map.hasLayer(copyMarker)) {
+          map.removeLayer(copyMarker);
+        }
+        map.pm.disableDraw();
+      },
+    };
+
+    const keys = {}, keyboards = [];
+    Object.keys(key)
+      .forEach(e => {
+        let keyboard = [uiCmd(e)];
+        keyboards.push(keyboard);
+        Object.assign(keys, { [keyboard]: key[e] });
+      });
+
+    hotkeys(keyboards.join(','), function (event, handler) {
+      keys[handler.key]();
+    },
+    );
+
+    let copyMarker;
+    let origLatLng;
+    let isCopyLayer = true;
+
+    function copyLayer() {
+      isCopyLayer = false;
+      const layers = [...setCopyLayer];
+      if (!layers.length) return;
+      const layer = layers[setCopyLayer.size - 1];
+      const { options, shape } = layer;
+      copyMarker = L[shape](mousemoveLatlng, options)
+        .addTo(map);
+      copyMarker.shape = shape;
+      copyMarker.uuid = uuid.v4();
+      drawLayers.push(copyMarker);
+      d3.select(document)
+        .on('click', copyLayerMapClick);
+
+      function copyLayerMapClick() {
+        bindContextMenu(copyMarker.shape, copyMarker);
+        copyMarker = undefined;
+        isCopyLayer = true;
+        d3.select(document)
+          .on('click', null);
+      }
+    }
+
+    let mousemoveLatlng;
+
+    function mapMousemove(e) {
+      mapMousemoveLatLng(e);
+    }
+
+    function mapMousemoveLatLng(event) {
+      if (!copyMarker && !selectLayer || !origLatLng) return;
+      const { latlng } = event;
+      const { shape } = copyMarker || selectLayer;
+      const currMove = map.latLngToLayerPoint(latlng);
+      const origMove = map.latLngToLayerPoint(origLatLng);
+      const delta = [currMove.x - origMove.x, currMove.y - origMove.y];
+      if (shape === 'marker' || shape === 'circleMarker') {
+        const end = [origMove.x + delta[0], origMove.y + delta[1]];
+        mousemoveLatlng = map.layerPointToLatLng(L.point(end[0], end[1]));
+        if (copyMarker && map.hasLayer(copyMarker)) {
+          copyMarker.setLatLng(mousemoveLatlng);
+        }
+      }
+      else {
+        mousemoveLatlng = [];
+        const latLngs = selectLayer.getLatLngs();
+        for (let i = 0; i < latLngs.length; i++) {
+          if (Array.isArray(latLngs[i])) {
+            mousemoveLatlng.push([]);
+            let lls = [];
+            for (let j = 0; j < latLngs[i].length; j++) {
+              const start = map.latLngToLayerPoint(latLngs[i][j]);
+              const end = [start.x + delta[0], start.y + delta[1]];
+              const endLatLng = map.layerPointToLatLng(L.point(end[0], end[1]));
+              lls.push(endLatLng);
+            }
+            mousemoveLatlng[i] = lls;
+          }
+          else {
+            const start = map.latLngToLayerPoint(latLngs[i]);
+            const end = [start.x + delta[0], start.y + delta[1]];
+            const endLatLng = map.layerPointToLatLng(L.point(end[0], end[1]));
+            mousemoveLatlng.push(endLatLng);
+          }
+        }
+        if (copyMarker && map.hasLayer(copyMarker)) {
+          copyMarker.setLatLngs(mousemoveLatlng);
+        }
+      }
+    }
+
+    const polygon = [
+      'Rectangle', 'Polygon',
+    ];
+
+    const marker = [
+      'Text',
+      'Marker',
+    ];
+
+    const polyline = [
+      'Line',
+    ];
+
+    const circleMarker = [
+      'CircleMarker',
+    ];
+
+    map.on('pm:create', (e) => {
+      map.on('contextmenu', disableDraw);
+
+      function disableDraw() {
+        map.pm.disableDraw();
+        map.off('contextmenu', disableDraw);
+      }
+
+      let { layer, shape } = e;
+      if (!isSegmentation) {
+        console.log('create one', shape, e);
+        if (polygon.includes(shape)) {
+          shape = 'polygon';
+          layer.setStyle({
+            color: '#4CAF50',
+          });
+        }
+        if (marker.includes(shape)) {
+          shape = 'marker';
+        }
+        if (polyline.includes(shape)) {
+          shape = 'polyline';
+          layer
+            .on('mouseover', function (e) {
+              e.sourceTarget.setStyle({
+                weight: 8,
+                opacity: 0.6,
+                color: '#f6634f',
+              });
+            })
+            .on('mouseout', function (e) {
+              e.sourceTarget.setStyle({
+                weight: 3,
+                opacity: 1,
+                color: '#3388ff',
+              });
+            });
+        }
+        if (circleMarker.includes(shape)) {
+          shape = 'circleMarker';
+        }
+        layer.shape = shape;
+        layer.isSegmentation = isSegmentation;
+        bindContextMenu(shape, layer);
+        layer.on('click', e => {
+          L.DomEvent.stopPropagation(e);
+          selectLayer = e.sourceTarget;
+        });
+        layer.uuid = uuid.v4();
+        layer.bindPopup(`<sapn>${popup(layer)}</sapn>`);
+        drawLayers.push(layer);
+      }
+      else {
+        segmentationLine(layer);
+      }
+    });
+
+    function popup(layer) {
+      const res = {};
+      res['编号'] = layer.uuid;
+      if (layer.shape === 'polygon') {
+        res['面积'] = turf.round(turf.area(layer.toGeoJSON()), 2) + '㎡';
+      }
+      if (layer.shape === 'polyline') {
+        res['长度'] = turf.round(turf.length(layer.toGeoJSON(), { units: 'kilometers' }), 3) + '㎞';
+      }
+      if (layer.shape === 'marker' || layer.shape === 'circleMarker') {
+        const latLng = turf.truncate(layer.toGeoJSON());
+        res['经度'] = latLng.geometry.coordinates[0];
+        res['纬度'] = latLng.geometry.coordinates[1];
+      }
+      let html = '';
+      Object.keys(res)
+        .forEach(key => {
+          html += `<p>${key}: ${res[key]}</p>`;
+        });
+      return html;
+    }
+  </script>
 </body>
+
 </html>
