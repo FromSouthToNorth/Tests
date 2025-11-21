@@ -409,7 +409,146 @@
     }).addTo(map);
 
     map.setView([51.525, -0.11], 19)
+    const polygon = L.polygon([{ "lat": 37.8612786, "lng": 113.3785993 }, { "lat": 37.8612147, "lng": 113.3666159 }, { "lat": 37.8790974, "lng": 113.3535334 }, { "lat": 37.8612786, "lng": 113.3785993 }, { "lat": 37.8903334, "lng": 113.3534352 }, { "lat": 37.8790974, "lng": 113.3535334 }, { "lat": 37.8899774, "lng": 113.2915874 }, { "lat": 37.8903334, "lng": 113.3534352 }, { "lat": 37.8697862, "lng": 113.2878231 }, { "lat": 37.8899774, "lng": 113.2915874 }, { "lat": 37.8732760, "lng": 113.3081865 }, { "lat": 37.8697862, "lng": 113.2878231 }, { "lat": 37.8643999, "lng": 113.3309944 }, { "lat": 37.8732760, "lng": 113.3081865 }, { "lat": 37.8682992, "lng": 113.3451311 }, { "lat": 37.8643999, "lng": 113.3309944 }, { "lat": 37.8746803, "lng": 113.3536363 }, { "lat": 37.8682992, "lng": 113.3451311 }, { "lat": 37.8611695, "lng": 113.3665879 }, { "lat": 37.8734235, "lng": 113.3547764 }, { "lat": 37.8612786, "lng": 113.3785993 }])
+      .addTo(map)
+    console.log(polygon.getBounds());
+    map.fitBounds(polygon.getBounds())
+    L.polyline([
+      [
+        37.8596661,
+        113.3325738
+      ],
+      [
+        37.859682,
+        113.3323833
+      ],
+      [
+        37.8597117,
+        113.3322157
+      ],
+      [
+        37.859666,
+        113.332574
+      ],
+      [
+        37.859642,
+        113.332833
+      ],
+      [
+        37.85964,
+        113.333073
+      ],
+      [
+        37.859574,
+        113.333108
+      ],
+      [
+        37.859495,
+        113.332897
+      ],
+      [
+        37.859476,
+        113.333149
+      ],
+      [
+        37.859513,
+        113.33333
+      ]
+    ]).addTo(map)
 
+
+
+    function mergePolylines(lines) {
+      if (!lines || lines.length === 0) return [];
+
+      // 转换输入为 Turf.js LineString 格式（注意：Turf.js 使用 [lng, lat] 顺序）
+      const polylines = lines.map(line =>
+        turf.lineString(line.map(point => [point.lng, point.lat]))
+      );
+
+      // 复制折线列表
+      let remaining = [...polylines];
+      let result = remaining.shift(); // 取第一条线段作为起点
+      let resultCoords = [...result.geometry.coordinates]; // 初始坐标
+
+      while (remaining.length > 0) {
+        let minDistance = Infinity;
+        let bestLine = null;
+        let bestIndex = 0;
+        let reverse = false;
+
+        // 当前路径的最后一个点
+        const lastPoint = turf.point(resultCoords[resultCoords.length - 1]);
+
+        // 找到最近的线段
+        for (let i = 0; i < remaining.length; i++) {
+          const line = remaining[i];
+          const startPoint = turf.point(line.geometry.coordinates[0]);
+          const endPoint = turf.point(line.geometry.coordinates[line.geometry.coordinates.length - 1]);
+
+          const distToStart = turf.distance(lastPoint, startPoint, { units: 'kilometers' });
+          const distToEnd = turf.distance(lastPoint, endPoint, { units: 'kilometers' });
+
+          if (distToStart < minDistance) {
+            minDistance = distToStart;
+            bestLine = line;
+            bestIndex = i;
+            reverse = false;
+          }
+          if (distToEnd < minDistance) {
+            minDistance = distToEnd;
+            bestLine = line;
+            bestIndex = i;
+            reverse = true;
+          }
+        }
+
+        // 添加最近线段的坐标（跳过第一个点如果与上一个点相同）
+        if (bestLine) {
+          let nextCoords = reverse ? bestLine.geometry.coordinates.slice().reverse() : bestLine.geometry.coordinates;
+          const lastCoord = resultCoords[resultCoords.length - 1];
+          const nextFirstCoord = nextCoords[0];
+          // 检查是否需要跳过重复点（精度到 6 位小数）
+          if (Math.abs(lastCoord[0] - nextFirstCoord[0]) > 1e-6 || Math.abs(lastCoord[1] - nextFirstCoord[1]) > 1e-6) {
+            resultCoords = resultCoords.concat(nextCoords);
+          } else {
+            resultCoords = resultCoords.concat(nextCoords.slice(1));
+          }
+          remaining.splice(bestIndex, 1);
+        }
+      }
+
+      // 使用 turf.cleanCoords 去重重复坐标
+      const cleanedLine = turf.cleanCoords(turf.lineString(resultCoords));
+
+      // 转换回 [lat, lng] 格式（Leaflet 使用 [lat, lng]）
+      return cleanedLine.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+    }
+
+    // 输入的三条线段
+    const lines = [
+      [
+        { lat: 37.8596661, lng: 113.3325738, seq: "0_(0.00)", z: 0 },
+        { lat: 37.859682, lng: 113.3323833, seq: "1_(0.00)", z: 0 },
+        { lat: 37.8597117, lng: 113.3322157, seq: "2_(0.00)", z: 0 }
+      ],
+      [
+        { lat: 37.859666, lng: 113.332574, seq: "0_(0.00)", z: 0 },
+        { lat: 37.859642, lng: 113.332833, seq: "1_(0.00)", z: 0 },
+        { lat: 37.85964, lng: 113.333073, seq: "2_(0.00)", z: 0 }
+      ],
+      [
+        { lat: 37.859513, lng: 113.33333, seq: "0_(0.00)", z: 0 },
+        { lat: 37.859476, lng: 113.333149, seq: "1_(0.00)", z: 0 },
+        { lat: 37.859495, lng: 113.332897, seq: "2_(0.00)", z: 0 },
+        { lat: 37.859574, lng: 113.333108, seq: "3_(0.00)", z: 0 },
+        { lat: 37.85964, lng: 113.333073, seq: "4_(0.00)", z: 0 }
+      ]
+    ];
+
+    // 合并线段
+    const mergedLine = mergePolylines(lines);
+    console.log(mergedLine);
   </script>
 </body>
 

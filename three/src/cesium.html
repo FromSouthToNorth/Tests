@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cesium高斯泼溅效果</title>
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.95/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.95/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <style>
+    html,
+    body,
+    #cesiumContainer {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .control-panel {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(42, 42, 42, 0.9);
+      padding: 15px;
+      border-radius: 5px;
+      color: white;
+      z-index: 1000;
+      max-width: 300px;
+    }
+
+    .control-panel h3 {
+      margin-top: 0;
+      color: #f0f0f0;
+    }
+
+    .control-group {
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    button {
+      background: #4CAF50;
+      border: none;
+      color: white;
+      padding: 8px 15px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 14px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .value-display {
+      display: inline-block;
+      width: 40px;
+      text-align: right;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="cesiumContainer"></div>
+  <div class="control-panel">
+    <h3>高斯泼溅控制面板</h3>
+
+    <div class="control-group">
+      <label for="splatSize">泼溅大小: <span id="splatSizeValue" class="value-display">100</span> km</label>
+      <input type="range" id="splatSize" min="10" max="500" value="100">
+    </div>
+
+    <div class="control-group">
+      <label for="splatIntensity">泼溅强度: <span id="splatIntensityValue" class="value-display">0.5</span></label>
+      <input type="range" id="splatIntensity" min="0.1" max="1" step="0.1" value="0.5">
+    </div>
+
+    <div class="control-group">
+      <label for="splatColor">泼溅颜色:</label>
+      <input type="color" id="splatColor" value="#ff0000">
+    </div>
+
+    <div class="control-group">
+      <button id="addSplat">添加随机泼溅</button>
+      <button id="clearSplats">清除所有泼溅</button>
+    </div>
+
+    <div class="control-group">
+      <p>点击地球添加泼溅点</p>
+    </div>
+  </div>
+
+  <script>
+    // Cesium Ion访问令牌（您需要注册并获取自己的令牌）
+    // 如果没有令牌，可以使用默认的OSM底图
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiNGNkZmExNi1iNGFjLTRmMWQtYTk0YS1kZDA0YThjODg0YWEiLCJpZCI6MTIzMzI5LCJpYXQiOjE3NTI2NTYwMDV9.AGrRQMfnLy7_rqCkCqt0ESx3NX3ulhfOZLv-sDZB-vA';
+
+    // 初始化Cesium Viewer
+    const viewer = new Cesium.Viewer('cesiumContainer', {
+      terrainProvider: Cesium.createWorldTerrain(),
+      animation: false,
+      timeline: false,
+      homeButton: false,
+      geocoder: false,
+      baseLayerPicker: false,
+      sceneModePicker: false,
+      navigationHelpButton: false,
+      fullscreenButton: false
+    });
+
+    // 设置初始视角
+    viewer.camera.setView({
+      destination: Cesium.Cartesian3.fromDegrees(116.4, 39.9, 10000000),
+      orientation: {
+        heading: 0,
+        pitch: -1.57,
+        roll: 0
+      }
+    });
+
+    // 存储泼溅实体
+    let splatEntities = [];
+
+    // 创建高斯泼溅材质（修复版本）
+    function createGaussianSplatMaterial(color, intensity) {
+      return new Cesium.Material({
+        fabric: {
+          type: 'GaussianSplat',
+          uniforms: {
+            color: color,
+            intensity: intensity
+          },
+          source: `
+                        czm_material czm_getMaterial(czm_materialInput materialInput) {
+                            czm_material material = czm_getDefaultMaterial(materialInput);
+                            
+                            // 计算到中心的距离（归一化坐标）
+                            vec2 st = materialInput.st;
+                            float distanceToCenter = length(st - vec2(0.5, 0.5));
+                            
+                            // 高斯函数
+                            float gaussian = exp(-(distanceToCenter * distanceToCenter) / (2.0 * intensity * intensity));
+                            
+                            // 应用颜色和透明度
+                            material.diffuse = color.rgb;
+                            material.alpha = color.a * gaussian;
+                            
+                            return material;
+                        }
+                    `
+        }
+      });
+    }
+
+    // 添加高斯泼溅点到指定位置
+    function addGaussianSplat(longitude, latitude, size, intensity, color) {
+      // 创建材质实例
+      const material = createGaussianSplatMaterial(color, intensity);
+
+      const entity = viewer.entities.add({
+        position: Cesium.Cartesian3.fromDegrees(longitude, latitude),
+        ellipse: {
+          semiMinorAxis: size,
+          semiMajorAxis: size,
+          material: material,
+          height: 0,
+          extrudedHeight: 0
+        }
+      });
+
+      // 存储材质参数以便后续更新
+      entity.splatParams = {
+        color: color,
+        intensity: intensity,
+        size: size
+      };
+
+      splatEntities.push(entity);
+      return entity;
+    }
+
+    // 更新泼溅点的材质参数
+    function updateSplatMaterial(entity, color, intensity) {
+      if (entity.ellipse && entity.ellipse.material) {
+        // 创建新的材质实例
+        const newMaterial = createGaussianSplatMaterial(color, intensity);
+        entity.ellipse.material = newMaterial;
+
+        // 更新存储的参数
+        entity.splatParams.color = color;
+        entity.splatParams.intensity = intensity;
+      }
+    }
+
+    // 清除所有泼溅点
+    function clearAllSplats() {
+      splatEntities.forEach(entity => {
+        viewer.entities.remove(entity);
+      });
+      splatEntities = [];
+    }
+
+    // 添加随机泼溅点
+    function addRandomSplat() {
+      const longitude = Math.random() * 360 - 180;
+      const latitude = Math.random() * 180 - 90;
+      const size = parseFloat(document.getElementById('splatSize').value) * 1000; // 转换为米
+      const intensity = parseFloat(document.getElementById('splatIntensity').value);
+      const color = Cesium.Color.fromCssColorString(document.getElementById('splatColor').value);
+
+      addGaussianSplat(longitude, latitude, size, intensity, color);
+    }
+
+    // 更新所有泼溅点的参数
+    function updateAllSplats() {
+      const intensity = parseFloat(document.getElementById('splatIntensity').value);
+      const color = Cesium.Color.fromCssColorString(document.getElementById('splatColor').value);
+
+      splatEntities.forEach(entity => {
+        updateSplatMaterial(entity, color, intensity);
+      });
+    }
+
+    // 点击地球添加泼溅点
+    const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+    handler.setInputAction(function (event) {
+      const position = viewer.camera.pickEllipsoid(event.position, viewer.scene.globe.ellipsoid);
+      if (position) {
+        const cartographic = Cesium.Cartographic.fromCartesian(position);
+        const longitude = Cesium.Math.toDegrees(cartographic.longitude);
+        const latitude = Cesium.Math.toDegrees(cartographic.latitude);
+
+        const size = parseFloat(document.getElementById('splatSize').value) * 1000;
+        const intensity = parseFloat(document.getElementById('splatIntensity').value);
+        const color = Cesium.Color.fromCssColorString(document.getElementById('splatColor').value);
+
+        addGaussianSplat(longitude, latitude, size, intensity, color);
+      }
+    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+    // 添加一些初始泼溅点
+    addGaussianSplat(116.4, 39.9, 100000, 0.5, Cesium.Color.RED.withAlpha(0.7)); // 北京
+    addGaussianSplat(-74.0, 40.7, 80000, 0.6, Cesium.Color.BLUE.withAlpha(0.7)); // 纽约
+    addGaussianSplat(139.7, 35.7, 70000, 0.4, Cesium.Color.GREEN.withAlpha(0.7)); // 东京
+
+    // 绑定控制面板事件
+    document.getElementById('addSplat').addEventListener('click', addRandomSplat);
+    document.getElementById('clearSplats').addEventListener('click', clearAllSplats);
+
+    // 更新显示值和所有泼溅点
+    document.getElementById('splatSize').addEventListener('input', function () {
+      document.getElementById('splatSizeValue').textContent = this.value;
+    });
+
+    document.getElementById('splatIntensity').addEventListener('input', function () {
+      document.getElementById('splatIntensityValue').textContent = this.value;
+      updateAllSplats();
+    });
+
+    document.getElementById('splatColor').addEventListener('input', function () {
+      updateAllSplats();
+    });
+  </script>
+</body>
+
+</html>
