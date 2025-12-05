@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>弧线连接点示例</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="./src/css/L.Icon.Pulse.css" />
+  <!-- Leaflet JavaScript -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Leaflet.curve JavaScript -->
+  <script src="./src/leaflet.curve.js"></script>
+  <script src="./src/L.Icon.Pulse.js"></script>
+  <style>
+    #map {
+      height: 600px;
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="map"></div>
+  <script>
+    // 我们的代码将写在这里
+    // 1. 初始化地图，以中国为中心
+    const map = L.map('map').setView([35, 105], 4);
+
+    // 2. 添加底图图层（这里使用OpenStreetMap）
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // 3. 定义中心点和子点的坐标
+    // 格式：[纬度, 经度]
+    const centerPoint = [30.60886, 114.32807]; // 武汉
+    const childPoints = [
+      [39.9042, 116.4074],   // 北京
+      [31.2304, 121.4737],   // 上海
+      [23.1291, 113.2644],   // 广州
+      [30.5728, 104.0668],   // 成都
+      [29.4316, 106.9123]    // 重庆
+    ];
+
+    const group = L.featureGroup().addTo(map);
+
+
+    var pulsingIcon = L.icon.pulse({ iconSize: [10, 10], color: 'red', fillColor: 'red' });
+    var centerMarker = L.marker([30.60886, 114.32807], { icon: pulsingIcon });
+    centerMarker.bindPopup("我是中心点（武汉）").openPopup();
+    group.addLayer(centerMarker);
+
+    // 5. 为每个子点添加标记，并从中心点绘制弧线连接到它们
+    childPoints.forEach((childCoord, index) => {
+      // 添加子点标记
+      var childIcon = L.icon.pulse({ iconSize: [6, 6], color: 'blue', fillColor: 'blue' });
+      var childMarker = L.marker(childCoord, { icon: childIcon });
+      childMarker.bindPopup(`我是子点 #${index + 1}`);
+      group.addLayer(childMarker);
+
+      // 使用 Leaflet.curve 绘制弧线
+      // 原理：创建一个二次贝塞尔曲线，控制点取起点和终点中间上方的某个位置
+      const curvePath = L.curve([
+        'M', centerPoint, // Move to 起点 (中心点)
+        'Q', [
+          (centerPoint[0] + childCoord[0]) / 2 + 5, // 控制点的纬度 (中间偏上)
+          (centerPoint[1] + childCoord[1]) / 2      // 控制点的经度 (中间)
+        ],
+        childCoord // 终点 (子点)
+      ], {
+        animate: { duration: 10000, iterations: Infinity, delay: 1 },    // 动画时长（毫秒）
+        color: 'red',      // 弧线颜色
+        weight: 3,         // 弧线宽度
+        opacity: 0.3,      // 透明度
+        dashArray: '5, 5'  // (可选) 设置为虚线，如果不需要实线可删除此行
+      }).addTo(map);
+
+      // (可选) 为弧线添加鼠标事件
+      curvePath.on('mouseover', function () {
+        this.setStyle({ color: 'blue', weight: 5 });
+      });
+      curvePath.on('mouseout', function () {
+        this.setStyle({ color: 'red', weight: 3 });
+      });
+      console.log('curvePath: ', curvePath.getLatLngs());
+    });
+
+  </script>
+</body>
+
+</html>
